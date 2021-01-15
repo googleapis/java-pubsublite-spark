@@ -1,1 +1,0 @@
-# java-pubsublite-spark
