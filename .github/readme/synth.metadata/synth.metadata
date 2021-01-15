@@ -1,0 +1,18 @@
+{
+  "sources": [
+    {
+      "git": {
+        "name": ".",
+        "remote": "https://github.com/googleapis/java-pubsublite-spark.git",
+        "sha": "292158597494f3ae8915b2e1468f082e1fc064ec"
+      }
+    },
+    {
+      "git": {
+        "name": "synthtool",
+        "remote": "https://github.com/googleapis/synthtool.git",
+        "sha": "16ec872dd898d7de6e1822badfac32484b5d9031"
+      }
+    }
+  ]
+}
