@@ -62,9 +62,6 @@ public class PslContinuousReader implements ContinuousReader {
 
   @Override
   public Offset mergeOffsets(PartitionOffset[] offsets) {
-    checkArgument(
-        SparkPartitionOffset.class.isAssignableFrom(offsets.getClass().getComponentType()),
-        "PartitionOffset object is not assignable to SparkPartitionOffset.");
     return SparkSourceOffset.merge(
         Arrays.copyOf(offsets, offsets.length, SparkPartitionOffset[].class));
   }
@@ -83,8 +80,8 @@ public class PslContinuousReader implements ContinuousReader {
   public void setStartOffset(Optional<Offset> start) {
     if (start.isPresent()) {
       checkArgument(
-          SparkSourceOffset.class.isAssignableFrom(start.get().getClass()),
-          "start offset is not assignable to PslSourceOffset.");
+          start.get() instanceof SparkSourceOffset,
+          "start offset is not instance of SparkSourceOffset.");
       startOffset = (SparkSourceOffset) start.get();
       return;
     }
@@ -95,8 +92,7 @@ public class PslContinuousReader implements ContinuousReader {
   @Override
   public void commit(Offset end) {
     checkArgument(
-        SparkSourceOffset.class.isAssignableFrom(end.getClass()),
-        "end offset is not assignable to SparkSourceOffset.");
+        end instanceof SparkSourceOffset, "end offset is not assignable to SparkSourceOffset.");
     committer.commit(PslSparkUtils.toPslSourceOffset((SparkSourceOffset) end));
   }
 

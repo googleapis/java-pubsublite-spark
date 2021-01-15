@@ -53,8 +53,7 @@ public class PslContinuousInputPartition
   @Override
   public InputPartitionReader<InternalRow> createContinuousReader(PartitionOffset offset) {
     checkArgument(
-        SparkPartitionOffset.class.isAssignableFrom(offset.getClass()),
-        "offset is not assignable to SparkPartitionOffset");
+        offset instanceof SparkPartitionOffset, "offset is not instance of SparkPartitionOffset");
 
     SparkPartitionOffset sparkPartitionOffset = (SparkPartitionOffset) offset;
     PslPartitionOffset pslPartitionOffset =
