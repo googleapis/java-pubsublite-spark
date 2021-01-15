@@ -1,10 +1,6 @@
 custom_content: |
   ## Requirements
 
-  ### Enable the PubSub Lite API
-
-                  Follow [these instructions](https://cloud.google.com/pubsub/lite/docs/quickstart#before-you-begin).
-
   ### Create a new subscription or use existing subscription
 
                   Follow [the instruction](https://cloud.google.com/pubsub/lite/docs/quickstart#create_a_lite_subscription) to create a new
@@ -76,29 +72,9 @@ custom_content: |
     | publish_timestamp | TimestampType | |
     | event_timestamp | TimestampType | Nullable |
 
-  ## Compiling with the connector
-
-  To include the connector in your project:
-
-    ### Maven
-
-    ```xml
-    <dependency>
-    <groupId>com.google.cloud.pubsublite.spark</groupId>
-    <artifactId>pubsublite-spark-sql-streaming-with-dependencies_2.11</artifactId>
-    <version>0.1.0</version>
-    </dependency>
-    ```
-
-    ### SBT
-
-    ```sbt
-    libraryDependencies += "com.google.cloud.pubsublite.spark" %% "pubsublite-spark-sql-streaming-with-dependencies_2.11" % "0.1.0"
-    ```
-
   ## Building the Connector
 
-  The connector is built using Maven. Following command creates a jar with shaded dependencies:
+  The connector is built using Maven. Following command creates a JAR file with shaded dependencies:
 
     ```
     mvn package
