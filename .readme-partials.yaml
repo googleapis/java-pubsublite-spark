@@ -1,11 +1,11 @@
 custom_content: |
   ## Requirements
 
-  ### Create a new subscription or use an existing subscription
+  ### Creating a new subscription or using an existing subscription
 
    Follow [the instruction](https://cloud.google.com/pubsub/lite/docs/quickstart#create_a_lite_subscription) to create a new subscription or use an existing subscription. If using an existing subscription, the connector will read from the oldest unacknowledged message in the subscription.
 
-  ### Create a Google Cloud Dataproc cluster (Optional)
+  ### Creating a Google Cloud Dataproc cluster (Optional)
 
    If you do not have an Apache Spark environment, you can create a [Cloud Dataproc](https://cloud.google.com/dataproc/docs) cluster with pre-configured auth. The following examples assume you are using Cloud Dataproc, but you can use `spark-submit` on any cluster.
 
