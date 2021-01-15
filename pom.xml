@@ -229,7 +229,7 @@
         <groupId>org.sonatype.plugins</groupId>
         <artifactId>nexus-staging-maven-plugin</artifactId>
         <configuration>
-          <!-- TODO(jiangmichael): Remote this to deploy.-->
+          <!-- TODO(jiangmichael): Remove this to deploy.-->
           <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
         </configuration>
       </plugin>
