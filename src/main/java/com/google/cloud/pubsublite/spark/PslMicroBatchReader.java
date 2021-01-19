@@ -66,8 +66,8 @@ public class PslMicroBatchReader implements MicroBatchReader {
   public void setOffsetRange(Optional<Offset> start, Optional<Offset> end) {
     if (start.isPresent()) {
       checkArgument(
-          SparkSourceOffset.class.isAssignableFrom(start.get().getClass()),
-          "start offset is not assignable to PslSourceOffset.");
+          start.get() instanceof SparkSourceOffset,
+          "start offset is not instance of SparkSourceOffset.");
       startOffset = (SparkSourceOffset) start.get();
     } else {
       startOffset =
@@ -75,8 +75,8 @@ public class PslMicroBatchReader implements MicroBatchReader {
     }
     if (end.isPresent()) {
       checkArgument(
-          SparkSourceOffset.class.isAssignableFrom(end.get().getClass()),
-          "start offset is not assignable to PslSourceOffset.");
+          end.get() instanceof SparkSourceOffset,
+          "end offset is not instance of SparkSourceOffset.");
       endOffset = (SparkSourceOffset) end.get();
     } else {
       endOffset = PslSparkUtils.toSparkSourceOffset(headOffsetReader.getHeadOffset());
@@ -101,8 +101,7 @@ public class PslMicroBatchReader implements MicroBatchReader {
   @Override
   public void commit(Offset end) {
     checkArgument(
-        SparkSourceOffset.class.isAssignableFrom(end.getClass()),
-        "end offset is not assignable to SparkSourceOffset.");
+        end instanceof SparkSourceOffset, "end offset is not instance of SparkSourceOffset.");
     committer.commit(PslSparkUtils.toPslSourceOffset((SparkSourceOffset) end));
   }
 
