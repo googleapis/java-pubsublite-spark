@@ -132,7 +132,7 @@ public class PslMicroBatchReaderTest {
     assertThat(((SparkSourceOffset) reader.getEndOffset()).getPartitionOffsetMap())
         .containsExactly(
             Partition.of(0L),
-            //
+            // the BatchOffsetRange setting takes effect as 100L + batchOffsetRange is less than 10000000L.
             SparkPartitionOffset.create(Partition.of(0L), 100L + batchOffsetRange - 1L),
             Partition.of(1L),
             SparkPartitionOffset.create(Partition.of(1L), -1L));
