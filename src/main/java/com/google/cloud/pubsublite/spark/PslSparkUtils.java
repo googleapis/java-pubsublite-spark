@@ -134,8 +134,11 @@ public class PslSparkUtils {
   }
 
   // EndOffset = min(startOffset + batchOffsetRange, headOffset)
-  public static SparkSourceOffset getSparkEndOffset(SparkSourceOffset headOffset, SparkSourceOffset startOffset,
-                                                    long batchOffsetRange, long topicPartitionCount) {
+  public static SparkSourceOffset getSparkEndOffset(
+      SparkSourceOffset headOffset,
+      SparkSourceOffset startOffset,
+      long batchOffsetRange,
+      long topicPartitionCount) {
     Map<Partition, SparkPartitionOffset> map = new HashMap<>();
     for (int i = 0; i < topicPartitionCount; i++) {
       Partition p = Partition.of(i);

@@ -98,7 +98,7 @@ public final class PslDataSource
             Ticker.systemTicker()),
         subscriptionPath,
         Objects.requireNonNull(pslDataSourceOptions.flowControlSettings()),
-        pslDataSourceOptions.maxBatchOffsetRange(),
+        Objects.requireNonNull(pslDataSourceOptions.maxBatchOffsetRange()),
         topicPartitionCount);
   }
 }

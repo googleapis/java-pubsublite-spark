@@ -82,8 +82,11 @@ public class PslMicroBatchReader implements MicroBatchReader {
           "end offset is not instance of SparkSourceOffset.");
       endOffset = (SparkSourceOffset) end.get();
     } else {
-      SparkSourceOffset headOffset = PslSparkUtils.toSparkSourceOffset(headOffsetReader.getHeadOffset());
-      endOffset = PslSparkUtils.getSparkEndOffset(headOffset, startOffset, batchOffsetRange, topicPartitionCount);
+      SparkSourceOffset headOffset =
+          PslSparkUtils.toSparkSourceOffset(headOffsetReader.getHeadOffset());
+      endOffset =
+          PslSparkUtils.getSparkEndOffset(
+              headOffset, startOffset, batchOffsetRange, topicPartitionCount);
     }
   }
 

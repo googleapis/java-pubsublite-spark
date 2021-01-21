@@ -46,8 +46,7 @@ public class Constants {
 
   public static final PubsubContext.Framework FRAMEWORK = PubsubContext.Framework.of("SPARK");
 
-  public static String BATCH_OFFSET_RANGE_CONFIG_KEY =
-          "pubsublite.flowcontrol.batchoffsetrange";
+  public static String BATCH_OFFSET_RANGE_CONFIG_KEY = "pubsublite.flowcontrol.batchoffsetrange";
   public static String BYTES_OUTSTANDING_CONFIG_KEY =
       "pubsublite.flowcontrol.byteoutstandingperpartition";
   public static String MESSAGES_OUTSTANDING_CONFIG_KEY =
