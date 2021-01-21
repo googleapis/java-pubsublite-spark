@@ -220,7 +220,7 @@
                 </relocation>
               </relocations>
               <shadedArtifactAttached>true</shadedArtifactAttached>
-              <shadedClassifierName>with-dependencies</shadedClassifierName>
+              <finalName>pubsublite-spark-sql-streaming-with-dependencies-${project.version}</finalName>
             </configuration>
           </execution>
         </executions>
