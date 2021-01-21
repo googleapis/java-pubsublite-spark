@@ -62,11 +62,7 @@ public abstract class PslDataSourceOptions implements Serializable {
 
   public static Builder builder() {
     return new AutoValue_PslDataSourceOptions.Builder()
-        .setCredentialsKey(null)
-        // TODO(jiangmichael): Revisit this later about if we need to expose this as a user
-        // configurable option. Ideally we should expose bytes range/# msgs range not
-        // offsets range since PSL doesn't guarantee offset = msg.
-        .setMaxBatchOffsetRange(Constants.DEFAULT_BATCH_OFFSET_RANGE);
+        .setCredentialsKey(null);
   }
 
   public static PslDataSourceOptions fromSparkDataSourceOptions(DataSourceOptions options) {
@@ -93,6 +89,9 @@ public abstract class PslDataSourceOptions implements Serializable {
                         Constants.BYTES_OUTSTANDING_CONFIG_KEY,
                         Constants.DEFAULT_BYTES_OUTSTANDING))
                 .build())
+        .setMaxBatchOffsetRange(options.getLong(
+                Constants.BATCH_OFFSET_RANGE_CONFIG_KEY,
+                Constants.DEFAULT_BATCH_OFFSET_RANGE))
         .build();
   }
 

@@ -132,4 +132,18 @@ public class PslSparkUtils {
           "Failed to get information from PSL and construct startOffset", e);
     }
   }
+
+  // EndOffset = min(startOffset + batchOffsetRange, headOffset)
+  public static SparkSourceOffset getSparkEndOffset(SparkSourceOffset headOffset, SparkSourceOffset startOffset,
+                                                    long batchOffsetRange, long topicPartitionCount) {
+    Map<Partition, SparkPartitionOffset> map = new HashMap<>();
+    for (int i = 0; i < topicPartitionCount; i++) {
+      Partition p = Partition.of(i);
+      SparkPartitionOffset emptyPartition = SparkPartitionOffset.create(p, -1L);
+      long head = headOffset.getPartitionOffsetMap().getOrDefault(p, emptyPartition).offset();
+      long start = startOffset.getPartitionOffsetMap().getOrDefault(p, emptyPartition).offset();
+      map.put(p, SparkPartitionOffset.create(p, Math.min(start + batchOffsetRange, head)));
+    }
+    return new SparkSourceOffset(map);
+  }
 }
