@@ -98,7 +98,7 @@ custom_content: |
     spark.readStream.format("pubsublite").option("gcp.credentials.key", "<SERVICE_ACCOUNT_JSON_IN_BASE64>")
     ```
 about: |
-  [Pub/Sub Lite][product-docs] is designed to provide reliable,
+  [Google Cloud Pub/Sub Lite][product-docs] is designed to provide reliable,
   many-to-many, asynchronous messaging between applications. Publisher
   applications can send messages to a topic and other applications can
   subscribe to that topic to receive the messages. By decoupling senders and
@@ -109,11 +109,11 @@ about: |
   storage with predefined capacity. Both products present a similar API, but
   Pub/Sub Lite has more usage caveats.
 
-  See the [Google Pub/Sub Lite docs](https://cloud.google.com/pubsub/quickstart-console#before-you-begin) for more details on how to activate
+  See the [Pub/Sub Lite docs](https://cloud.google.com/pubsub/quickstart-console#before-you-begin) for more details on how to activate
   Pub/Sub Lite for your project, as well as guidance on how to choose between
   Cloud Pub/Sub and Pub/Sub Lite.
 
   See the [Pub/Sub Lite client library docs][javadocs] to learn how to
-  use this Pub/Sub Client Library.
+  use this Pub/Sub Lite Client Library.
 
   The Pub/Sub Lite Spark connector ...
