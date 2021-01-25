@@ -1,4 +1,4 @@
 # Format:
 # module:released-version:current-version
 
-pubsublite-spark::0.1.0-SNAPSHOT
+pubsublite-spark:0.0.0:0.0.1-SNAPSHOT
