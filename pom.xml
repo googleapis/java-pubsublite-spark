@@ -7,8 +7,8 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.google.cloud</groupId>
-  <artifactId>pubsublite-spark</artifactId>
-  <version>0.0.1-SNAPSHOT</version><!-- {x-version-update:pubsublite-spark:current} -->
+  <artifactId>pubsublite-spark-sql-streaming</artifactId>
+  <version>0.0.1-SNAPSHOT</version><!-- {x-version-update:pubsublite-spark-sql-streaming:current} -->
   <packaging>jar</packaging>
   <name>Pub/Sub Lite Spark SQL Streaming</name>
   <url>https://github.com/googleapis/java-pubsublite-spark</url>
@@ -220,7 +220,7 @@
                 </relocation>
               </relocations>
               <shadedArtifactAttached>true</shadedArtifactAttached>
-              <finalName>pubsublite-spark-with-dependencies-${project.version}</finalName>
+              <finalName>pubsublite-spark-sql-streaming-with-dependencies-${project.version}</finalName>
             </configuration>
           </execution>
         </executions>

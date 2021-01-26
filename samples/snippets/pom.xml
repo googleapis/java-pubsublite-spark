@@ -29,7 +29,7 @@
     <!-- [START pubsublite-spark_java_dependencies] -->
     <dependency>
       <groupId>com.google.cloud</groupId>
-      <artifactId>pubsublite-spark</artifactId>
+      <artifactId>pubsublite-spark-sql-streaming</artifactId>
       <version>0.0.0</version>
     </dependency>
     <!-- [END pubsublite-spark_java_dependencies] -->
