@@ -42,7 +42,7 @@ public class PslMicroBatchReader implements MicroBatchReader {
   private final SubscriptionPath subscriptionPath;
   private final FlowControlSettings flowControlSettings;
   private final long topicPartitionCount;
-  private final long batchOffsetRange;
+  @Nullable private final Long maxMessagePerBatch;
   @Nullable private SparkSourceOffset startOffset = null;
   private SparkSourceOffset endOffset;
 
@@ -53,7 +53,7 @@ public class PslMicroBatchReader implements MicroBatchReader {
       PerTopicHeadOffsetReader headOffsetReader,
       SubscriptionPath subscriptionPath,
       FlowControlSettings flowControlSettings,
-      long batchOffsetRange,
+      @Nullable Long maxMessagePerBatch,
       long topicPartitionCount) {
     this.cursorClient = cursorClient;
     this.committer = committer;
@@ -62,7 +62,7 @@ public class PslMicroBatchReader implements MicroBatchReader {
     this.subscriptionPath = subscriptionPath;
     this.flowControlSettings = flowControlSettings;
     this.topicPartitionCount = topicPartitionCount;
-    this.batchOffsetRange = batchOffsetRange;
+    this.maxMessagePerBatch = maxMessagePerBatch;
   }
 
   @Override
@@ -86,7 +86,7 @@ public class PslMicroBatchReader implements MicroBatchReader {
           PslSparkUtils.toSparkSourceOffset(headOffsetReader.getHeadOffset());
       endOffset =
           PslSparkUtils.getSparkEndOffset(
-              headOffset, startOffset, batchOffsetRange, topicPartitionCount);
+              headOffset, startOffset, maxMessagePerBatch, topicPartitionCount);
     }
   }
 

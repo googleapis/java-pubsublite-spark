@@ -25,7 +25,6 @@ import org.apache.spark.sql.types.StructType;
 public class Constants {
   public static long DEFAULT_BYTES_OUTSTANDING = 50_000_000;
   public static long DEFAULT_MESSAGES_OUTSTANDING = Long.MAX_VALUE;
-  public static long DEFAULT_BATCH_OFFSET_RANGE = Long.MAX_VALUE;
   public static StructType DEFAULT_SCHEMA =
       new StructType(
           new StructField[] {
@@ -46,7 +45,8 @@ public class Constants {
 
   public static final PubsubContext.Framework FRAMEWORK = PubsubContext.Framework.of("SPARK");
 
-  public static String BATCH_OFFSET_RANGE_CONFIG_KEY = "pubsublite.flowcontrol.batchoffsetrange";
+  public static String MAX_MESSAGE_PER_BATCH_CONFIG_KEY =
+      "pubsublite.flowcontrol.maxmessageperbatch";
   public static String BYTES_OUTSTANDING_CONFIG_KEY =
       "pubsublite.flowcontrol.byteoutstandingperpartition";
   public static String MESSAGES_OUTSTANDING_CONFIG_KEY =

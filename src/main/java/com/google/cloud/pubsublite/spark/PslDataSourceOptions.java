@@ -16,22 +16,15 @@
 
 package com.google.cloud.pubsublite.spark;
 
-import static com.google.cloud.pubsublite.internal.ExtractStatus.toCanonical;
+import static com.google.cloud.pubsublite.internal.wire.ServiceClients.addDefaultSettings;
 
-import com.google.api.gax.core.ExecutorProvider;
-import com.google.api.gax.core.FixedExecutorProvider;
-import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
-import com.google.api.gax.rpc.ApiException;
-import com.google.api.gax.rpc.ClientSettings;
 import com.google.auto.value.AutoValue;
 import com.google.cloud.pubsublite.AdminClient;
 import com.google.cloud.pubsublite.AdminClientSettings;
-import com.google.cloud.pubsublite.CloudRegion;
 import com.google.cloud.pubsublite.SubscriptionPath;
 import com.google.cloud.pubsublite.cloudpubsub.FlowControlSettings;
 import com.google.cloud.pubsublite.internal.CursorClient;
 import com.google.cloud.pubsublite.internal.CursorClientSettings;
-import com.google.cloud.pubsublite.internal.Lazy;
 import com.google.cloud.pubsublite.internal.TopicStatsClient;
 import com.google.cloud.pubsublite.internal.TopicStatsClientSettings;
 import com.google.cloud.pubsublite.internal.wire.CommitterBuilder;
@@ -47,14 +40,11 @@ import com.google.cloud.pubsublite.v1.SubscriberServiceClient;
 import com.google.cloud.pubsublite.v1.SubscriberServiceSettings;
 import com.google.cloud.pubsublite.v1.TopicStatsServiceClient;
 import com.google.cloud.pubsublite.v1.TopicStatsServiceSettings;
-import com.google.common.util.concurrent.MoreExecutors;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Optional;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import javax.annotation.Nullable;
 import org.apache.spark.sql.sources.v2.DataSourceOptions;
-import org.threeten.bp.Duration;
 
 @AutoValue
 public abstract class PslDataSourceOptions implements Serializable {
@@ -69,7 +59,7 @@ public abstract class PslDataSourceOptions implements Serializable {
   public abstract FlowControlSettings flowControlSettings();
 
   @Nullable
-  public abstract Long maxBatchOffsetRange();
+  public abstract Long maxMessagePerBatch();
 
   public static Builder builder() {
     return new AutoValue_PslDataSourceOptions.Builder().setCredentialsKey(null);
@@ -81,9 +71,13 @@ public abstract class PslDataSourceOptions implements Serializable {
     }
 
     Builder builder = builder();
-    Optional<String> value;
-    if ((value = options.get(Constants.CREDENTIALS_KEY_CONFIG_KEY)).isPresent()) {
-      builder.setCredentialsKey(value.get());
+    Optional<String> cred;
+    if ((cred = options.get(Constants.CREDENTIALS_KEY_CONFIG_KEY)).isPresent()) {
+      builder.setCredentialsKey(cred.get());
+    }
+    Optional<String> bor;
+    if ((bor = options.get(Constants.MAX_MESSAGE_PER_BATCH_CONFIG_KEY)).isPresent()) {
+      builder.setMaxMessagePerBatch(Long.parseLong(bor.get()));
     }
     return builder
         .setSubscriptionPath(
@@ -99,9 +93,6 @@ public abstract class PslDataSourceOptions implements Serializable {
                         Constants.BYTES_OUTSTANDING_CONFIG_KEY,
                         Constants.DEFAULT_BYTES_OUTSTANDING))
                 .build())
-        .setMaxBatchOffsetRange(
-            options.getLong(
-                Constants.BATCH_OFFSET_RANGE_CONFIG_KEY, Constants.DEFAULT_BATCH_OFFSET_RANGE))
         .build();
   }
 
@@ -112,7 +103,7 @@ public abstract class PslDataSourceOptions implements Serializable {
 
     public abstract Builder setSubscriptionPath(SubscriptionPath subscriptionPath);
 
-    public abstract Builder setMaxBatchOffsetRange(long maxBatchOffsetRange);
+    public abstract Builder setMaxMessagePerBatch(long maxMessagePerBatch);
 
     public abstract Builder setFlowControlSettings(FlowControlSettings flowControlSettings);
 

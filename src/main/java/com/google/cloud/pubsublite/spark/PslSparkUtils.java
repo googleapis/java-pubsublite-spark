@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.apache.spark.sql.catalyst.InternalRow;
 import org.apache.spark.sql.catalyst.util.ArrayBasedMapData;
 import org.apache.spark.sql.catalyst.util.GenericArrayData;
@@ -137,7 +138,7 @@ public class PslSparkUtils {
   public static SparkSourceOffset getSparkEndOffset(
       SparkSourceOffset headOffset,
       SparkSourceOffset startOffset,
-      long batchOffsetRange,
+      @Nullable Long maxMessagePerBatch,
       long topicPartitionCount) {
     Map<Partition, SparkPartitionOffset> map = new HashMap<>();
     for (int i = 0; i < topicPartitionCount; i++) {
@@ -145,7 +146,11 @@ public class PslSparkUtils {
       SparkPartitionOffset emptyPartition = SparkPartitionOffset.create(p, -1L);
       long head = headOffset.getPartitionOffsetMap().getOrDefault(p, emptyPartition).offset();
       long start = startOffset.getPartitionOffsetMap().getOrDefault(p, emptyPartition).offset();
-      map.put(p, SparkPartitionOffset.create(p, Math.min(start + batchOffsetRange, head)));
+      if (maxMessagePerBatch != null) {
+        map.put(p, SparkPartitionOffset.create(p, Math.min(start + maxMessagePerBatch, head)));
+      } else {
+        map.put(p, SparkPartitionOffset.create(p, head));
+      }
     }
     return new SparkSourceOffset(map);
   }
