@@ -106,5 +106,5 @@ about: |
   The Pub/Sub Lite Spark connector supports Pub/Sub Lite as an input source to
   Apache Spark Structured Streaming in both the default micro-batch processing
   mode and the _experimental_ continous processing mode. The connector works in
-  all Apache Spark distributions, including [Google Cloud Dataproc](https://cloud.google.com/dataproc/docs/), Databricks,
+  all Apache Spark distributions, including [Google Cloud Dataproc](https://cloud.google.com/dataproc/docs/)
   and manual Spark installations.
