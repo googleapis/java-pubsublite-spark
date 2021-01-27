@@ -8,7 +8,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.google.cloud</groupId>
   <artifactId>pubsublite-spark-sql-streaming</artifactId>
-  <version>0.1.0-SNAPSHOT</version><!-- {x-version-update:pubsublite-spark-sql-streaming:current} -->
+  <version>0.0.1-SNAPSHOT</version><!-- {x-version-update:pubsublite-spark-sql-streaming:current} -->
   <packaging>jar</packaging>
   <name>Pub/Sub Lite Spark SQL Streaming</name>
   <url>https://github.com/googleapis/java-pubsublite-spark</url>
