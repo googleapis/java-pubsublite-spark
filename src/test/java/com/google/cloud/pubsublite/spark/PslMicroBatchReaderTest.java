@@ -123,7 +123,7 @@ public class PslMicroBatchReaderTest {
   }
 
   @Test
-  public void testmaxMessagesPerBatch() {
+  public void testMaxMessagesPerBatch() {
     when(cursorClient.listPartitionCursors(UnitTestExamples.exampleSubscriptionPath()))
         .thenReturn(ApiFutures.immediateFuture(ImmutableMap.of(Partition.of(0L), Offset.of(100L))));
     when(headOffsetReader.getHeadOffset())
