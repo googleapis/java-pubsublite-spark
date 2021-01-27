@@ -42,7 +42,6 @@ import com.google.cloud.pubsublite.v1.TopicStatsServiceClient;
 import com.google.cloud.pubsublite.v1.TopicStatsServiceSettings;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Optional;
 import javax.annotation.Nullable;
 import org.apache.spark.sql.sources.v2.DataSourceOptions;
 
@@ -58,11 +57,11 @@ public abstract class PslDataSourceOptions implements Serializable {
   @Nullable
   public abstract FlowControlSettings flowControlSettings();
 
-  @Nullable
-  public abstract Long maxMessagePerBatch();
+  public abstract long maxMessagesPerBatch();
 
   public static Builder builder() {
-    return new AutoValue_PslDataSourceOptions.Builder().setCredentialsKey(null);
+    return new AutoValue_PslDataSourceOptions.Builder().setCredentialsKey(null)
+            .setMaxMessagesPerBatch(Constants.DEFAULT_MAX_MESSAGES_PER_BATCH);
   }
 
   public static PslDataSourceOptions fromSparkDataSourceOptions(DataSourceOptions options) {
@@ -71,14 +70,9 @@ public abstract class PslDataSourceOptions implements Serializable {
     }
 
     Builder builder = builder();
-    Optional<String> cred;
-    if ((cred = options.get(Constants.CREDENTIALS_KEY_CONFIG_KEY)).isPresent()) {
-      builder.setCredentialsKey(cred.get());
-    }
-    Optional<String> bor;
-    if ((bor = options.get(Constants.MAX_MESSAGE_PER_BATCH_CONFIG_KEY)).isPresent()) {
-      builder.setMaxMessagePerBatch(Long.parseLong(bor.get()));
-    }
+    options.get(Constants.CREDENTIALS_KEY_CONFIG_KEY).ifPresent(builder::setCredentialsKey);
+    options.get(Constants.MAX_MESSAGE_PER_BATCH_CONFIG_KEY).ifPresent(mmpb ->
+            builder.setMaxMessagesPerBatch(Long.parseLong(mmpb)));
     return builder
         .setSubscriptionPath(
             SubscriptionPath.parse(options.get(Constants.SUBSCRIPTION_CONFIG_KEY).get()))
@@ -103,7 +97,7 @@ public abstract class PslDataSourceOptions implements Serializable {
 
     public abstract Builder setSubscriptionPath(SubscriptionPath subscriptionPath);
 
-    public abstract Builder setMaxMessagePerBatch(long maxMessagePerBatch);
+    public abstract Builder setMaxMessagesPerBatch(long maxMessagesPerBatch);
 
     public abstract Builder setFlowControlSettings(FlowControlSettings flowControlSettings);
 

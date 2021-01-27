@@ -25,6 +25,7 @@ import com.google.cloud.pubsublite.SequencedMessage;
 import com.google.cloud.pubsublite.SubscriptionPath;
 import com.google.cloud.pubsublite.internal.CursorClient;
 import com.google.common.collect.ListMultimap;
+import com.google.common.math.LongMath;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.util.Timestamps;
 import java.util.ArrayList;
@@ -34,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import org.apache.spark.sql.catalyst.InternalRow;
 import org.apache.spark.sql.catalyst.util.ArrayBasedMapData;
 import org.apache.spark.sql.catalyst.util.GenericArrayData;
@@ -138,7 +138,7 @@ public class PslSparkUtils {
   public static SparkSourceOffset getSparkEndOffset(
       SparkSourceOffset headOffset,
       SparkSourceOffset startOffset,
-      @Nullable Long maxMessagePerBatch,
+      long maxMessagesPerBatch,
       long topicPartitionCount) {
     Map<Partition, SparkPartitionOffset> map = new HashMap<>();
     for (int i = 0; i < topicPartitionCount; i++) {
@@ -146,11 +146,8 @@ public class PslSparkUtils {
       SparkPartitionOffset emptyPartition = SparkPartitionOffset.create(p, -1L);
       long head = headOffset.getPartitionOffsetMap().getOrDefault(p, emptyPartition).offset();
       long start = startOffset.getPartitionOffsetMap().getOrDefault(p, emptyPartition).offset();
-      if (maxMessagePerBatch != null) {
-        map.put(p, SparkPartitionOffset.create(p, Math.min(start + maxMessagePerBatch, head)));
-      } else {
-        map.put(p, SparkPartitionOffset.create(p, head));
-      }
+      map.put(p, SparkPartitionOffset.create(p,
+              Math.min(LongMath.saturatedAdd(start, maxMessagesPerBatch), head)));
     }
     return new SparkSourceOffset(map);
   }
