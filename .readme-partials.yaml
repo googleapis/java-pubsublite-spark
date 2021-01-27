@@ -97,3 +97,14 @@ custom_content: |
     ```java
     spark.readStream.format("pubsublite").option("gcp.credentials.key", "<SERVICE_ACCOUNT_JSON_IN_BASE64>")
     ```
+about: |
+  [Google Cloud Pub/Sub Lite][product-docs] is a zonal, real-time messaging
+  service that lets you send and receive messages between independent
+  applications. You can manually configure the throughput and storage capacity
+  for Pub/Sub Lite systems.
+
+  The Pub/Sub Lite Spark connector supports Pub/Sub Lite as an input source to
+  Apache Spark Structured Streaming in both the default micro-batch processing
+  mode and the _experimental_ continous processing mode. The connector works in
+  all Apache Spark distributions, including [Google Cloud Dataproc](https://cloud.google.com/dataproc/docs/)
+  and manual Spark installations.
