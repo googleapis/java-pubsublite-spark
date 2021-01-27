@@ -21,7 +21,10 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.streaming.StreamingQuery;
+import org.apache.spark.sql.streaming.Trigger;
 import org.apache.spark.sql.types.DataTypes;
+
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.spark.sql.functions.split;
 
@@ -48,9 +51,10 @@ public class WordCount {
 
         StreamingQuery query = df.writeStream()
                 .format("console")
+                .trigger(Trigger.ProcessingTime(10, TimeUnit.SECONDS))
                 .start();
 
-        Thread.sleep(10000);
+        Thread.sleep(20000);
         query.stop();
     }
 }
