@@ -54,14 +54,21 @@ public abstract class PslDataSourceOptions implements Serializable {
 
   public abstract SubscriptionPath subscriptionPath();
 
-  @Nullable
   public abstract FlowControlSettings flowControlSettings();
 
   public abstract long maxMessagesPerBatch();
 
   public static Builder builder() {
     return new AutoValue_PslDataSourceOptions.Builder().setCredentialsKey(null)
-            .setMaxMessagesPerBatch(Constants.DEFAULT_MAX_MESSAGES_PER_BATCH);
+            .setMaxMessagesPerBatch(Constants.DEFAULT_MAX_MESSAGES_PER_BATCH)
+            .setFlowControlSettings(
+                    FlowControlSettings.builder()
+                            .setMessagesOutstanding(
+                                            Constants.DEFAULT_MESSAGES_OUTSTANDING)
+                            .setBytesOutstanding(
+                                    Constants.DEFAULT_BYTES_OUTSTANDING)
+                            .build()
+            );
   }
 
   public static PslDataSourceOptions fromSparkDataSourceOptions(DataSourceOptions options) {
