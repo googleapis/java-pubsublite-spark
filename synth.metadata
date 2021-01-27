@@ -4,14 +4,14 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/java-pubsublite-spark.git",
-        "sha": "6b2d3f80ff3485f747cc28be07383c4f25cbf958"
+        "sha": "24a03fbecd251d369b658897942e04224f4035e0"
       }
     },
     {
       "git": {
         "name": "synthtool",
         "remote": "https://github.com/googleapis/synthtool.git",
-        "sha": "16ec872dd898d7de6e1822badfac32484b5d9031"
+        "sha": "3816b080296d4d52975079fd26c110dd26ba25af"
       }
     }
   ],
@@ -84,7 +84,6 @@
     "java.header",
     "license-checks.xml",
     "renovate.json",
-    "samples/install-without-bom/pom.xml",
     "samples/pom.xml",
     "samples/snapshot/pom.xml",
     "samples/snippets/pom.xml"
