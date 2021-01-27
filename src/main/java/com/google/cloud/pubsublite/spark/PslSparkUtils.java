@@ -146,8 +146,10 @@ public class PslSparkUtils {
       SparkPartitionOffset emptyPartition = SparkPartitionOffset.create(p, -1L);
       long head = headOffset.getPartitionOffsetMap().getOrDefault(p, emptyPartition).offset();
       long start = startOffset.getPartitionOffsetMap().getOrDefault(p, emptyPartition).offset();
-      map.put(p, SparkPartitionOffset.create(p,
-              Math.min(LongMath.saturatedAdd(start, maxMessagesPerBatch), head)));
+      map.put(
+          p,
+          SparkPartitionOffset.create(
+              p, Math.min(LongMath.saturatedAdd(start, maxMessagesPerBatch), head)));
     }
     return new SparkSourceOffset(map);
   }

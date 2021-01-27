@@ -132,7 +132,8 @@ public class PslMicroBatchReaderTest {
     assertThat(((SparkSourceOffset) reader.getEndOffset()).getPartitionOffsetMap())
         .containsExactly(
             Partition.of(0L),
-            // the maxMessagesPerBatch setting takes effect as 100L + maxMessagesPerBatch is less than
+            // the maxMessagesPerBatch setting takes effect as 100L + maxMessagesPerBatch is less
+            // than
             // 10000000L.
             SparkPartitionOffset.create(Partition.of(0L), 100L + maxMessagesPerBatch - 1L),
             Partition.of(1L),

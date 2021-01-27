@@ -59,16 +59,14 @@ public abstract class PslDataSourceOptions implements Serializable {
   public abstract long maxMessagesPerBatch();
 
   public static Builder builder() {
-    return new AutoValue_PslDataSourceOptions.Builder().setCredentialsKey(null)
-            .setMaxMessagesPerBatch(Constants.DEFAULT_MAX_MESSAGES_PER_BATCH)
-            .setFlowControlSettings(
-                    FlowControlSettings.builder()
-                            .setMessagesOutstanding(
-                                            Constants.DEFAULT_MESSAGES_OUTSTANDING)
-                            .setBytesOutstanding(
-                                    Constants.DEFAULT_BYTES_OUTSTANDING)
-                            .build()
-            );
+    return new AutoValue_PslDataSourceOptions.Builder()
+        .setCredentialsKey(null)
+        .setMaxMessagesPerBatch(Constants.DEFAULT_MAX_MESSAGES_PER_BATCH)
+        .setFlowControlSettings(
+            FlowControlSettings.builder()
+                .setMessagesOutstanding(Constants.DEFAULT_MESSAGES_OUTSTANDING)
+                .setBytesOutstanding(Constants.DEFAULT_BYTES_OUTSTANDING)
+                .build());
   }
 
   public static PslDataSourceOptions fromSparkDataSourceOptions(DataSourceOptions options) {
@@ -78,8 +76,9 @@ public abstract class PslDataSourceOptions implements Serializable {
 
     Builder builder = builder();
     options.get(Constants.CREDENTIALS_KEY_CONFIG_KEY).ifPresent(builder::setCredentialsKey);
-    options.get(Constants.MAX_MESSAGE_PER_BATCH_CONFIG_KEY).ifPresent(mmpb ->
-            builder.setMaxMessagesPerBatch(Long.parseLong(mmpb)));
+    options
+        .get(Constants.MAX_MESSAGE_PER_BATCH_CONFIG_KEY)
+        .ifPresent(mmpb -> builder.setMaxMessagesPerBatch(Long.parseLong(mmpb)));
     return builder
         .setSubscriptionPath(
             SubscriptionPath.parse(options.get(Constants.SUBSCRIPTION_CONFIG_KEY).get()))
