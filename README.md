@@ -19,19 +19,19 @@ If you are using Maven, add this to your pom.xml file:
 ```xml
 <dependency>
   <groupId>com.google.cloud</groupId>
-  <artifactId>pubsublite-spark-sql-streaming</artifactId>
+  <artifactId>pubsublite-spark</artifactId>
   <version>0.0.0</version>
 </dependency>
 ```
 
 If you are using Gradle without BOM, add this to your dependencies
 ```Groovy
-compile 'com.google.cloud:pubsublite-spark-sql-streaming:0.0.0'
+compile 'com.google.cloud:pubsublite-spark:0.0.0'
 ```
 
 If you are using SBT, add this to your dependencies
 ```Scala
-libraryDependencies += "com.google.cloud" % "pubsublite-spark-sql-streaming" % "0.0.0"
+libraryDependencies += "com.google.cloud" % "pubsublite-spark" % "0.0.0"
 ```
 
 ## Authentication
@@ -50,22 +50,29 @@ You will need to [enable billing][enable-billing] to use Google Pub/Sub Lite Spa
 
 ### Installation and setup
 
-You'll need to obtain the `pubsublite-spark-sql-streaming` library.  See the [Quickstart](#quickstart) section
-to add `pubsublite-spark-sql-streaming` as a dependency in your code.
+You'll need to obtain the `pubsublite-spark` library.  See the [Quickstart](#quickstart) section
+to add `pubsublite-spark` as a dependency in your code.
 
 ## About Pub/Sub Lite Spark Connector
 
-[Google Cloud Pub/Sub Lite][product-docs] is a zonal, real-time messaging
-service that lets you send and receive messages between independent
-applications. You can manually configure the throughput and storage capacity
-for Pub/Sub Lite systems.
 
-The Pub/Sub Lite Spark connector supports Pub/Sub Lite as an input source to
-Apache Spark Structured Streaming in both the default micro-batch processing
-mode and the _experimental_ continous processing mode. The connector works in
-all Apache Spark distributions, including [Google Cloud Dataproc](https://cloud.google.com/dataproc/docs/), Databricks,
-or manual Spark installations.
+[Pub/Sub Lite Spark Connector][product-docs] is designed to provide reliable,
+many-to-many, asynchronous messaging between applications. Publisher
+applications can send messages to a topic and other applications can
+subscribe to that topic to receive the messages. By decoupling senders and
+receivers, Google Cloud Pub/Sub allows developers to communicate between
+independently written applications.
 
+Compared to Google Pub/Sub, Pub/Sub Lite provides partitioned zonal data
+storage with predefined capacity. Both products present a similar API, but
+Pub/Sub Lite has more usage caveats.
+
+See the [Google Pub/Sub Lite docs](https://cloud.google.com/pubsub/quickstart-console#before-you-begin) for more details on how to activate
+Pub/Sub Lite for your project, as well as guidance on how to choose between
+Cloud Pub/Sub and Pub/Sub Lite.
+
+See the [Pub/Sub Lite Spark Connector client library docs][javadocs] to learn how to
+use this Pub/Sub Lite Spark Connector Client Library.
 
 
 ## Requirements
@@ -231,8 +238,8 @@ Java is a registered trademark of Oracle and/or its affiliates.
 [kokoro-badge-image-5]: http://storage.googleapis.com/cloud-devrel-public/java/badges/java-pubsublite-spark/java11.svg
 [kokoro-badge-link-5]: http://storage.googleapis.com/cloud-devrel-public/java/badges/java-pubsublite-spark/java11.html
 [stability-image]: https://img.shields.io/badge/stability-alpha-orange
-[maven-version-image]: https://img.shields.io/maven-central/v/com.google.cloud/pubsublite-spark-sql-streaming.svg
-[maven-version-link]: https://search.maven.org/search?q=g:com.google.cloud%20AND%20a:pubsublite-spark-sql-streaming&core=gav
+[maven-version-image]: https://img.shields.io/maven-central/v/com.google.cloud/pubsublite-spark.svg
+[maven-version-link]: https://search.maven.org/search?q=g:com.google.cloud%20AND%20a:pubsublite-spark&core=gav
 [authentication]: https://github.com/googleapis/google-cloud-java#authentication
 [developer-console]: https://console.developers.google.com/
 [create-project]: https://cloud.google.com/resource-manager/docs/creating-managing-projects
