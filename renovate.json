@@ -38,7 +38,7 @@
     },
     {
       "packagePatterns": [
-        "^com.google.cloud:pubsublite-spark",
+        "^com.google.cloud:pubsublite-spark-sql-streaming",
         "^com.google.cloud:libraries-bom",
         "^com.google.cloud.samples:shared-configuration"
       ],

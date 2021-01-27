@@ -4,7 +4,7 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/java-pubsublite-spark.git",
-        "sha": "6b2d3f80ff3485f747cc28be07383c4f25cbf958"
+        "sha": "24a03fbecd251d369b658897942e04224f4035e0"
       }
     },
     {
@@ -84,7 +84,6 @@
     "java.header",
     "license-checks.xml",
     "renovate.json",
-    "samples/install-without-bom/pom.xml",
     "samples/pom.xml",
     "samples/snapshot/pom.xml",
     "samples/snippets/pom.xml"
