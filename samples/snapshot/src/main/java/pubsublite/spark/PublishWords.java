@@ -62,7 +62,8 @@ public class PublishWords {
 
         String snippets = Resources.toString(Resources.getResource("text_snippets.txt"),
                 Charset.defaultCharset());
-        snippets = snippets.replaceAll("[,.!]", "").toLowerCase();
+        snippets = snippets.replaceAll("[:;,.!]", "").replaceAll("\n", " ").
+                replaceAll("\\s+", " ").toLowerCase();
         List<String> words = Arrays.asList(snippets.split(" "));
 
         createTopicExample(cloudRegion, zoneId, projectNumber, topicId, partitions);

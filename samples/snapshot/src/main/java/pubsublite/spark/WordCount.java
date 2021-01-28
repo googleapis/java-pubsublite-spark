@@ -20,7 +20,7 @@ import org.apache.spark.sql.Column;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.streaming.StreamingQuery;
+import org.apache.spark.sql.streaming.OutputMode;
 import org.apache.spark.sql.streaming.Trigger;
 import org.apache.spark.sql.types.DataTypes;
 
@@ -42,19 +42,15 @@ public class WordCount {
                 .load();
 
         Column splitCol = split(df.col("data"), "_");
-
         df = df.withColumn("word", splitCol.getItem(0))
                 .withColumn("word_count", splitCol.getItem(1).cast(DataTypes.LongType));
-
         df = df.groupBy("word").sum("word_count");
-        df = df.orderBy(df.col("sum(word_count)").desc()).cache();
+        df = df.orderBy(df.col("sum(word_count)").desc());
 
-        StreamingQuery query = df.writeStream()
+        df.writeStream()
                 .format("console")
-                .trigger(Trigger.ProcessingTime(10, TimeUnit.SECONDS))
-                .start();
-
-        Thread.sleep(20000);
-        query.stop();
+                .outputMode(OutputMode.Complete())
+                .trigger(Trigger.ProcessingTime(1, TimeUnit.SECONDS))
+                .start().awaitTermination();
     }
 }
