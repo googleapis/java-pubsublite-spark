@@ -37,6 +37,8 @@ import com.google.cloud.pubsublite.proto.Subscription.DeliveryConfig.DeliveryReq
 import com.google.cloud.pubsublite.proto.Topic;
 import com.google.cloud.pubsublite.proto.Topic.PartitionConfig;
 import com.google.cloud.pubsublite.proto.Topic.RetentionConfig;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.util.Durations;
@@ -46,19 +48,30 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 public class PublishWords {
 
+    private static final String REGION = "REGION";
+    private static final String ZONE_ID = "ZONE_ID";
+    private static final String TOPIC_ID = "TOPIC_ID";
+    private static final String SUBSCRIPTION_ID = "SUBSCRIPTION_ID";
+    private static final String PROJECT_NUMBER = "PROJECT_NUMBER";
+    private static final String PARTITIONS = "PARTITIONS";
+
     public static void main(String[] args) throws Exception {
 
-        // TODO(developer): Replace these variables before running the sample.
-        String cloudRegion = "your-cloud-region";
-        char zoneId = 'b';
-        String topicId = "your-topic-id";
-        String subscriptionId = "your-subscription-id";
-        long projectNumber = Long.parseLong("123456789");
-        int partitions = 2;
+        Map<String, String> env = System.getenv();
+        Preconditions.checkArgument(env.keySet().containsAll(ImmutableList.of(
+                REGION, ZONE_ID, TOPIC_ID, SUBSCRIPTION_ID, PROJECT_NUMBER, PARTITIONS)));
+
+        String cloudRegion = env.get(REGION);
+        char zoneId = env.get(ZONE_ID).charAt(0);
+        String topicId = env.get(TOPIC_ID);
+        String subscriptionId = env.get(SUBSCRIPTION_ID);
+        long projectNumber = Long.parseLong(env.get(PROJECT_NUMBER));
+        int partitions = Integer.parseInt(env.get(PARTITIONS));
 
         String snippets = Resources.toString(Resources.getResource("text_snippets.txt"),
                 Charset.defaultCharset());
