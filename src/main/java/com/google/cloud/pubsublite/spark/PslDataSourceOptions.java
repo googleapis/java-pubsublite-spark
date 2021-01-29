@@ -42,7 +42,6 @@ import com.google.cloud.pubsublite.v1.TopicStatsServiceClient;
 import com.google.cloud.pubsublite.v1.TopicStatsServiceSettings;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Optional;
 import javax.annotation.Nullable;
 import org.apache.spark.sql.sources.v2.DataSourceOptions;
 
@@ -55,18 +54,19 @@ public abstract class PslDataSourceOptions implements Serializable {
 
   public abstract SubscriptionPath subscriptionPath();
 
-  @Nullable
   public abstract FlowControlSettings flowControlSettings();
 
-  public abstract long maxBatchOffsetRange();
+  public abstract long maxMessagesPerBatch();
 
   public static Builder builder() {
     return new AutoValue_PslDataSourceOptions.Builder()
         .setCredentialsKey(null)
-        // TODO(jiangmichael): Revisit this later about if we need to expose this as a user
-        // configurable option. Ideally we should expose bytes range/# msgs range not
-        // offsets range since PSL doesn't guarantee offset = msg.
-        .setMaxBatchOffsetRange(Constants.DEFAULT_BATCH_OFFSET_RANGE);
+        .setMaxMessagesPerBatch(Constants.DEFAULT_MAX_MESSAGES_PER_BATCH)
+        .setFlowControlSettings(
+            FlowControlSettings.builder()
+                .setMessagesOutstanding(Constants.DEFAULT_MESSAGES_OUTSTANDING)
+                .setBytesOutstanding(Constants.DEFAULT_BYTES_OUTSTANDING)
+                .build());
   }
 
   public static PslDataSourceOptions fromSparkDataSourceOptions(DataSourceOptions options) {
@@ -75,10 +75,10 @@ public abstract class PslDataSourceOptions implements Serializable {
     }
 
     Builder builder = builder();
-    Optional<String> value;
-    if ((value = options.get(Constants.CREDENTIALS_KEY_CONFIG_KEY)).isPresent()) {
-      builder.setCredentialsKey(value.get());
-    }
+    options.get(Constants.CREDENTIALS_KEY_CONFIG_KEY).ifPresent(builder::setCredentialsKey);
+    options
+        .get(Constants.MAX_MESSAGE_PER_BATCH_CONFIG_KEY)
+        .ifPresent(mmpb -> builder.setMaxMessagesPerBatch(Long.parseLong(mmpb)));
     return builder
         .setSubscriptionPath(
             SubscriptionPath.parse(options.get(Constants.SUBSCRIPTION_CONFIG_KEY).get()))
@@ -103,7 +103,7 @@ public abstract class PslDataSourceOptions implements Serializable {
 
     public abstract Builder setSubscriptionPath(SubscriptionPath subscriptionPath);
 
-    public abstract Builder setMaxBatchOffsetRange(long maxBatchOffsetRange);
+    public abstract Builder setMaxMessagesPerBatch(long maxMessagesPerBatch);
 
     public abstract Builder setFlowControlSettings(FlowControlSettings flowControlSettings);
 

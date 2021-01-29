@@ -98,6 +98,7 @@ public final class PslDataSource
             Ticker.systemTicker()),
         subscriptionPath,
         Objects.requireNonNull(pslDataSourceOptions.flowControlSettings()),
+        pslDataSourceOptions.maxMessagesPerBatch(),
         topicPartitionCount);
   }
 }

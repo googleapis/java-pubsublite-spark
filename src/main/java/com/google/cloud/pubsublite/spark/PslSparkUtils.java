@@ -25,6 +25,7 @@ import com.google.cloud.pubsublite.SequencedMessage;
 import com.google.cloud.pubsublite.SubscriptionPath;
 import com.google.cloud.pubsublite.internal.CursorClient;
 import com.google.common.collect.ListMultimap;
+import com.google.common.math.LongMath;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.util.Timestamps;
 import java.util.ArrayList;
@@ -131,5 +132,25 @@ public class PslSparkUtils {
       throw new IllegalStateException(
           "Failed to get information from PSL and construct startOffset", e);
     }
+  }
+
+  // EndOffset = min(startOffset + batchOffsetRange, headOffset)
+  public static SparkSourceOffset getSparkEndOffset(
+      SparkSourceOffset headOffset,
+      SparkSourceOffset startOffset,
+      long maxMessagesPerBatch,
+      long topicPartitionCount) {
+    Map<Partition, SparkPartitionOffset> map = new HashMap<>();
+    for (int i = 0; i < topicPartitionCount; i++) {
+      Partition p = Partition.of(i);
+      SparkPartitionOffset emptyPartition = SparkPartitionOffset.create(p, -1L);
+      long head = headOffset.getPartitionOffsetMap().getOrDefault(p, emptyPartition).offset();
+      long start = startOffset.getPartitionOffsetMap().getOrDefault(p, emptyPartition).offset();
+      map.put(
+          p,
+          SparkPartitionOffset.create(
+              p, Math.min(LongMath.saturatedAdd(start, maxMessagesPerBatch), head)));
+    }
+    return new SparkSourceOffset(map);
   }
 }
