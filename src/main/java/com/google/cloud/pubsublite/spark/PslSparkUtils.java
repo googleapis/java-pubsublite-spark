@@ -75,9 +75,9 @@ public class PslSparkUtils {
                 msg.offset().value(),
                 ByteArray.concat(msg.message().key().toByteArray()),
                 ByteArray.concat(msg.message().data().toByteArray()),
-                Timestamps.toMillis(msg.publishTime()),
+                Timestamps.toMicros(msg.publishTime()),
                 msg.message().eventTime().isPresent()
-                    ? Timestamps.toMillis(msg.message().eventTime().get())
+                    ? Timestamps.toMicros(msg.message().eventTime().get())
                     : null,
                 convertAttributesToSparkMap(msg.message().attributes())));
     return InternalRow.apply(asScalaBufferConverter(list).asScala());
