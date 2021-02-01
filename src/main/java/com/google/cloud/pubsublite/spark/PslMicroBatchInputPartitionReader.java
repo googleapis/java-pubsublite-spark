@@ -48,7 +48,9 @@ public class PslMicroBatchInputPartitionReader implements InputPartitionReader<I
   private boolean batchFulfilled = false;
   private final MetricRegistry metrics = new MetricRegistry();
   private final Meter processRate;
-  private final Histogram latency;
+  private final Histogram latencyInsideNext;
+  private final Histogram latencyBetweenNext;
+  @Nullable private Long lastNextCallFinish = null;
 
   @VisibleForTesting
   PslMicroBatchInputPartitionReader(
@@ -59,7 +61,8 @@ public class PslMicroBatchInputPartitionReader implements InputPartitionReader<I
     this.subscriber = subscriber;
     this.endOffset = endOffset;
     this.processRate = metrics.meter(String.format("P-%d-process-rate", endOffset.partition().value()));
-    this.latency = metrics.histogram(String.format("P-%d-latency", endOffset.partition().value()));
+    this.latencyInsideNext = metrics.histogram(String.format("P-%d-latency-inside-next", endOffset.partition().value()));
+    this.latencyBetweenNext = metrics.histogram(String.format("P-%d-latency-between-next", endOffset.partition().value()));
     ConsoleReporter.forRegistry(metrics)
             .convertRatesTo(TimeUnit.SECONDS)
             .convertDurationsTo(TimeUnit.MILLISECONDS)
@@ -68,6 +71,9 @@ public class PslMicroBatchInputPartitionReader implements InputPartitionReader<I
 
   @Override
   public boolean next() {
+    if (lastNextCallFinish != null) {
+      latencyBetweenNext.update(System.currentTimeMillis() - lastNextCallFinish);
+    }
     if (batchFulfilled) {
       return false;
     }
@@ -79,7 +85,7 @@ public class PslMicroBatchInputPartitionReader implements InputPartitionReader<I
         msg = subscriber.messageIfAvailable();
         long finish = System.currentTimeMillis();
         processRate.mark();
-        latency.update(finish - start);
+        latencyInsideNext.update(finish - start);
         break;
       } catch (TimeoutException e) {
         log.atWarning().log(
@@ -97,14 +103,18 @@ public class PslMicroBatchInputPartitionReader implements InputPartitionReader<I
     // available to this thread.
     checkState(msg.isPresent());
     currentMsg = msg.get();
-    if (currentMsg.offset().value() == endOffset.offset()) {
-      // this is the last msg for the batch.
-      batchFulfilled = true;
-    } else if (currentMsg.offset().value() > endOffset.offset()) {
-      batchFulfilled = true;
-      return false;
+    try {
+      if (currentMsg.offset().value() == endOffset.offset()) {
+        // this is the last msg for the batch.
+        batchFulfilled = true;
+      } else if (currentMsg.offset().value() > endOffset.offset()) {
+        batchFulfilled = true;
+        return false;
+      }
+      return true;
+    } finally {
+      lastNextCallFinish = System.currentTimeMillis();
     }
-    return true;
   }
 
   @Override
