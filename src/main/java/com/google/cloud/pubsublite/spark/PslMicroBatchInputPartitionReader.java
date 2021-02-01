@@ -18,6 +18,10 @@ package com.google.cloud.pubsublite.spark;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import com.codahale.metrics.ConsoleReporter;
+import com.codahale.metrics.Histogram;
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
 import com.google.cloud.pubsublite.SequencedMessage;
 import com.google.cloud.pubsublite.SubscriptionPath;
 import com.google.cloud.pubsublite.internal.BlockingPullSubscriber;
@@ -28,6 +32,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import javax.annotation.Nullable;
+
 import org.apache.spark.sql.catalyst.InternalRow;
 import org.apache.spark.sql.sources.v2.reader.InputPartitionReader;
 
@@ -41,6 +46,9 @@ public class PslMicroBatchInputPartitionReader implements InputPartitionReader<I
   private final BlockingPullSubscriber subscriber;
   @Nullable private SequencedMessage currentMsg = null;
   private boolean batchFulfilled = false;
+  private final MetricRegistry metrics = new MetricRegistry();
+  private final Meter processRate;
+  private final Histogram latency;
 
   @VisibleForTesting
   PslMicroBatchInputPartitionReader(
@@ -50,6 +58,12 @@ public class PslMicroBatchInputPartitionReader implements InputPartitionReader<I
     this.subscriptionPath = subscriptionPath;
     this.subscriber = subscriber;
     this.endOffset = endOffset;
+    this.processRate = metrics.meter(String.format("P-%d-process-rate", endOffset.partition().value()));
+    this.latency = metrics.histogram(String.format("P-%d-latency", endOffset.partition().value()));
+    ConsoleReporter.forRegistry(metrics)
+            .convertRatesTo(TimeUnit.SECONDS)
+            .convertDurationsTo(TimeUnit.MILLISECONDS)
+            .build().start(30, TimeUnit.SECONDS);
   }
 
   @Override
@@ -60,8 +74,12 @@ public class PslMicroBatchInputPartitionReader implements InputPartitionReader<I
     Optional<SequencedMessage> msg;
     while (true) {
       try {
+        long start = System.currentTimeMillis();
         subscriber.onData().get(SUBSCRIBER_PULL_TIMEOUT.getSeconds(), TimeUnit.SECONDS);
         msg = subscriber.messageIfAvailable();
+        long finish = System.currentTimeMillis();
+        processRate.mark();
+        latency.update(finish - start);
         break;
       } catch (TimeoutException e) {
         log.atWarning().log(

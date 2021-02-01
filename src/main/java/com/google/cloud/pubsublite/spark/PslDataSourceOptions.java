@@ -16,15 +16,24 @@
 
 package com.google.cloud.pubsublite.spark;
 
+import static com.google.cloud.pubsublite.internal.ExtractStatus.toCanonical;
 import static com.google.cloud.pubsublite.internal.wire.ServiceClients.addDefaultSettings;
 
+import com.google.api.gax.core.ExecutorProvider;
+import com.google.api.gax.core.FixedExecutorProvider;
+import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
+import com.google.api.gax.rpc.ApiException;
+import com.google.api.gax.rpc.ClientSettings;
 import com.google.auto.value.AutoValue;
 import com.google.cloud.pubsublite.AdminClient;
 import com.google.cloud.pubsublite.AdminClientSettings;
+import com.google.cloud.pubsublite.CloudRegion;
+import com.google.cloud.pubsublite.Endpoints;
 import com.google.cloud.pubsublite.SubscriptionPath;
 import com.google.cloud.pubsublite.cloudpubsub.FlowControlSettings;
 import com.google.cloud.pubsublite.internal.CursorClient;
 import com.google.cloud.pubsublite.internal.CursorClientSettings;
+import com.google.cloud.pubsublite.internal.Lazy;
 import com.google.cloud.pubsublite.internal.TopicStatsClient;
 import com.google.cloud.pubsublite.internal.TopicStatsClientSettings;
 import com.google.cloud.pubsublite.internal.wire.CommitterBuilder;
@@ -42,8 +51,12 @@ import com.google.cloud.pubsublite.v1.TopicStatsServiceClient;
 import com.google.cloud.pubsublite.v1.TopicStatsServiceSettings;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import javax.annotation.Nullable;
+
+import com.google.common.util.concurrent.MoreExecutors;
 import org.apache.spark.sql.sources.v2.DataSourceOptions;
+import org.threeten.bp.Duration;
 
 @AutoValue
 public abstract class PslDataSourceOptions implements Serializable {
@@ -108,6 +121,35 @@ public abstract class PslDataSourceOptions implements Serializable {
     public abstract Builder setFlowControlSettings(FlowControlSettings flowControlSettings);
 
     public abstract PslDataSourceOptions build();
+  }
+
+  private static final Lazy<ExecutorProvider> PROVIDER =
+          new Lazy<>(
+                  () ->
+                          FixedExecutorProvider.create(
+                                  MoreExecutors.getExitingScheduledExecutorService(
+                                          new ScheduledThreadPoolExecutor(
+                                                  Math.max(4, Runtime.getRuntime().availableProcessors())))));
+
+  public static <
+          Settings extends ClientSettings<Settings>,
+          Builder extends ClientSettings.Builder<Settings, Builder>>
+  Settings addDefaultSettings(CloudRegion target, Builder builder) throws ApiException {
+    try {
+      return builder
+              .setEndpoint("us-central1-staging-pubsublite.sandbox.googleapis.com:443")
+              .setExecutorProvider(PROVIDER.get())
+              .setTransportChannelProvider(
+                      InstantiatingGrpcChannelProvider.newBuilder()
+                              .setMaxInboundMessageSize(Integer.MAX_VALUE)
+                              .setKeepAliveTime(Duration.ofMinutes(1))
+                              .setKeepAliveWithoutCalls(true)
+                              .setKeepAliveTimeout(Duration.ofMinutes(1))
+                              .build())
+              .build();
+    } catch (Throwable t) {
+      throw toCanonical(t).underlying;
+    }
   }
 
   MultiPartitionCommitter newMultiPartitionCommitter(long topicPartitionCount) {

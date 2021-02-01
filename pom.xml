@@ -113,6 +113,11 @@
       <version>${scala.version}</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>io.dropwizard.metrics</groupId>
+      <artifactId>metrics-core</artifactId>
+      <version>4.1.2</version>
+    </dependency>
 
     <!--test dependencies-->
     <dependency>
