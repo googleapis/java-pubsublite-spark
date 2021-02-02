@@ -18,6 +18,7 @@ SUBSCRIPTION_ID=test-subscrciption # or your subscription to create
 PARTITIONS=1 # or your number of partitions to create
 CLUSTER_NAME=waprin-spark7 # or your Dataproc cluster name to create
 BUCKET=gs://your-gcs-bucket
+SUBSCRIPTION_PATH=projects/$PROJECT_NUMBER/locations/$REGION-$ZONE_ID/subscriptions/$SUBSCRIPTION_ID
 ```
 
 ## Running word count sample
@@ -43,15 +44,15 @@ To run the word count sample in Dataproc cluster, follow the steps:
 6. Create GCS bucket and upload both pubsublite-spark-sql-streaming jar and the sample jar onto GCS
    ```
    gsutil mb $BUCKET
-   gsutil cp snapshots/target/pubsublite-spark-snapshot-1.0.21.jar $BUCKET
+   gsutil cp snapshot/target/pubsublite-spark-snapshot-1.0.21.jar $BUCKET
    gsutil cp $PUBSUBLITE_SPARK_SQL_STREAMING_JAR_LOCATION $BUCKET
    ```
 <!-- TODO: set up bots to update jar version -->
 7. Run the sample in Dataproc
    ```
    gcloud dataproc jobs submit spark --cluster="$CLUSTER_NAME" \
-      --jars="$BUCKET/pubsublite-spark-snapshot-1.0.21.jar,$BUCKET/pubsublite-spark-sql-streaming-0.0.1.jar" \
-      --class=pubsublite.spark.WordCount --properties=spark.master=yarn
+      --jars="$BUCKET/pubsublite-spark-snapshot-1.0.21.jar,$BUCKET/pubsublite-spark-sql-streaming-0.1.0.jar" \
+      --class=pubsublite.spark.WordCount -- $SUBSCRIPTION_PATH
    ```
 
 

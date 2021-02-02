@@ -34,6 +34,7 @@ public class WordCount {
 
         SparkSession spark = SparkSession.builder()
                 .appName("Word count")
+                .master("yarn")
                 .getOrCreate();
 
         Dataset<Row> df = spark.readStream()
