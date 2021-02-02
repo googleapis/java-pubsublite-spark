@@ -52,9 +52,11 @@ import com.google.cloud.pubsublite.v1.TopicStatsServiceSettings;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
 import javax.annotation.Nullable;
 
 import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.spark.sql.sources.v2.DataSourceOptions;
 import org.threeten.bp.Duration;
 
@@ -129,7 +131,10 @@ public abstract class PslDataSourceOptions implements Serializable {
                           FixedExecutorProvider.create(
                                   MoreExecutors.getExitingScheduledExecutorService(
                                           new ScheduledThreadPoolExecutor(
-                                                  Math.max(4, Runtime.getRuntime().availableProcessors())))));
+                                                  Math.max(4, Runtime.getRuntime().availableProcessors()),
+          new ThreadFactoryBuilder()
+                  .setNameFormat("psl-thread-%d")
+                  .build()))));
 
   public static <
           Settings extends ClientSettings<Settings>,

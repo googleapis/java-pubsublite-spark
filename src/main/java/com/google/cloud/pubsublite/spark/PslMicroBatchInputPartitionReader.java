@@ -22,9 +22,10 @@ import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.SlidingTimeWindowReservoir;
+import com.codahale.metrics.SlidingWindowReservoir;
 import com.google.cloud.pubsublite.SequencedMessage;
 import com.google.cloud.pubsublite.SubscriptionPath;
-import com.google.cloud.pubsublite.internal.BlockingPullSubscriber;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.flogger.GoogleLogger;
 import java.time.Duration;
@@ -62,7 +63,9 @@ public class PslMicroBatchInputPartitionReader implements InputPartitionReader<I
     this.endOffset = endOffset;
     this.processRate = metrics.meter(String.format("P-%d-process-rate", endOffset.partition().value()));
     this.latencyInsideNext = metrics.histogram(String.format("P-%d-latency-inside-next", endOffset.partition().value()));
+//            () -> new Histogram(new SlidingTimeWindowReservoir(20, TimeUnit.SECONDS)));
     this.latencyBetweenNext = metrics.histogram(String.format("P-%d-latency-between-next", endOffset.partition().value()));
+//            () -> new Histogram(new SlidingTimeWindowReservoir(20, TimeUnit.SECONDS)));
     ConsoleReporter.forRegistry(metrics)
             .convertRatesTo(TimeUnit.SECONDS)
             .convertDurationsTo(TimeUnit.MILLISECONDS)
@@ -85,7 +88,12 @@ public class PslMicroBatchInputPartitionReader implements InputPartitionReader<I
         msg = subscriber.messageIfAvailable();
         long finish = System.currentTimeMillis();
         processRate.mark();
-        latencyInsideNext.update(finish - start);
+        long latencyInsideNextThis = finish - start;
+        latencyInsideNext.update(latencyInsideNextThis);
+        if (latencyInsideNextThis > 100) {
+          log.atWarning().log("[MJ] latency inside next: " + latencyInsideNextThis
+                  + " larger than 100");
+        }
         break;
       } catch (TimeoutException e) {
         log.atWarning().log(

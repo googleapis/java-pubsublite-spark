@@ -24,7 +24,6 @@ import com.google.api.core.ApiFutures;
 import com.google.cloud.pubsublite.Message;
 import com.google.cloud.pubsublite.Offset;
 import com.google.cloud.pubsublite.SequencedMessage;
-import com.google.cloud.pubsublite.internal.BlockingPullSubscriberImpl;
 import com.google.cloud.pubsublite.internal.testing.UnitTestExamples;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.util.Timestamps;
