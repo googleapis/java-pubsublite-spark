@@ -33,11 +33,15 @@ import com.google.cloud.pubsublite.proto.SeekRequest;
 import com.google.common.flogger.GoogleLogger;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.errorprone.annotations.concurrent.GuardedBy;
+import scala.xml.dtd.impl.Base;
+
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class BlockingPullSubscriberImpl implements BlockingPullSubscriber {
     private static final GoogleLogger log = GoogleLogger.forEnclosingClass();
@@ -49,6 +53,10 @@ public class BlockingPullSubscriberImpl implements BlockingPullSubscriber {
 
     @GuardedBy("this")
     private Deque<SequencedMessage> messages = new ArrayDeque<>();
+
+    private final ReadWriteLock sideLock = new ReentrantReadWriteLock();
+    @GuardedBy("sideLock")
+    private Deque<SequencedMessage> sideMessages = new ArrayDeque<>();
 
     @GuardedBy("this")
     private Optional<SettableApiFuture<Void>> notification = Optional.empty();
@@ -86,14 +94,15 @@ public class BlockingPullSubscriberImpl implements BlockingPullSubscriber {
         }
     }
 
-    private synchronized void addMessages(Collection<SequencedMessage> new_messages) {
-        messages.addAll(new_messages);
-        log.atWarning().log("[MJ] Added messages: " + new_messages.size()
-                + "; current cache size: " + messages.size());
-//        if (notification.isPresent()) {
-//            notification.get().set(null);
-//            notification = Optional.empty();
-//        }
+    private void addMessages(Collection<SequencedMessage> new_messages) {
+        sideLock.writeLock().lock();
+        try {
+            sideMessages.addAll(new_messages);
+            log.atWarning().log("[mj] added messages: " + new_messages.size()
+                    + "; current cache size: " + sideMessages.size());
+        } finally {
+            sideLock.writeLock().unlock();
+        }
     }
 
     @Override
@@ -101,9 +110,9 @@ public class BlockingPullSubscriberImpl implements BlockingPullSubscriber {
         if (error.isPresent()) {
             return ApiFutures.immediateFailedFuture(error.get());
         }
-//        if (!messages.isEmpty()) {
-//            return ApiFutures.immediateFuture(null);
-//        }
+        if (!messages.isEmpty()) {
+            return ApiFutures.immediateFuture(null);
+        }
         if (!notification.isPresent()) {
             notification = Optional.of(SettableApiFuture.create());
         }
