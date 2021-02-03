@@ -40,6 +40,7 @@ public class PslMicroBatchReaderTest {
   private final PartitionSubscriberFactory partitionSubscriberFactory =
       mock(PartitionSubscriberFactory.class);
   private final PerTopicHeadOffsetReader headOffsetReader = mock(PerTopicHeadOffsetReader.class);
+  private static final long MAX_MESSAGES_PER_BATCH = 20000;
   private final PslMicroBatchReader reader =
       new PslMicroBatchReader(
           cursorClient,
@@ -48,6 +49,7 @@ public class PslMicroBatchReaderTest {
           headOffsetReader,
           UnitTestExamples.exampleSubscriptionPath(),
           OPTIONS.flowControlSettings(),
+          MAX_MESSAGES_PER_BATCH,
           2);
 
   private PslSourceOffset createPslSourceOffsetTwoPartition(long offset0, long offset1) {
@@ -118,5 +120,23 @@ public class PslMicroBatchReaderTest {
     SparkSourceOffset endOffset = createSparkSourceOffsetTwoPartition(20L, 100L);
     reader.setOffsetRange(Optional.of(startOffset), Optional.of(endOffset));
     assertThat(reader.planInputPartitions()).hasSize(1);
+  }
+
+  @Test
+  public void testMaxMessagesPerBatch() {
+    when(cursorClient.listPartitionCursors(UnitTestExamples.exampleSubscriptionPath()))
+        .thenReturn(ApiFutures.immediateFuture(ImmutableMap.of(Partition.of(0L), Offset.of(100L))));
+    when(headOffsetReader.getHeadOffset())
+        .thenReturn(createPslSourceOffsetTwoPartition(10000000L, 0L));
+    reader.setOffsetRange(Optional.empty(), Optional.empty());
+    assertThat(((SparkSourceOffset) reader.getEndOffset()).getPartitionOffsetMap())
+        .containsExactly(
+            Partition.of(0L),
+            // the maxMessagesPerBatch setting takes effect as 100L + maxMessagesPerBatch is less
+            // than
+            // 10000000L.
+            SparkPartitionOffset.create(Partition.of(0L), 100L + MAX_MESSAGES_PER_BATCH - 1L),
+            Partition.of(1L),
+            SparkPartitionOffset.create(Partition.of(1L), -1L));
   }
 }
