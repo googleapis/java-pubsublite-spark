@@ -28,13 +28,6 @@ cd ${scriptDir}/..
 # include common functions
 source ${scriptDir}/common.sh
 
-# Setup required env variables:
-# GOOGLE_CLOUD_PROJECT_NUMBER
-# CLUSTER_NAME
-# BUCKET_NAME
-source ${KOKORO_GFILE_DIR}/pubsublite_spark_secrets.txt
-echo "********** Successfully Set All Environment Variables **********"
-
 # Set additional env variables
 export CONNECTOR_VERSION=$(grep pubsublite-spark-sql-streaming versions.txt | cut -d: -f3)
 export SAMPLE_VERSION=$(grep com.google.cloud.samples.shared-configuration: versions.txt | cut -d: -f3)
