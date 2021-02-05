@@ -114,6 +114,24 @@ public class AdminUtils {
     }
   }
 
+  public static void deleteSubscriptionExample(
+      String cloudRegion, char zoneId, String projectId, String subscriptionId) throws Exception {
+    SubscriptionPath subscriptionPath =
+        SubscriptionPath.newBuilder()
+            .setLocation(CloudZone.of(CloudRegion.of(cloudRegion), zoneId))
+            .setProject(ProjectId.of(projectId))
+            .setName(SubscriptionName.of(subscriptionId))
+            .build();
+
+    AdminClientSettings adminClientSettings =
+        AdminClientSettings.newBuilder().setRegion(CloudRegion.of(cloudRegion)).build();
+
+    try (AdminClient adminClient = AdminClient.create(adminClientSettings)) {
+      adminClient.deleteSubscription(subscriptionPath).get();
+      System.out.println(subscriptionPath + " deleted successfully.");
+    }
+  }
+
   public static void publisherExample(
       String cloudRegion, char zoneId, String projectId, String topicId, List<String> words)
       throws ApiException, ExecutionException, InterruptedException {
