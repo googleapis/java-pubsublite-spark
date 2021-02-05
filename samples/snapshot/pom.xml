@@ -14,7 +14,7 @@
   <parent>
     <groupId>com.google.cloud.samples</groupId>
     <artifactId>shared-configuration</artifactId>
-    <version>1.0.21</version><!-- {x-version-update:pubsublite-spark-sql-streaming:current} -->
+    <version>1.0.21</version>
   </parent>
 
   <properties>
@@ -44,7 +44,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-pubsublite</artifactId>
-      <version>0.8.0</version><!-- {x-version-update:pubsublite-spark-sql-streaming:current} -->
+      <version>0.8.0</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -91,24 +91,24 @@
         <version>3.2.0</version>
         <executions>
           <execution>
-            <id>add-snapshot-source</id>
+            <id>add-snippets-source</id>
             <goals>
               <goal>add-source</goal>
             </goals>
             <configuration>
               <sources>
-                <source>../snapshot/src/main/java</source>
+                <source>../snippets/src/main/java</source>
               </sources>
             </configuration>
           </execution>
           <execution>
-            <id>add-snapshot-tests</id>
+            <id>add-snippets-tests</id>
             <goals>
               <goal>add-test-source</goal>
             </goals>
             <configuration>
               <sources>
-                <source>../snapshot/src/test/java</source>
+                <source>../snippets/src/test/java</source>
               </sources>
             </configuration>
           </execution>
