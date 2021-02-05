@@ -115,6 +115,8 @@ public class PslMicroBatchReader implements MicroBatchReader {
   @Override
   public void stop() {
     committer.close();
+    cursorClient.close();
+    headOffsetReader.close();
   }
 
   @Override

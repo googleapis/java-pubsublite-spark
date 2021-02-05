@@ -22,7 +22,6 @@ import com.google.cloud.pubsublite.AdminClient;
 import com.google.cloud.pubsublite.PartitionLookupUtils;
 import com.google.cloud.pubsublite.SubscriptionPath;
 import com.google.cloud.pubsublite.TopicPath;
-import com.google.cloud.pubsublite.internal.CursorClient;
 import java.util.Objects;
 import java.util.Optional;
 import org.apache.spark.sql.sources.DataSourceRegister;
@@ -33,6 +32,8 @@ import org.apache.spark.sql.sources.v2.MicroBatchReadSupport;
 import org.apache.spark.sql.sources.v2.reader.streaming.ContinuousReader;
 import org.apache.spark.sql.sources.v2.reader.streaming.MicroBatchReader;
 import org.apache.spark.sql.types.StructType;
+
+import static com.google.cloud.pubsublite.internal.ExtractStatus.toCanonical;
 
 @AutoService(DataSourceRegister.class)
 public final class PslDataSource
@@ -53,12 +54,13 @@ public final class PslDataSource
 
     PslDataSourceOptions pslDataSourceOptions =
         PslDataSourceOptions.fromSparkDataSourceOptions(options);
-    CursorClient cursorClient = pslDataSourceOptions.newCursorClient();
-    AdminClient adminClient = pslDataSourceOptions.newAdminClient();
     SubscriptionPath subscriptionPath = pslDataSourceOptions.subscriptionPath();
-    long topicPartitionCount = PartitionLookupUtils.numPartitions(subscriptionPath, adminClient);
+    long topicPartitionCount;
+    try (AdminClient adminClient = pslDataSourceOptions.newAdminClient()) {
+      topicPartitionCount = PartitionLookupUtils.numPartitions(subscriptionPath, adminClient);
+    }
     return new PslContinuousReader(
-        cursorClient,
+        pslDataSourceOptions.newCursorClient(),
         pslDataSourceOptions.newMultiPartitionCommitter(topicPartitionCount),
         pslDataSourceOptions.getSubscriberFactory(),
         subscriptionPath,
@@ -76,19 +78,17 @@ public final class PslDataSource
 
     PslDataSourceOptions pslDataSourceOptions =
         PslDataSourceOptions.fromSparkDataSourceOptions(options);
-    CursorClient cursorClient = pslDataSourceOptions.newCursorClient();
-    AdminClient adminClient = pslDataSourceOptions.newAdminClient();
     SubscriptionPath subscriptionPath = pslDataSourceOptions.subscriptionPath();
     TopicPath topicPath;
-    try {
+    long topicPartitionCount;
+    try (AdminClient adminClient = pslDataSourceOptions.newAdminClient()) {
       topicPath = TopicPath.parse(adminClient.getSubscription(subscriptionPath).get().getTopic());
+      topicPartitionCount = PartitionLookupUtils.numPartitions(topicPath, adminClient);
     } catch (Throwable t) {
-      throw new IllegalStateException(
-          "Unable to get topic for subscription " + subscriptionPath, t);
+      throw toCanonical(t).underlying;
     }
-    long topicPartitionCount = PartitionLookupUtils.numPartitions(topicPath, adminClient);
     return new PslMicroBatchReader(
-        cursorClient,
+        pslDataSourceOptions.newCursorClient(),
         pslDataSourceOptions.newMultiPartitionCommitter(topicPartitionCount),
         pslDataSourceOptions.getSubscriberFactory(),
         new LimitingHeadOffsetReader(
