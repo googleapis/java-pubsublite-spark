@@ -28,7 +28,9 @@ cd ${scriptDir}/..
 # include common functions
 source ${scriptDir}/common.sh
 
-# Set additional env variables
+# Set additional env variables from Secret Manager
+source "${KOKORO_GFILE_DIR}/secret_manager/java-pubsublite-spark-samples-secrets"
+# Set additional env variables from `versions.txt`
 export CONNECTOR_VERSION=$(grep pubsublite-spark-sql-streaming versions.txt | cut -d: -f3)
 export SAMPLE_VERSION=$(grep com.google.cloud.samples.shared-configuration: versions.txt | cut -d: -f3)
 
