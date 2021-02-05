@@ -78,6 +78,14 @@ samples)
 
     if [[ -f ${SAMPLES_DIR}/pom.xml ]]
     then
+      # get versions for constructing the full names of the packaged JARs
+      CONNECTOR_VERSION=$(grep pubsublite-spark-sql-streaming ${scriptDir}/../versions.txt | cut -d: -f3)
+      SAMPLE_VERSION=$(grep com.google.cloud.samples.shared-configuration: ${scriptDir}/../versions.txt | cut -d: -f3)
+      if [ -f "${KOKORO_GFILE_DIR}/secret_manager/java-pubsublite-spark-samples-secrets" ]
+        then
+            source "${KOKORO_GFILE_DIR}/secret_manager/java-pubsublite-spark-samples-secrets"
+      fi
+
         pushd ${SAMPLES_DIR}
         mvn -B \
           -Penable-samples \
