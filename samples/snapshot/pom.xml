@@ -23,15 +23,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
-  <!-- {x-version-update-start:pubsublite-spark:current} -->
   <dependencies>
-    <dependency>
-      <groupId>com.google.cloud</groupId>
-      <artifactId>pubsublite-spark-sql-streaming</artifactId>
-      <version>0.1.0-SNAPSHOT</version>
-    </dependency>
-  <!-- {x-version-update-end} -->
-
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
