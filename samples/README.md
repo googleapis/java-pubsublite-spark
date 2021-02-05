@@ -45,9 +45,9 @@ To run the word count sample in Dataproc cluster, follow the steps:
    mvn clean package -Dmaven.test.skip=true
    ```
 <!-- TODO: set up bots to update jar version, also provide link to maven central --> 
-5. Download pubsublite-spark-sql-streaming-0.1.0.jar from Maven Central
+5. Download pubsublite-spark-sql-streaming-with-dependencies-0.1.0-SNAPSHOT.jar from Maven Central
 <!-- TODO: set up bots to update jar version -->
-6. Create GCS bucket and upload both pubsublite-spark-sql-streaming jar and the sample jar onto GCS
+6. Create GCS bucket and upload both pubsublite-spark-sql-streaming-with-dependencies-0.1.0-SNAPSHOT jar and the sample jar onto GCS
    ```
    gsutil mb $BUCKET
    gsutil cp snapshot/target/pubsublite-spark-snapshot-1.0.21.jar $BUCKET
@@ -56,8 +56,8 @@ To run the word count sample in Dataproc cluster, follow the steps:
 <!-- TODO: set up bots to update jar version -->
 7. Run the sample in Dataproc
    ```
-   gcloud dataproc jobs submit spark --cluster="$CLUSTER_NAME" \
-      --jars="$BUCKET/pubsublite-spark-snapshot-1.0.21.jar,$BUCKET/pubsublite-spark-sql-streaming-0.1.0.jar" \
+   gcloud dataproc jobs submit spark --cluster=$CLUSTER_NAME \
+      --jars=$BUCKET/pubsublite-spark-snapshot-1.0.21.jar,$BUCKET/pubsublite-spark-sql-streaming-with-dependencies-0.1.0-SNAPSHOT \
       --class=pubsublite.spark.WordCount -- $SUBSCRIPTION_PATH
    ```
 
