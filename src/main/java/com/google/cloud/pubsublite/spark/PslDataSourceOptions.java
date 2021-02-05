@@ -118,7 +118,8 @@ public abstract class PslDataSourceOptions implements Serializable {
                 .setSubscriptionPath(this.subscriptionPath())
                 .setPartition(partition)
                 .setServiceClient(newCursorServiceClient())
-                .build().instantiate());
+                .build()
+                .instantiate());
   }
 
   PartitionSubscriberFactory getSubscriberFactory() {
