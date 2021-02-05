@@ -54,6 +54,9 @@ gcloud auth activate-service-account \
     --key-file="$GOOGLE_APPLICATION_CREDENTIALS" \
     --project="$GOOGLE_CLOUD_PROJECT"
 
+# Move into the samples directory
+cd samples/
+
 echo -e "\n******************** RUNNING SAMPLE TESTS ********************"
 
 mvn --fail-at-end clean verify
