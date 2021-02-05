@@ -16,6 +16,8 @@
 
 package com.google.cloud.pubsublite.spark;
 
+import static com.google.cloud.pubsublite.internal.ExtractStatus.toCanonical;
+
 import com.github.benmanes.caffeine.cache.Ticker;
 import com.google.auto.service.AutoService;
 import com.google.cloud.pubsublite.AdminClient;
@@ -32,8 +34,6 @@ import org.apache.spark.sql.sources.v2.MicroBatchReadSupport;
 import org.apache.spark.sql.sources.v2.reader.streaming.ContinuousReader;
 import org.apache.spark.sql.sources.v2.reader.streaming.MicroBatchReader;
 import org.apache.spark.sql.types.StructType;
-
-import static com.google.cloud.pubsublite.internal.ExtractStatus.toCanonical;
 
 @AutoService(DataSourceRegister.class)
 public final class PslDataSource
