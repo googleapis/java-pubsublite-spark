@@ -98,8 +98,8 @@ public class PslContinuousReader implements ContinuousReader {
 
   @Override
   public void stop() {
-    cursorClient.shutdown();
     committer.close();
+    cursorClient.close();
   }
 
   @Override
