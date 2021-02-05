@@ -29,9 +29,7 @@ cd ${scriptDir}/..
 source ${scriptDir}/common.sh
 
 # Setup required env variables:
-# GOOGLE_CLOUD_PROJECT
 # GOOGLE_CLOUD_PROJECT_NUMBER
-# GOOGLE_APPLICATION_CREDENTIALS
 # CLUSTER_NAME
 # BUCKET_NAME
 source ${KOKORO_GFILE_DIR}/pubsublite_spark_secrets.txt
