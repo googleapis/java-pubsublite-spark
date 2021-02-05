@@ -27,7 +27,7 @@ import com.google.cloud.pubsublite.internal.CursorClient;
 import com.google.cloud.pubsublite.internal.CursorClientSettings;
 import com.google.cloud.pubsublite.internal.TopicStatsClient;
 import com.google.cloud.pubsublite.internal.TopicStatsClientSettings;
-import com.google.cloud.pubsublite.internal.wire.CommitterBuilder;
+import com.google.cloud.pubsublite.internal.wire.CommitterSettings;
 import com.google.cloud.pubsublite.internal.wire.PubsubContext;
 import com.google.cloud.pubsublite.internal.wire.RoutingMetadata;
 import com.google.cloud.pubsublite.internal.wire.ServiceClients;
@@ -114,11 +114,12 @@ public abstract class PslDataSourceOptions implements Serializable {
     return new MultiPartitionCommitterImpl(
         topicPartitionCount,
         (partition) ->
-            CommitterBuilder.newBuilder()
+            CommitterSettings.newBuilder()
                 .setSubscriptionPath(this.subscriptionPath())
                 .setPartition(partition)
                 .setServiceClient(newCursorServiceClient())
-                .build());
+                .build()
+                .instantiate());
   }
 
   PartitionSubscriberFactory getSubscriberFactory() {
@@ -136,7 +137,6 @@ public abstract class PslDataSourceOptions implements Serializable {
         return SubscriberBuilder.newBuilder()
             .setSubscriptionPath(this.subscriptionPath())
             .setPartition(partition)
-            .setContext(context)
             .setServiceClient(serviceClient)
             .setMessageConsumer(consumer)
             .build();
