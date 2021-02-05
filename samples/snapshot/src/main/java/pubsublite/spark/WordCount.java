@@ -16,6 +16,9 @@
 
 package pubsublite.spark;
 
+import static org.apache.spark.sql.functions.split;
+
+import java.util.concurrent.TimeUnit;
 import org.apache.spark.sql.Column;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -24,34 +27,27 @@ import org.apache.spark.sql.streaming.OutputMode;
 import org.apache.spark.sql.streaming.Trigger;
 import org.apache.spark.sql.types.DataTypes;
 
-import java.util.concurrent.TimeUnit;
-
-import static org.apache.spark.sql.functions.split;
-
 public class WordCount {
 
-    public static void main(String[] args) throws Exception {
+  public static void main(String[] args) throws Exception {
 
-        SparkSession spark = SparkSession.builder()
-                .appName("Word count")
-                .master("yarn")
-                .getOrCreate();
+    SparkSession spark = SparkSession.builder().appName("Word count").master("yarn").getOrCreate();
 
-        Dataset<Row> df = spark.readStream()
-                .format("pubsublite")
-                .option("pubsublite.subscription", args[0])
-                .load();
+    Dataset<Row> df =
+        spark.readStream().format("pubsublite").option("pubsublite.subscription", args[0]).load();
 
-        Column splitCol = split(df.col("data"), "_");
-        df = df.withColumn("word", splitCol.getItem(0))
-                .withColumn("word_count", splitCol.getItem(1).cast(DataTypes.LongType));
-        df = df.groupBy("word").sum("word_count");
-        df = df.orderBy(df.col("sum(word_count)").desc());
+    Column splitCol = split(df.col("data"), "_");
+    df =
+        df.withColumn("word", splitCol.getItem(0))
+            .withColumn("word_count", splitCol.getItem(1).cast(DataTypes.LongType));
+    df = df.groupBy("word").sum("word_count");
+    df = df.orderBy(df.col("sum(word_count)").desc());
 
-        df.writeStream()
-                .format("console")
-                .outputMode(OutputMode.Complete())
-                .trigger(Trigger.ProcessingTime(1, TimeUnit.SECONDS))
-                .start().awaitTermination();
-    }
+    df.writeStream()
+        .format("console")
+        .outputMode(OutputMode.Complete())
+        .trigger(Trigger.ProcessingTime(1, TimeUnit.SECONDS))
+        .start()
+        .awaitTermination();
+  }
 }

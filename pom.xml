@@ -9,7 +9,7 @@
   <groupId>com.google.cloud</groupId>
   <artifactId>pubsublite-spark-sql-streaming</artifactId>
   <version>0.1.0-SNAPSHOT</version><!-- {x-version-update:pubsublite-spark-sql-streaming:current} -->
-  <packaging>pom</packaging>
+  <packaging>jar</packaging>
   <name>Pub/Sub Lite Spark SQL Streaming</name>
   <url>https://github.com/googleapis/java-pubsublite-spark</url>
   <description>Spark SQL Streaming Connector for Google Cloud Pub/Sub Lite</description>
@@ -21,6 +21,17 @@
     <scala.version.short>2.11</scala.version.short>
     <spark.version>2.4.7</spark.version>
   </properties>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.google.cloud</groupId>
+        <artifactId>libraries-bom</artifactId>
+        <version>16.3.0</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
   <dependencies>
     <dependency>
       <groupId>org.apache.spark</groupId>
@@ -53,6 +64,7 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
+      <version>30.1-android</version>
     </dependency>
     <dependency>
       <groupId>com.google.api</groupId>
@@ -136,6 +148,28 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava-testlib</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-embedder</artifactId>
+      <version>3.6.3</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-compat</artifactId>
+      <version>3.6.3</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-storage</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-dataproc</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -255,8 +289,4 @@
       </plugin>
     </plugins>
   </build>
-
-  <modules>
-    <module>samples</module>
-  </modules>
 </project>

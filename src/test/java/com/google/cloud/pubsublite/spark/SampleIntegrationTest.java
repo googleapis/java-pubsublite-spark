@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package pubsublite.spark;
+package com.google.cloud.pubsublite.spark;
 
 import static com.google.common.truth.Truth.assertThat;
-import static pubsublite.spark.AdminUtils.createSubscriptionExample;
 
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.dataproc.v1.Job;
