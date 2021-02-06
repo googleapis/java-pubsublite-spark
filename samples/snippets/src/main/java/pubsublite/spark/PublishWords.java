@@ -39,7 +39,7 @@ public class PublishWords {
 
   public static void main(String[] args) throws Exception {
 
-    Map<String, String> env = System.getenv();
+    Map<String, String> env = env.get();
     Preconditions.checkArgument(
         env.keySet()
             .containsAll(

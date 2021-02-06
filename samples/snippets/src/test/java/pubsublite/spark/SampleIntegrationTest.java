@@ -41,8 +41,12 @@ import com.google.cloud.storage.StorageOptions;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.google.common.base.Preconditions;
 import org.apache.maven.shared.invoker.DefaultInvocationRequest;
 import org.apache.maven.shared.invoker.DefaultInvoker;
 import org.apache.maven.shared.invoker.InvocationRequest;
@@ -55,89 +59,143 @@ import org.spark_project.guava.collect.ImmutableList;
 
 public class SampleIntegrationTest {
 
-  private static final CloudRegion CLOUD_REGION = CloudRegion.of("us-central1");
-  CloudZone CLOUD_ZONE = CloudZone.of(CLOUD_REGION, 'b');
-  ProjectId PROEJCT_ID = ProjectId.of("pubsub-lite-load-tests");
-  TopicName TOPIC_NAME = TopicName.of("jiangmichael-sample-integration");
-  SubscriptionName SUBSCRIPTION_NAME =
-      SubscriptionName.of("sample-integration-sub-" + System.currentTimeMillis());
-  SubscriptionPath SUBSCIPTION_PATH =
-      SubscriptionPath.newBuilder()
-          .setProject(PROEJCT_ID)
-          .setLocation(CLOUD_ZONE)
-          .setName(SUBSCRIPTION_NAME)
-          .build();
-  String CLUSTER_NAME = "jiangmichael-psl-spark-connector-test-cluster-2";
-  String BUCKET_NAME = "jiangmichael-spark-sample-integration";
-  String WORKING_DIR = System.getProperty("user.dir").replace("/samples/snapshot", "");
-  String SAMPLE_JAR_NAME = "pubsublite-spark-snapshot-1.0.21.jar";
-  String CONNECTOR_JAR_NAME = "pubsublite-spark-sql-streaming-with-dependencies-0.1.0-SNAPSHOT.jar";
-  String SAMPLE_JAR_LOC =
-      String.format("%s/samples/snapshot/target/%s", WORKING_DIR, SAMPLE_JAR_NAME);
-  String CONNECTOR_JAR_LOC = String.format("%s/target/%s", WORKING_DIR, CONNECTOR_JAR_NAME);
+  private static final String CLOUD_REGION = "CLOUD_REGION";
+  private static final String CLOUD_ZONE = "CLOUD_ZONE";
+  private static final String PROJECT_ID = "PROJECT_ID";
+  private static final String TOPIC_NAME = "TOPIC_NAME";
+  private static final String CLUSTER_NAME = "CLUSTER_NAME";
+  private static final String BUCKET_NAME = "BUCKET_NAME";
+  private static final String SAMPLE_VERSION = "SAMPLE_VERSION";
+  private static final String CONNECTOR_VERSION = "CONNECTOR_VERSION";
+  private static final String MAVEN_HOME = "MAVEN_HOME";
 
-  private static void mavenPackage(String workingDir) throws MavenInvocationException {
+  private CloudRegion cloudRegion;
+  private CloudZone cloudZone;
+  private ProjectId projectId;
+  private TopicName topicName;
+  private SubscriptionName subscriptionName;
+  private SubscriptionPath subscriptionPath;
+  private String clusterName;
+  private String bucketName;
+  private String workingDir;
+  private String mavenHome;
+  private String sampleVersion;
+  private String connectorVersion;
+  private String sampleJarName;
+  private String connectorJarName;
+  private String sampleJarLoc;
+  private String connectorJarLoc;
+
+
+  private void mavenPackage(String workingDir) throws MavenInvocationException {
     InvocationRequest request = new DefaultInvocationRequest();
     request.setPomFile(new File(workingDir + "/pom.xml"));
     request.setGoals(ImmutableList.of("clean", "package", "-Dmaven.test.skip=true"));
     Invoker invoker = new DefaultInvoker();
-    invoker.setMavenHome(new File("/opt/apache-maven-3.5.3"));
+    invoker.setMavenHome(new File(mavenHome));
     assertThat(invoker.execute(request).getExitCode()).isEqualTo(0);
+  }
+
+
+  private void setUpVariables() {
+    Map<String, String> env = System.getenv();
+    Preconditions.checkState(env.keySet().containsAll(ImmutableList.of(
+            CLOUD_REGION,
+            CLOUD_ZONE,
+            PROJECT_ID,
+            TOPIC_NAME,
+            CLUSTER_NAME,
+            BUCKET_NAME,
+            SAMPLE_VERSION,
+            CONNECTOR_VERSION,
+            MAVEN_HOME
+    )));
+    cloudRegion = CloudRegion.of(env.get(CLOUD_REGION));
+    cloudZone =
+            CloudZone.of(cloudRegion, env.get(CLOUD_ZONE).charAt(0));
+    projectId = ProjectId.of(env.get(PROJECT_ID));
+    topicName = TopicName.of(env.get(TOPIC_NAME));
+    subscriptionName =
+            SubscriptionName.of("sample-integration-sub-" + UUID.randomUUID());
+    subscriptionPath =
+            SubscriptionPath.newBuilder()
+                    .setProject(projectId)
+                    .setLocation(cloudZone)
+                    .setName(subscriptionName)
+                    .build();
+    clusterName = env.get(CLUSTER_NAME);
+    bucketName = env.get(BUCKET_NAME);
+    workingDir =
+            System.getProperty("user.dir").replace("/samples/snippets", "");
+    sampleVersion = env.get(SAMPLE_VERSION);
+    connectorVersion = env.get(CONNECTOR_VERSION);
+    sampleJarName =
+            String.format("pubsublite-spark-snippets-%s.jar", sampleVersion);
+    connectorJarName =
+            String.format(
+                    "pubsublite-spark-sql-streaming-with-dependencies-%s.jar",
+                    connectorVersion);
+    sampleJarLoc =
+            String.format("%s/samples/snippets/target/%s", workingDir, sampleJarName);
+    connectorJarLoc =
+            String.format("%s/target/%s", workingDir, connectorJarName);
   }
 
   @Before
   public void setUp() throws Exception {
+    setUpVariables();
+
     // Create a subscription
     createSubscriptionExample(
-        CLOUD_REGION.value(),
-        CLOUD_ZONE.zoneId(),
-        PROEJCT_ID.value(),
-        TOPIC_NAME.value(),
-        SUBSCRIPTION_NAME.value());
+        cloudRegion.value(),
+        cloudZone.zoneId(),
+        projectId.value(),
+        topicName.value(),
+        subscriptionName.value());
   }
 
   @After
   public void tearDown() throws Exception {
     // Cleanup the subscription
     deleteSubscriptionExample(
-        CLOUD_REGION.value(), CLOUD_ZONE.zoneId(), PROEJCT_ID.value(), SUBSCRIPTION_NAME.value());
+        cloudRegion.value(), cloudZone.zoneId(), projectId.value(), subscriptionName.value());
   }
 
   @Test
   public void test() throws Exception {
     // Maven package into jars
-    mavenPackage(WORKING_DIR);
-    mavenPackage(WORKING_DIR + "/samples");
+    mavenPackage(workingDir);
+    mavenPackage(workingDir + "/samples");
 
     // Upload to GCS
     Storage storage =
-        StorageOptions.newBuilder().setProjectId(PROEJCT_ID.value()).build().getService();
-    BlobId blobId = BlobId.of(BUCKET_NAME, SAMPLE_JAR_NAME);
+        StorageOptions.newBuilder().setProjectId(projectId.value()).build().getService();
+    BlobId blobId = BlobId.of(bucketName, sampleJarName);
     BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
-    storage.create(blobInfo, Files.readAllBytes(Paths.get(SAMPLE_JAR_LOC)));
-    blobId = BlobId.of(BUCKET_NAME, CONNECTOR_JAR_NAME);
+    storage.create(blobInfo, Files.readAllBytes(Paths.get(sampleJarLoc)));
+    blobId = BlobId.of(bucketName, connectorJarName);
     blobInfo = BlobInfo.newBuilder(blobId).build();
-    storage.create(blobInfo, Files.readAllBytes(Paths.get(CONNECTOR_JAR_LOC)));
+    storage.create(blobInfo, Files.readAllBytes(Paths.get(connectorJarLoc)));
 
     // Run Dataproc job
-    String myEndpoint = String.format("%s-dataproc.googleapis.com:443", CLOUD_REGION.value());
+    String myEndpoint = String.format("%s-dataproc.googleapis.com:443", cloudRegion.value());
     JobControllerSettings jobControllerSettings =
         JobControllerSettings.newBuilder().setEndpoint(myEndpoint).build();
 
     try (JobControllerClient jobControllerClient =
         JobControllerClient.create(jobControllerSettings)) {
-      JobPlacement jobPlacement = JobPlacement.newBuilder().setClusterName(CLUSTER_NAME).build();
+      JobPlacement jobPlacement = JobPlacement.newBuilder().setClusterName(clusterName).build();
       SparkJob sparkJob =
           SparkJob.newBuilder()
-              .addJarFileUris(String.format("gs://%s/%s", BUCKET_NAME, SAMPLE_JAR_NAME))
-              .addJarFileUris(String.format("gs://%s/%s", BUCKET_NAME, CONNECTOR_JAR_NAME))
+              .addJarFileUris(String.format("gs://%s/%s", bucketName, sampleJarName))
+              .addJarFileUris(String.format("gs://%s/%s", bucketName, connectorJarName))
               .setMainClass("pubsublite.spark.WordCount")
-              .addArgs(SUBSCIPTION_PATH.toString())
+              .addArgs(subscriptionPath.toString())
               .build();
       Job job = Job.newBuilder().setPlacement(jobPlacement).setSparkJob(sparkJob).build();
       OperationFuture<Job, JobMetadata> submitJobAsOperationAsyncRequest =
           jobControllerClient.submitJobAsOperationAsync(
-              PROEJCT_ID.value(), CLOUD_REGION.value(), job);
+              projectId.value(), cloudRegion.value(), job);
       Job jobResponse = submitJobAsOperationAsyncRequest.get();
 
       // Check Dataproc job output from GCS
