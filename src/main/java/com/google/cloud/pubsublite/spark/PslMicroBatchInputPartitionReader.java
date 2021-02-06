@@ -97,10 +97,6 @@ public class PslMicroBatchInputPartitionReader implements InputPartitionReader<I
 
   @Override
   public void close() {
-    try {
-      subscriber.close();
-    } catch (Exception e) {
-      log.atWarning().log("Subscriber failed to close.");
-    }
+    subscriber.close();
   }
 }
