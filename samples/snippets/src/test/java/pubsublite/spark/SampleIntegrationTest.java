@@ -38,6 +38,7 @@ import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
+import com.google.common.base.Preconditions;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -45,8 +46,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.google.common.base.Preconditions;
 import org.apache.maven.shared.invoker.DefaultInvocationRequest;
 import org.apache.maven.shared.invoker.DefaultInvoker;
 import org.apache.maven.shared.invoker.InvocationRequest;
@@ -69,6 +68,7 @@ public class SampleIntegrationTest {
   private static final String CONNECTOR_VERSION = "CONNECTOR_VERSION";
   private static final String MAVEN_HOME = "MAVEN_HOME";
 
+  private final String runId = UUID.randomUUID().toString();
   private CloudRegion cloudRegion;
   private CloudZone cloudZone;
   private ProjectId projectId;
@@ -83,9 +83,10 @@ public class SampleIntegrationTest {
   private String connectorVersion;
   private String sampleJarName;
   private String connectorJarName;
+  private String sampleJarNameInGCS;
+  private String connectorJarNameInGCS;
   private String sampleJarLoc;
   private String connectorJarLoc;
-
 
   private void mavenPackage(String workingDir) throws MavenInvocationException {
     InvocationRequest request = new DefaultInvocationRequest();
@@ -96,49 +97,111 @@ public class SampleIntegrationTest {
     assertThat(invoker.execute(request).getExitCode()).isEqualTo(0);
   }
 
+  private void uploadGCS(Storage storage, String fileNameInGCS, String fileLoc) throws Exception {
+    BlobId blobId = BlobId.of(bucketName, fileNameInGCS);
+    BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
+    storage.create(blobInfo, Files.readAllBytes(Paths.get(fileLoc)));
+  }
+
+  private Job runDataprocJob() throws Exception {
+    String myEndpoint = String.format("%s-dataproc.googleapis.com:443", cloudRegion.value());
+    JobControllerSettings jobControllerSettings =
+        JobControllerSettings.newBuilder().setEndpoint(myEndpoint).build();
+
+    try (JobControllerClient jobControllerClient =
+        JobControllerClient.create(jobControllerSettings)) {
+      JobPlacement jobPlacement = JobPlacement.newBuilder().setClusterName(clusterName).build();
+      SparkJob sparkJob =
+          SparkJob.newBuilder()
+              .addJarFileUris(String.format("gs://%s/%s", bucketName, sampleJarName))
+              .addJarFileUris(String.format("gs://%s/%s", bucketName, connectorJarName))
+              .setMainClass("pubsublite.spark.WordCount")
+              .addArgs(subscriptionPath.toString())
+              .build();
+      Job job = Job.newBuilder().setPlacement(jobPlacement).setSparkJob(sparkJob).build();
+      OperationFuture<Job, JobMetadata> submitJobAsOperationAsyncRequest =
+          jobControllerClient.submitJobAsOperationAsync(
+              projectId.value(), cloudRegion.value(), job);
+      return submitJobAsOperationAsyncRequest.get();
+    }
+  }
+
+  private void verifyDataprocOutput(Storage storage, Job job) {
+    Matcher matches = Pattern.compile("gs://(.*?)/(.*)").matcher(job.getDriverOutputResourceUri());
+    assertThat(matches.matches()).isTrue();
+
+    Blob blob = storage.get(matches.group(1), String.format("%s.000000000", matches.group(2)));
+    String sparkJobOutput = new String(blob.getContent());
+    String expectedWordCountResult =
+        "+-----+---------------+\n"
+            + "| word|sum(word_count)|\n"
+            + "+-----+---------------+\n"
+            + "|  the|             24|\n"
+            + "|   of|             16|\n"
+            + "|  and|             14|\n"
+            + "|    i|             13|\n"
+            + "|   my|             10|\n"
+            + "|    a|              6|\n"
+            + "|   in|              5|\n"
+            + "| that|              5|\n"
+            + "| with|              4|\n"
+            + "| soul|              4|\n"
+            + "|   us|              3|\n"
+            + "|   me|              3|\n"
+            + "| when|              3|\n"
+            + "| feel|              3|\n"
+            + "| like|              3|\n"
+            + "|   so|              3|\n"
+            + "|   as|              3|\n"
+            + "| then|              3|\n"
+            + "|which|              3|\n"
+            + "|among|              2|\n"
+            + "+-----+---------------+\n"
+            + "only showing top 20 rows";
+    assertThat(sparkJobOutput).contains(expectedWordCountResult);
+  }
 
   private void setUpVariables() {
     Map<String, String> env = System.getenv();
-    Preconditions.checkState(env.keySet().containsAll(ImmutableList.of(
-            CLOUD_REGION,
-            CLOUD_ZONE,
-            PROJECT_ID,
-            TOPIC_NAME,
-            CLUSTER_NAME,
-            BUCKET_NAME,
-            SAMPLE_VERSION,
-            CONNECTOR_VERSION,
-            MAVEN_HOME
-    )));
+    Preconditions.checkState(
+        env.keySet()
+            .containsAll(
+                ImmutableList.of(
+                    CLOUD_REGION,
+                    CLOUD_ZONE,
+                    PROJECT_ID,
+                    TOPIC_NAME,
+                    CLUSTER_NAME,
+                    BUCKET_NAME,
+                    SAMPLE_VERSION,
+                    CONNECTOR_VERSION,
+                    MAVEN_HOME)));
     cloudRegion = CloudRegion.of(env.get(CLOUD_REGION));
-    cloudZone =
-            CloudZone.of(cloudRegion, env.get(CLOUD_ZONE).charAt(0));
+    cloudZone = CloudZone.of(cloudRegion, env.get(CLOUD_ZONE).charAt(0));
     projectId = ProjectId.of(env.get(PROJECT_ID));
     topicName = TopicName.of(env.get(TOPIC_NAME));
-    subscriptionName =
-            SubscriptionName.of("sample-integration-sub-" + UUID.randomUUID());
+    subscriptionName = SubscriptionName.of("sample-integration-sub-" + runId);
     subscriptionPath =
-            SubscriptionPath.newBuilder()
-                    .setProject(projectId)
-                    .setLocation(cloudZone)
-                    .setName(subscriptionName)
-                    .build();
+        SubscriptionPath.newBuilder()
+            .setProject(projectId)
+            .setLocation(cloudZone)
+            .setName(subscriptionName)
+            .build();
     clusterName = env.get(CLUSTER_NAME);
     bucketName = env.get(BUCKET_NAME);
-    workingDir =
-            System.getProperty("user.dir").replace("/samples/snippets", "");
+    workingDir = System.getProperty("user.dir").replace("/samples/snippets", "");
     sampleVersion = env.get(SAMPLE_VERSION);
     connectorVersion = env.get(CONNECTOR_VERSION);
-    sampleJarName =
-            String.format("pubsublite-spark-snippets-%s.jar", sampleVersion);
+    sampleJarName = String.format("pubsublite-spark-snippets-%s.jar", sampleVersion);
     connectorJarName =
-            String.format(
-                    "pubsublite-spark-sql-streaming-with-dependencies-%s.jar",
-                    connectorVersion);
-    sampleJarLoc =
-            String.format("%s/samples/snippets/target/%s", workingDir, sampleJarName);
-    connectorJarLoc =
-            String.format("%s/target/%s", workingDir, connectorJarName);
+        String.format("pubsublite-spark-sql-streaming-with-dependencies-%s.jar", connectorVersion);
+    sampleJarNameInGCS = String.format("pubsublite-spark-snippets-%s-%s.jar", sampleVersion, runId);
+    connectorJarNameInGCS =
+        String.format(
+            "pubsublite-spark-sql-streaming-with-dependencies-%s-%s.jar", connectorVersion, runId);
+    sampleJarLoc = String.format("%s/samples/snippets/target/%s", workingDir, sampleJarName);
+    connectorJarLoc = String.format("%s/target/%s", workingDir, connectorJarName);
+    mavenHome = env.get(MAVEN_HOME);
   }
 
   @Before
@@ -170,68 +233,11 @@ public class SampleIntegrationTest {
     // Upload to GCS
     Storage storage =
         StorageOptions.newBuilder().setProjectId(projectId.value()).build().getService();
-    BlobId blobId = BlobId.of(bucketName, sampleJarName);
-    BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
-    storage.create(blobInfo, Files.readAllBytes(Paths.get(sampleJarLoc)));
-    blobId = BlobId.of(bucketName, connectorJarName);
-    blobInfo = BlobInfo.newBuilder(blobId).build();
-    storage.create(blobInfo, Files.readAllBytes(Paths.get(connectorJarLoc)));
+    uploadGCS(storage, sampleJarNameInGCS, sampleJarLoc);
+    uploadGCS(storage, connectorJarNameInGCS, connectorJarLoc);
 
-    // Run Dataproc job
-    String myEndpoint = String.format("%s-dataproc.googleapis.com:443", cloudRegion.value());
-    JobControllerSettings jobControllerSettings =
-        JobControllerSettings.newBuilder().setEndpoint(myEndpoint).build();
-
-    try (JobControllerClient jobControllerClient =
-        JobControllerClient.create(jobControllerSettings)) {
-      JobPlacement jobPlacement = JobPlacement.newBuilder().setClusterName(clusterName).build();
-      SparkJob sparkJob =
-          SparkJob.newBuilder()
-              .addJarFileUris(String.format("gs://%s/%s", bucketName, sampleJarName))
-              .addJarFileUris(String.format("gs://%s/%s", bucketName, connectorJarName))
-              .setMainClass("pubsublite.spark.WordCount")
-              .addArgs(subscriptionPath.toString())
-              .build();
-      Job job = Job.newBuilder().setPlacement(jobPlacement).setSparkJob(sparkJob).build();
-      OperationFuture<Job, JobMetadata> submitJobAsOperationAsyncRequest =
-          jobControllerClient.submitJobAsOperationAsync(
-              projectId.value(), cloudRegion.value(), job);
-      Job jobResponse = submitJobAsOperationAsyncRequest.get();
-
-      // Check Dataproc job output from GCS
-      Matcher matches =
-          Pattern.compile("gs://(.*?)/(.*)").matcher(jobResponse.getDriverOutputResourceUri());
-      assertThat(matches.matches()).isTrue();
-
-      Blob blob = storage.get(matches.group(1), String.format("%s.000000000", matches.group(2)));
-      String sparkJobOutput = new String(blob.getContent());
-      String expectedWordCountResult =
-          "+-----+---------------+\n"
-              + "| word|sum(word_count)|\n"
-              + "+-----+---------------+\n"
-              + "|  the|             24|\n"
-              + "|   of|             16|\n"
-              + "|  and|             14|\n"
-              + "|    i|             13|\n"
-              + "|   my|             10|\n"
-              + "|    a|              6|\n"
-              + "|   in|              5|\n"
-              + "| that|              5|\n"
-              + "| with|              4|\n"
-              + "| soul|              4|\n"
-              + "|   us|              3|\n"
-              + "|   me|              3|\n"
-              + "| when|              3|\n"
-              + "| feel|              3|\n"
-              + "| like|              3|\n"
-              + "|   so|              3|\n"
-              + "|   as|              3|\n"
-              + "| then|              3|\n"
-              + "|which|              3|\n"
-              + "|among|              2|\n"
-              + "+-----+---------------+\n"
-              + "only showing top 20 rows";
-      assertThat(sparkJobOutput).contains(expectedWordCountResult);
-    }
+    // Run Dataproc job and verify output
+    Job jobResponse = runDataprocJob();
+    verifyDataprocOutput(storage, jobResponse);
   }
 }
