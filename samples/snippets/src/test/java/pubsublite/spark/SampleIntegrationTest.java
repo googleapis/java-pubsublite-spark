@@ -113,8 +113,8 @@ public class SampleIntegrationTest {
       JobPlacement jobPlacement = JobPlacement.newBuilder().setClusterName(clusterName).build();
       SparkJob sparkJob =
           SparkJob.newBuilder()
-              .addJarFileUris(String.format("gs://%s/%s", bucketName, sampleJarName))
-              .addJarFileUris(String.format("gs://%s/%s", bucketName, connectorJarName))
+              .addJarFileUris(String.format("gs://%s/%s", bucketName, sampleJarNameInGCS))
+              .addJarFileUris(String.format("gs://%s/%s", bucketName, connectorJarNameInGCS))
               .setMainClass("pubsublite.spark.WordCount")
               .addArgs(subscriptionPath.toString())
               .build();
