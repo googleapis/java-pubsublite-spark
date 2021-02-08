@@ -20,4 +20,6 @@ java.common_templates(excludes=[
     # TODO: allow when pubsublite-spark is available in libraries-bom
     'samples/install-without-bom/*',
     '.kokoro/build.sh',
+    '.kokoro/presubmit/samples.cfg',
+    '.kokoro/nightly/samples.cfg',
 ])
