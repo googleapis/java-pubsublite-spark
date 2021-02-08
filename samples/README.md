@@ -59,7 +59,7 @@ To run the word count sample in Dataproc cluster, follow the steps:
    gcloud config set dataproc/region $REGION
    ```
 <!-- TODO: set up bots to update jar version -->
-7. Run the sample in Dataproc
+8. Run the sample in Dataproc
    ```sh
    gcloud dataproc jobs submit spark --cluster=$CLUSTER_NAME \
       --jars=$BUCKET/pubsublite-spark-snapshot-1.0.21.jar,$BUCKET/pubsublite-spark-sql-streaming-with-dependencies-0.1.0.jar \
