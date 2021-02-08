@@ -24,7 +24,7 @@ import com.google.cloud.pubsublite.AdminClient;
 import com.google.cloud.pubsublite.AdminClientSettings;
 import com.google.cloud.pubsublite.CloudRegion;
 import com.google.cloud.pubsublite.CloudZone;
-import com.google.cloud.pubsublite.ProjectId;
+import com.google.cloud.pubsublite.ProjectNumber;
 import com.google.cloud.pubsublite.PublishMetadata;
 import com.google.cloud.pubsublite.SubscriptionName;
 import com.google.cloud.pubsublite.SubscriptionPath;
@@ -44,12 +44,12 @@ import java.util.concurrent.ExecutionException;
 public class AdminUtils {
 
   public static void createTopicExample(
-      String cloudRegion, char zoneId, String projectId, String topicId, int partitions)
+      String cloudRegion, char zoneId, long projectNumber, String topicId, int partitions)
       throws Exception {
 
     TopicPath topicPath =
         TopicPath.newBuilder()
-            .setProject(ProjectId.of(projectId))
+            .setProject(ProjectNumber.of(projectNumber))
             .setLocation(CloudZone.of(CloudRegion.of(cloudRegion), zoneId))
             .setName(TopicName.of(topicId))
             .build();
@@ -91,12 +91,12 @@ public class AdminUtils {
   }
 
   public static void createSubscriptionExample(
-      String cloudRegion, char zoneId, String projectId, String topicId, String subscriptionId)
+      String cloudRegion, char zoneId, long projectNumber, String topicId, String subscriptionId)
       throws Exception {
 
     TopicPath topicPath =
         TopicPath.newBuilder()
-            .setProject(ProjectId.of(projectId))
+            .setProject(ProjectNumber.of(projectNumber))
             .setLocation(CloudZone.of(CloudRegion.of(cloudRegion), zoneId))
             .setName(TopicName.of(topicId))
             .build();
@@ -104,7 +104,7 @@ public class AdminUtils {
     SubscriptionPath subscriptionPath =
         SubscriptionPath.newBuilder()
             .setLocation(CloudZone.of(CloudRegion.of(cloudRegion), zoneId))
-            .setProject(ProjectId.of(projectId))
+            .setProject(ProjectNumber.of(projectNumber))
             .setName(SubscriptionName.of(subscriptionId))
             .build();
 
@@ -136,11 +136,11 @@ public class AdminUtils {
   }
 
   public static void deleteSubscriptionExample(
-      String cloudRegion, char zoneId, String projectId, String subscriptionId) throws Exception {
+      String cloudRegion, char zoneId, long projectNumber, String subscriptionId) throws Exception {
     SubscriptionPath subscriptionPath =
         SubscriptionPath.newBuilder()
             .setLocation(CloudZone.of(CloudRegion.of(cloudRegion), zoneId))
-            .setProject(ProjectId.of(projectId))
+            .setProject(ProjectNumber.of(projectNumber))
             .setName(SubscriptionName.of(subscriptionId))
             .build();
 
@@ -154,12 +154,12 @@ public class AdminUtils {
   }
 
   public static void publisherExample(
-      String cloudRegion, char zoneId, String projectId, String topicId, List<String> words)
+      String cloudRegion, char zoneId, long projectNumber, String topicId, List<String> words)
       throws ApiException, ExecutionException, InterruptedException {
 
     TopicPath topicPath =
         TopicPath.newBuilder()
-            .setProject(ProjectId.of(projectId))
+            .setProject(ProjectNumber.of(projectNumber))
             .setLocation(CloudZone.of(CloudRegion.of(cloudRegion), zoneId))
             .setName(TopicName.of(topicId))
             .build();

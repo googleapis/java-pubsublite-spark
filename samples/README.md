@@ -11,7 +11,6 @@ The recommended approach is to use Application Default Credentials by setting `G
 Set the following environment variables:
 ```
 PROJECT_NUMBER=12345 # or your project number
-PROJECT_ID=your-project-id
 REGION=us-central1 # or your region
 ZONE_ID=b # or your zone id
 TOPIC_ID=test-topic # or your topic id to create
@@ -30,7 +29,7 @@ To run the word count sample in Dataproc cluster, follow the steps:
 1. `cd samples/` 
 2. Create the topic and subscription, and publish word count messages to the topic.
    ```sh
-   PROJECT_ID=$PROJECT_ID \
+   PROJECT_NUMBER=$PROJECT_NUMBER \
    REGION=$REGION \
    ZONE_ID=$ZONE_ID \
    TOPIC_ID=$TOPIC_ID \

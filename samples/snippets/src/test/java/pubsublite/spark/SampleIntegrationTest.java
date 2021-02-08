@@ -30,6 +30,7 @@ import com.google.cloud.dataproc.v1.SparkJob;
 import com.google.cloud.pubsublite.CloudRegion;
 import com.google.cloud.pubsublite.CloudZone;
 import com.google.cloud.pubsublite.ProjectId;
+import com.google.cloud.pubsublite.ProjectNumber;
 import com.google.cloud.pubsublite.SubscriptionName;
 import com.google.cloud.pubsublite.SubscriptionPath;
 import com.google.cloud.pubsublite.TopicName;
@@ -68,6 +69,7 @@ public class SampleIntegrationTest {
 
   private static final String CLOUD_REGION = "CLOUD_REGION";
   private static final String CLOUD_ZONE = "CLOUD_ZONE";
+  private static final String PROJECT_NUMBER = "GOOGLE_CLOUD_PROJECT_NUMBER";
   private static final String PROJECT_ID = "PROJECT_ID";
   private static final String TOPIC_ID = "TOPIC_ID";
   private static final String CLUSTER_NAME = "CLUSTER_NAME";
@@ -78,6 +80,7 @@ public class SampleIntegrationTest {
   private final String runId = UUID.randomUUID().toString();
   private CloudRegion cloudRegion;
   private CloudZone cloudZone;
+  private ProjectNumber projectNumber;
   private ProjectId projectId;
   private TopicName topicId;
   private SubscriptionName subscriptionName;
@@ -192,7 +195,7 @@ public class SampleIntegrationTest {
             ImmutableSet.of(
                 CLOUD_REGION,
                 CLOUD_ZONE,
-                PROJECT_ID,
+                PROJECT_NUMBER,
                 TOPIC_ID,
                 CLUSTER_NAME,
                 BUCKET_NAME,
@@ -204,6 +207,7 @@ public class SampleIntegrationTest {
     cloudRegion = CloudRegion.of(env.get(CLOUD_REGION));
     cloudZone = CloudZone.of(cloudRegion, env.get(CLOUD_ZONE).charAt(0));
     projectId = ProjectId.of(env.get(PROJECT_ID));
+    projectNumber = ProjectNumber.of(Long.parseLong(env.get(PROJECT_NUMBER)));
     topicId = TopicName.of(env.get(TOPIC_ID));
     subscriptionName = SubscriptionName.of("sample-integration-sub-" + runId);
     subscriptionPath =
@@ -237,7 +241,7 @@ public class SampleIntegrationTest {
     createSubscriptionExample(
         cloudRegion.value(),
         cloudZone.zoneId(),
-        projectId.value(),
+        projectNumber.value(),
         topicId.value(),
         subscriptionName.value());
   }
@@ -246,7 +250,7 @@ public class SampleIntegrationTest {
   public void tearDown() throws Exception {
     // Cleanup the subscription
     deleteSubscriptionExample(
-        cloudRegion.value(), cloudZone.zoneId(), projectId.value(), subscriptionName.value());
+        cloudRegion.value(), cloudZone.zoneId(), projectNumber.value(), subscriptionName.value());
   }
 
   @Test
