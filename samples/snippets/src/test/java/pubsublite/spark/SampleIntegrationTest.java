@@ -39,22 +39,18 @@ import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.common.base.Preconditions;
-
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.shared.invoker.DefaultInvocationRequest;
 import org.apache.maven.shared.invoker.DefaultInvoker;
@@ -103,7 +99,7 @@ public class SampleIntegrationTest {
     Process p = Runtime.getRuntime().exec("mvn --version");
     BufferedReader stdOut = new BufferedReader(new InputStreamReader(p.getInputStream()));
     assertThat(p.waitFor()).isEqualTo(0);
-    String s = null;
+    String s;
     while ((s = stdOut.readLine()) != null) {
       if (StringUtils.startsWith(s, "Maven home: ")) {
         mavenHome = s.replace("Maven home: ", "");
@@ -111,7 +107,8 @@ public class SampleIntegrationTest {
     }
   }
 
-  private void mavenPackage(String workingDir) throws MavenInvocationException, CommandLineException {
+  private void mavenPackage(String workingDir)
+      throws MavenInvocationException, CommandLineException {
     InvocationRequest request = new DefaultInvocationRequest();
     request.setPomFile(new File(workingDir + "/pom.xml"));
     request.setGoals(ImmutableList.of("clean", "package", "-Dmaven.test.skip=true"));
@@ -190,16 +187,20 @@ public class SampleIntegrationTest {
 
   private void setUpVariables() {
     Map<String, String> env = System.getenv();
-    Set<String> missingVars = Sets.difference(ImmutableSet.of(CLOUD_REGION,
-            CLOUD_ZONE,
-            PROJECT_ID,
-            TOPIC_ID,
-            CLUSTER_NAME,
-            BUCKET_NAME,
-            SAMPLE_VERSION,
-            CONNECTOR_VERSION), env.keySet());
+    Set<String> missingVars =
+        Sets.difference(
+            ImmutableSet.of(
+                CLOUD_REGION,
+                CLOUD_ZONE,
+                PROJECT_ID,
+                TOPIC_ID,
+                CLUSTER_NAME,
+                BUCKET_NAME,
+                SAMPLE_VERSION,
+                CONNECTOR_VERSION),
+            env.keySet());
     Preconditions.checkState(
-            missingVars.isEmpty(), "Missing required environment variables: " + missingVars);
+        missingVars.isEmpty(), "Missing required environment variables: " + missingVars);
     cloudRegion = CloudRegion.of(env.get(CLOUD_REGION));
     cloudZone = CloudZone.of(cloudRegion, env.get(CLOUD_ZONE).charAt(0));
     projectId = ProjectId.of(env.get(PROJECT_ID));
