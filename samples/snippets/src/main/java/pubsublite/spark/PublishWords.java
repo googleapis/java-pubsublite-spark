@@ -21,12 +21,14 @@ import static pubsublite.spark.AdminUtils.createTopicExample;
 import static pubsublite.spark.AdminUtils.publisherExample;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import com.google.common.io.Resources;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class PublishWords {
 
@@ -40,11 +42,12 @@ public class PublishWords {
   public static void main(String[] args) throws Exception {
 
     Map<String, String> env = System.getenv();
-    Preconditions.checkArgument(
-        env.keySet()
-            .containsAll(
-                ImmutableList.of(
-                    REGION, ZONE_ID, TOPIC_ID, SUBSCRIPTION_ID, PROJECT_ID, PARTITIONS)));
+    Set<String> missingVars =
+        Sets.difference(
+            ImmutableSet.of(REGION, ZONE_ID, TOPIC_ID, SUBSCRIPTION_ID, PROJECT_ID, PARTITIONS),
+            env.keySet());
+    Preconditions.checkState(
+        missingVars.isEmpty(), "Missing required environment variables: " + missingVars);
 
     String cloudRegion = env.get(REGION);
     char zoneId = env.get(ZONE_ID).charAt(0);
