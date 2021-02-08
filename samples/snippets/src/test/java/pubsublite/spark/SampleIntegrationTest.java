@@ -46,11 +46,15 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.shared.invoker.DefaultInvocationRequest;
 import org.apache.maven.shared.invoker.DefaultInvoker;
@@ -180,18 +184,16 @@ public class SampleIntegrationTest {
 
   private void setUpVariables() {
     Map<String, String> env = System.getenv();
+    Set<String> missingVars = Sets.difference(ImmutableSet.of(CLOUD_REGION,
+            CLOUD_ZONE,
+            PROJECT_ID,
+            TOPIC_ID,
+            CLUSTER_NAME,
+            BUCKET_NAME,
+            SAMPLE_VERSION,
+            CONNECTOR_VERSION), env.keySet());
     Preconditions.checkState(
-        env.keySet()
-            .containsAll(
-                ImmutableList.of(
-                    CLOUD_REGION,
-                    CLOUD_ZONE,
-                    PROJECT_ID,
-                    TOPIC_ID,
-                    CLUSTER_NAME,
-                    BUCKET_NAME,
-                    SAMPLE_VERSION,
-                    CONNECTOR_VERSION)));
+            missingVars.isEmpty(), "Missing required environment variables: " + missingVars);
     cloudRegion = CloudRegion.of(env.get(CLOUD_REGION));
     cloudZone = CloudZone.of(cloudRegion, env.get(CLOUD_ZONE).charAt(0));
     projectId = ProjectId.of(env.get(PROJECT_ID));
