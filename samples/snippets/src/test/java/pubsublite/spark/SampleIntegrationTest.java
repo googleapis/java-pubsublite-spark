@@ -67,18 +67,17 @@ public class SampleIntegrationTest {
   private static final String CLOUD_REGION = "CLOUD_REGION";
   private static final String CLOUD_ZONE = "CLOUD_ZONE";
   private static final String PROJECT_ID = "PROJECT_ID";
-  private static final String TOPIC_NAME = "TOPIC_NAME";
+  private static final String TOPIC_ID = "TOPIC_ID";
   private static final String CLUSTER_NAME = "CLUSTER_NAME";
   private static final String BUCKET_NAME = "BUCKET_NAME";
   private static final String SAMPLE_VERSION = "SAMPLE_VERSION";
   private static final String CONNECTOR_VERSION = "CONNECTOR_VERSION";
-  private static final String MAVEN_HOME = "MAVEN_HOME";
 
   private final String runId = UUID.randomUUID().toString();
   private CloudRegion cloudRegion;
   private CloudZone cloudZone;
   private ProjectId projectId;
-  private TopicName topicName;
+  private TopicName topicId;
   private SubscriptionName subscriptionName;
   private SubscriptionPath subscriptionPath;
   private String clusterName;
@@ -188,16 +187,15 @@ public class SampleIntegrationTest {
                     CLOUD_REGION,
                     CLOUD_ZONE,
                     PROJECT_ID,
-                    TOPIC_NAME,
+                    TOPIC_ID,
                     CLUSTER_NAME,
                     BUCKET_NAME,
                     SAMPLE_VERSION,
-                    CONNECTOR_VERSION,
-                    MAVEN_HOME)));
+                    CONNECTOR_VERSION)));
     cloudRegion = CloudRegion.of(env.get(CLOUD_REGION));
     cloudZone = CloudZone.of(cloudRegion, env.get(CLOUD_ZONE).charAt(0));
     projectId = ProjectId.of(env.get(PROJECT_ID));
-    topicName = TopicName.of(env.get(TOPIC_NAME));
+    topicId = TopicName.of(env.get(TOPIC_ID));
     subscriptionName = SubscriptionName.of("sample-integration-sub-" + runId);
     subscriptionPath =
         SubscriptionPath.newBuilder()
@@ -219,7 +217,6 @@ public class SampleIntegrationTest {
             "pubsublite-spark-sql-streaming-with-dependencies-%s-%s.jar", connectorVersion, runId);
     sampleJarLoc = String.format("%s/samples/snippets/target/%s", workingDir, sampleJarName);
     connectorJarLoc = String.format("%s/target/%s", workingDir, connectorJarName);
-    mavenHome = env.get(MAVEN_HOME);
   }
 
   @Before
@@ -232,7 +229,7 @@ public class SampleIntegrationTest {
         cloudRegion.value(),
         cloudZone.zoneId(),
         projectId.value(),
-        topicName.value(),
+        topicId.value(),
         subscriptionName.value());
   }
 
