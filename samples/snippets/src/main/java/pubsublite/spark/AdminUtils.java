@@ -18,6 +18,7 @@ package pubsublite.spark;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
+import com.google.api.gax.rpc.AlreadyExistsException;
 import com.google.api.gax.rpc.ApiException;
 import com.google.cloud.pubsublite.AdminClient;
 import com.google.cloud.pubsublite.AdminClientSettings;
@@ -84,6 +85,8 @@ public class AdminUtils {
     try (AdminClient adminClient = AdminClient.create(adminClientSettings)) {
       Topic response = adminClient.createTopic(topic).get();
       System.out.println(response.getAllFields() + "created successfully.");
+    } catch (AlreadyExistsException e) {
+      System.out.println(topicPath + " already exists");
     }
   }
 
@@ -127,6 +130,8 @@ public class AdminUtils {
     try (AdminClient adminClient = AdminClient.create(adminClientSettings)) {
       Subscription response = adminClient.createSubscription(subscription).get();
       System.out.println(response.getAllFields() + "created successfully.");
+    } catch (AlreadyExistsException e) {
+      System.out.println(subscriptionPath + " already exists");
     }
   }
 
