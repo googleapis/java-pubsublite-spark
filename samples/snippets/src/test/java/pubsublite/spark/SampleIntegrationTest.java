@@ -59,8 +59,10 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.maven.shared.invoker.DefaultInvocationRequest;
 import org.apache.maven.shared.invoker.DefaultInvoker;
 import org.apache.maven.shared.invoker.InvocationRequest;
+import org.apache.maven.shared.invoker.InvocationResult;
 import org.apache.maven.shared.invoker.Invoker;
 import org.apache.maven.shared.invoker.MavenInvocationException;
+import org.apache.maven.shared.utils.cli.CommandLineException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -109,13 +111,17 @@ public class SampleIntegrationTest {
     }
   }
 
-  private void mavenPackage(String workingDir) throws MavenInvocationException {
+  private void mavenPackage(String workingDir) throws MavenInvocationException, CommandLineException {
     InvocationRequest request = new DefaultInvocationRequest();
     request.setPomFile(new File(workingDir + "/pom.xml"));
     request.setGoals(ImmutableList.of("clean", "package", "-Dmaven.test.skip=true"));
     Invoker invoker = new DefaultInvoker();
     invoker.setMavenHome(new File(mavenHome));
-    assertThat(invoker.execute(request).getExitCode()).isEqualTo(0);
+    InvocationResult result = invoker.execute(request);
+    if (result.getExecutionException() != null) {
+      throw result.getExecutionException();
+    }
+    assertThat(result.getExitCode()).isEqualTo(0);
   }
 
   private void uploadGCS(Storage storage, String fileNameInGCS, String fileLoc) throws Exception {
