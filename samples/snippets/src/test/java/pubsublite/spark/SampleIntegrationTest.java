@@ -39,13 +39,19 @@ import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.common.base.Preconditions;
+
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.shared.invoker.DefaultInvocationRequest;
 import org.apache.maven.shared.invoker.DefaultInvoker;
 import org.apache.maven.shared.invoker.InvocationRequest;
@@ -87,6 +93,18 @@ public class SampleIntegrationTest {
   private String connectorJarNameInGCS;
   private String sampleJarLoc;
   private String connectorJarLoc;
+
+  private void findMavenHome() throws Exception {
+    Process p = Runtime.getRuntime().exec("mvn --version");
+    BufferedReader stdOut = new BufferedReader(new InputStreamReader(p.getInputStream()));
+    assertThat(p.waitFor()).isEqualTo(0);
+    String s = null;
+    while ((s = stdOut.readLine()) != null) {
+      if (StringUtils.startsWith(s, "Maven home: ")) {
+        mavenHome = s.replace("Maven home: ", "");
+      }
+    }
+  }
 
   private void mavenPackage(String workingDir) throws MavenInvocationException {
     InvocationRequest request = new DefaultInvocationRequest();
@@ -207,6 +225,7 @@ public class SampleIntegrationTest {
   @Before
   public void setUp() throws Exception {
     setUpVariables();
+    findMavenHome();
 
     // Create a subscription
     createSubscriptionExample(
