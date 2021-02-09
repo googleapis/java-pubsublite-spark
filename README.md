@@ -116,12 +116,13 @@ and manual Spark installations.
 
 The connector supports a number of options to configure the read:
 
-  | Option | Type | Required | Meaning |
-  | ------ | ---- | -------- | ------- |
-  | pubsublite.subscription | String | Y | Full subscription path that the connector will read from. |
-  | pubsublite.flowcontrol.byteoutstandingperpartition | Long | N | Max number of bytes per partition that will be cached in workers before Spark processes the messages. Default to 50000000 bytes. |
-  | pubsublite.flowcontrol.messageoutstandingperpartition | Long | N | Max number of messages per partition that will be cached in workers before Spark processes the messages. Default to Long.MAX_VALUE. |
-  | gcp.credentials.key | String | N | Service account JSON in base64. Default to [Application Default Credentials](https://cloud.google.com/docs/authentication/production#automatically). |
+  | Option | Type | Required | Default Value | Meaning |
+  | ------ | ---- | -------- | ------------- | ------- |
+  | pubsublite.subscription | String | Y | | Full subscription path that the connector will read from. |
+  | pubsublite.flowcontrol.byteoutstandingperpartition | Long | N | 50_000_000 | Max number of bytes per partition that will be cached in workers before Spark processes the messages. |
+  | pubsublite.flowcontrol.messageoutstandingperpartition | Long | N | Long.MAX | Max number of messages per partition that will be cached in workers before Spark processes the messages. |
+  | pubsublite.flowcontrol.maxmessagesperbatch | Long | N | Long.MAX | Max number of messages in micro batch. |
+  | gcp.credentials.key | String | N | [Application Default Credentials](https://cloud.google.com/docs/authentication/production#automatically) | Service account JSON in base64. |
 
 ### Data Schema
 
