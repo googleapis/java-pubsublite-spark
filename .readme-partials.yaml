@@ -16,11 +16,8 @@ custom_content: |
 
   ## Downloading and Using the Connector
 
-  <!--- TODO(jiangmichael): Add jar link for spark-pubsublite-latest.jar -->
-    The latest version connector of the connector (Scala 2.11) will be publicly available in `gs://spark-lib/pubsublite/spark-pubsublite-latest.jar`.
-
   <!--- TODO(jiangmichael): Release on Maven Central and add Maven Central link -->
-    The connector will also be available from the Maven Central repository. It can be used using the `--packages` option or the `spark.jars.packages` configuration property.
+    The connector will be available from the Maven Central repository. It can be used using the `--packages` option or the `spark.jars.packages` configuration property.
 
   <!--
     | Scala version | Connector Artifact |
