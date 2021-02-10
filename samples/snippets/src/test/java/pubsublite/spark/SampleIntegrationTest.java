@@ -225,11 +225,11 @@ public class SampleIntegrationTest {
     connectorVersion = env.get(CONNECTOR_VERSION);
     sampleJarName = String.format("pubsublite-spark-snippets-%s.jar", sampleVersion);
     connectorJarName =
-        String.format("pubsublite-spark-sql-streaming-with-dependencies-%s.jar", connectorVersion);
+        String.format("pubsublite-spark-sql-streaming-%s-with-dependencies.jar", connectorVersion);
     sampleJarNameInGCS = String.format("pubsublite-spark-snippets-%s-%s.jar", sampleVersion, runId);
     connectorJarNameInGCS =
         String.format(
-            "pubsublite-spark-sql-streaming-with-dependencies-%s-%s.jar", connectorVersion, runId);
+            "pubsublite-spark-sql-streaming-%s-with-dependencies-%s.jar", connectorVersion, runId);
     sampleJarLoc = String.format("%s/samples/snippets/target/%s", workingDir, sampleJarName);
     connectorJarLoc = String.format("%s/target/%s", workingDir, connectorJarName);
   }
