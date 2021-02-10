@@ -19,7 +19,7 @@ PARTITIONS=1 # or your number of partitions to create
 CLUSTER_NAME=waprin-spark7 # or your Dataproc cluster name to create
 BUCKET=gs://your-gcs-bucket
 SUBSCRIPTION_PATH=projects/$PROJECT_NUMBER/locations/$REGION-$ZONE_ID/subscriptions/$SUBSCRIPTION_ID
-PUBSUBLITE_SPARK_SQL_STREAMING_JAR_LOCATION= # downloaded pubsublite-spark-sql-streaming-with-dependencies jar location
+PUBSUBLITE_SPARK_SQL_STREAMING_JAR_LOCATION= # downloaded pubsublite-spark-sql-streaming-0.1.0-with-dependencies jar location
 ```
 
 ## Running word count sample
@@ -46,9 +46,9 @@ To run the word count sample in Dataproc cluster, follow the steps:
    mvn clean package -Dmaven.test.skip=true
    ```
 <!-- TODO: set up bots to update jar version, also provide link to maven central --> 
-5. Download `pubsublite-spark-sql-streaming-with-dependencies-0.1.0.jar` from Maven Central and set `PUBSUBLITE_SPARK_SQL_STREAMING_JAR_LOCATION` environment variable.
+5. Download `pubsublite-spark-sql-streaming-0.1.0-with-dependencies.jar` from Maven Central and set `PUBSUBLITE_SPARK_SQL_STREAMING_JAR_LOCATION` environment variable.
 <!-- TODO: set up bots to update jar version -->
-6. Create GCS bucket and upload both `pubsublite-spark-sql-streaming-with-dependencies-0.1.0.jar` and the sample jar onto GCS
+6. Create GCS bucket and upload both `pubsublite-spark-sql-streaming-0.1.0-with-dependencies.jar` and the sample jar onto GCS
    ```sh
    gsutil mb $BUCKET
    gsutil cp snapshot/target/pubsublite-spark-snapshot-1.0.21.jar $BUCKET
@@ -62,7 +62,7 @@ To run the word count sample in Dataproc cluster, follow the steps:
 8. Run the sample in Dataproc
    ```sh
    gcloud dataproc jobs submit spark --cluster=$CLUSTER_NAME \
-      --jars=$BUCKET/pubsublite-spark-snapshot-1.0.21.jar,$BUCKET/pubsublite-spark-sql-streaming-with-dependencies-0.1.0.jar \
+      --jars=$BUCKET/pubsublite-spark-snapshot-1.0.21.jar,$BUCKET/pubsublite-spark-sql-streaming-0.1.0-with-dependencies.jar \
       --class=pubsublite.spark.WordCount -- $SUBSCRIPTION_PATH
    ```
 

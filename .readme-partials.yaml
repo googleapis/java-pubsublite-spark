@@ -22,7 +22,7 @@ custom_content: |
   <!--
     | Scala version | Connector Artifact |
     | --- | --- |
-    | Scala 2.11 | `com.google.cloud.pubsublite.spark:pubsublite-spark-sql-streaming-with-dependencies_2.11:0.1.0` |
+    | Scala 2.11 | `com.google.cloud.pubsublite.spark:pubsublite-spark-sql-streaming:0.1.0:with-dependencies` |
   -->
 
   <!--- TODO(jiangmichael): Add exmaple code and brief description here -->
