@@ -218,7 +218,9 @@ public class SampleIntegrationTest {
             .build();
     clusterName = env.get(CLUSTER_NAME);
     bucketName = env.get(BUCKET_NAME);
-    workingDir = System.getProperty("user.dir").replace("/samples/snapshot", "");
+    workingDir = System.getProperty("user.dir")
+            .replace("/samples/snapshot", "")
+            .replace("/samples/snippets", "");
     sampleVersion = env.get(SAMPLE_VERSION);
     connectorVersion = env.get(CONNECTOR_VERSION);
     sampleJarName = String.format("pubsublite-spark-snippets-%s.jar", sampleVersion);
