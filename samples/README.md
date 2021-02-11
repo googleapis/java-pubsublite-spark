@@ -67,7 +67,7 @@ To run the word count sample in Dataproc cluster, follow the steps:
    gcloud config set dataproc/region $REGION
    ```
 <!-- TODO: set up bots to update jar version -->
-9. Run the sample in Dataproc
+9. Run the sample in Dataproc. You would see the word count result show up in the console output.
    ```sh
    gcloud dataproc jobs submit spark --cluster=$CLUSTER_NAME \
       --jars=$BUCKET/pubsublite-spark-snapshot-$SAMPLE_VERSION.jar,$BUCKET/pubsublite-spark-sql-streaming-$CONNECTOR_VERSION-with-dependencies.jar \
