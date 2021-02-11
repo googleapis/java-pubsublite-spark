@@ -171,18 +171,18 @@ public class SampleIntegrationTest {
             + "|    a|              6|\n"
             + "|   in|              5|\n"
             + "| that|              5|\n"
-            + "| with|              4|\n"
             + "| soul|              4|\n"
-            + "|   us|              3|\n"
-            + "|   me|              3|\n"
-            + "| when|              3|\n"
+            + "| with|              4|\n"
+            + "|   as|              3|\n"
             + "| feel|              3|\n"
             + "| like|              3|\n"
+            + "|   me|              3|\n"
             + "|   so|              3|\n"
-            + "|   as|              3|\n"
             + "| then|              3|\n"
+            + "|   us|              3|\n"
+            + "| when|              3|\n"
             + "|which|              3|\n"
-            + "|among|              2|\n"
+            + "|   am|              2|\n"
             + "+-----+---------------+\n"
             + "only showing top 20 rows";
     assertThat(sparkJobOutput).contains(expectedWordCountResult);
@@ -218,7 +218,8 @@ public class SampleIntegrationTest {
             .build();
     clusterName = env.get(CLUSTER_NAME);
     bucketName = env.get(BUCKET_NAME);
-    workingDir = System.getProperty("user.dir")
+    workingDir =
+        System.getProperty("user.dir")
             .replace("/samples/snapshot", "")
             .replace("/samples/snippets", "");
     sampleVersion = env.get(SAMPLE_VERSION);
