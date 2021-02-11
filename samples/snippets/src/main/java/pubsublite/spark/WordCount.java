@@ -42,7 +42,7 @@ public class WordCount {
         df.withColumn("word", splitCol.getItem(0))
             .withColumn("word_count", splitCol.getItem(1).cast(DataTypes.LongType));
     df = df.groupBy("word").sum("word_count");
-    df = df.orderBy(df.col("sum(word_count)").desc());
+    df = df.orderBy(df.col("sum(word_count)").desc(), df.col("word").asc());
 
     StreamingQuery query =
         df.writeStream()
