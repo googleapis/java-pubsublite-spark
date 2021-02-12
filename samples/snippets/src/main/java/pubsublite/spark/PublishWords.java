@@ -70,5 +70,7 @@ public class PublishWords {
     createSubscriptionExample(cloudRegion, zoneId, projectNumber, topicId, subscriptionId);
 
     publisherExample(cloudRegion, zoneId, projectNumber, topicId, words);
+
+    System.exit(0);
   }
 }
