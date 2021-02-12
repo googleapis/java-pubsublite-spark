@@ -85,8 +85,12 @@ public class AdminUtils {
     try (AdminClient adminClient = AdminClient.create(adminClientSettings)) {
       Topic response = adminClient.createTopic(topic).get();
       System.out.println(response.getAllFields() + "created successfully.");
-    } catch (AlreadyExistsException e) {
-      System.out.println(topicPath + " already exists");
+    } catch (ExecutionException e) {
+      if (e.getCause() instanceof AlreadyExistsException) {
+        System.out.println(topicPath + " already exists");
+      } else {
+        throw e;
+      }
     }
   }
 
@@ -130,8 +134,12 @@ public class AdminUtils {
     try (AdminClient adminClient = AdminClient.create(adminClientSettings)) {
       Subscription response = adminClient.createSubscription(subscription).get();
       System.out.println(response.getAllFields() + "created successfully.");
-    } catch (AlreadyExistsException e) {
-      System.out.println(subscriptionPath + " already exists");
+    } catch (ExecutionException e) {
+      if (e.getCause() instanceof AlreadyExistsException) {
+        System.out.println(topicPath + " already exists");
+      } else {
+        throw e;
+      }
     }
   }
 

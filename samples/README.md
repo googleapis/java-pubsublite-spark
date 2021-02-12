@@ -27,7 +27,7 @@ PUBSUBLITE_SPARK_SQL_STREAMING_JAR_LOCATION= # downloaded pubsublite-spark-sql-s
 
 To run the word count sample in Dataproc cluster, follow the steps:
 
-1. `cd samples/` 
+1. `cd samples/snippets` 
 2. Set the current sample version.
    ```sh
    SAMPLE_VERSION=$(mvn -q \
@@ -59,7 +59,7 @@ To run the word count sample in Dataproc cluster, follow the steps:
 7. Create GCS bucket and upload both `pubsublite-spark-sql-streaming-$CONNECTOR_VERSION-with-dependencies.jar` and the sample jar onto GCS
    ```sh
    gsutil mb $BUCKET
-   gsutil cp snapshot/target/pubsublite-spark-snapshot-$SAMPLE_VERSION.jar $BUCKET
+   gsutil cp target/pubsublite-spark-snippets-$SAMPLE_VERSION.jar $BUCKET
    gsutil cp $PUBSUBLITE_SPARK_SQL_STREAMING_JAR_LOCATION $BUCKET
    ```
 8. Set Dataproc region
@@ -70,14 +70,14 @@ To run the word count sample in Dataproc cluster, follow the steps:
 9. Run the sample in Dataproc. You would see the word count result show up in the console output.
    ```sh
    gcloud dataproc jobs submit spark --cluster=$CLUSTER_NAME \
-      --jars=$BUCKET/pubsublite-spark-snapshot-$SAMPLE_VERSION.jar,$BUCKET/pubsublite-spark-sql-streaming-$CONNECTOR_VERSION-with-dependencies.jar \
+      --jars=$BUCKET/pubsublite-spark-snippets-$SAMPLE_VERSION.jar,$BUCKET/pubsublite-spark-sql-streaming-$CONNECTOR_VERSION-with-dependencies.jar \
       --class=pubsublite.spark.WordCount -- $SUBSCRIPTION_PATH
    ```
 
 ## Cleaning up
 1. Delete Pub/Sub Lite topic and subscription.
    ```sh
-   gcloud pubsub lite-subscriptions delete $SUBSCRIPTION_ID --zone=$REGION-$ZONE_ID=
+   gcloud pubsub lite-subscriptions delete $SUBSCRIPTION_ID --zone=$REGION-$ZONE_ID
    gcloud pubsub lite-topics delete $TOPIC_ID --zone=$REGION-$ZONE_ID
    ```
 2. Delete GCS bucket.
