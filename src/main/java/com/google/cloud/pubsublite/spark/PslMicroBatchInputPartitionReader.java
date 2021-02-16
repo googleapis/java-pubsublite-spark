@@ -60,7 +60,12 @@ public class PslMicroBatchInputPartitionReader implements InputPartitionReader<I
     Optional<SequencedMessage> msg;
     while (true) {
       try {
+        long start = System.currentTimeMillis();
         subscriber.onData().get(SUBSCRIBER_PULL_TIMEOUT.getSeconds(), TimeUnit.SECONDS);
+        long end = System.currentTimeMillis();
+        if (end - start > 50) {
+          log.atWarning().log("[MJ] onData waited " + (end - start));
+        }
         msg = subscriber.messageIfAvailable();
         break;
       } catch (TimeoutException e) {
