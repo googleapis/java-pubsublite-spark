@@ -24,8 +24,8 @@ import com.google.cloud.pubsublite.AdminClient;
 import com.google.cloud.pubsublite.AdminClientSettings;
 import com.google.cloud.pubsublite.CloudRegion;
 import com.google.cloud.pubsublite.CloudZone;
+import com.google.cloud.pubsublite.MessageMetadata;
 import com.google.cloud.pubsublite.ProjectNumber;
-import com.google.cloud.pubsublite.PublishMetadata;
 import com.google.cloud.pubsublite.SubscriptionName;
 import com.google.cloud.pubsublite.SubscriptionPath;
 import com.google.cloud.pubsublite.TopicName;
@@ -193,11 +193,11 @@ public class AdminUtils {
         futures.add(future);
       }
     } finally {
-      ArrayList<PublishMetadata> metadata = new ArrayList<>();
+      ArrayList<MessageMetadata> metadata = new ArrayList<>();
       List<String> ackIds = ApiFutures.allAsList(futures).get();
       for (String id : ackIds) {
         // Decoded metadata contains partition and offset.
-        metadata.add(PublishMetadata.decode(id));
+        metadata.add(MessageMetadata.decode(id));
       }
       System.out.println(metadata + "\nPublished " + ackIds.size() + " messages.");
 
