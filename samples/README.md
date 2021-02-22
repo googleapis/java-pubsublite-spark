@@ -88,3 +88,13 @@ To run the word count sample in Dataproc cluster, follow the steps:
    ```sh
    gcloud dataproc clusters delete $CLUSTER_NAME --region=$REGION
    ```
+
+## Common issues
+1. Permission not granted. <br>
+   This could happen in any step, for example when creating topic and subscription, or submitting job to Dataproc cluster.
+   Make sure the account/service account is granted with edit permissions for Pub/Sub Lite and Dataproc. Also the 
+   Dataproc cluster should have `scope=cloud-platform` to be able to access other cloud resources within the same
+   project such as Pub/Sub Lite.
+
+2. Dataproc job shows ClassNotFound or similar exceptions. <br>
+   Make sure the Dataproc cluster you created has images with [supported spark versions](https://github.com/googleapis/java-pubsublite-spark#compatibility). 
