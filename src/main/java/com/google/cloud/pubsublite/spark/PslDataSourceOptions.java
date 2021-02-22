@@ -18,6 +18,7 @@ package com.google.cloud.pubsublite.spark;
 
 import static com.google.cloud.pubsublite.internal.wire.ServiceClients.addDefaultSettings;
 
+import com.google.api.gax.rpc.ApiException;
 import com.google.auto.value.AutoValue;
 import com.google.cloud.pubsublite.AdminClient;
 import com.google.cloud.pubsublite.AdminClientSettings;
@@ -79,9 +80,16 @@ public abstract class PslDataSourceOptions implements Serializable {
     options
         .get(Constants.MAX_MESSAGE_PER_BATCH_CONFIG_KEY)
         .ifPresent(mmpb -> builder.setMaxMessagesPerBatch(Long.parseLong(mmpb)));
+    String subscriptionPathVal = options.get(Constants.SUBSCRIPTION_CONFIG_KEY).get();
+    SubscriptionPath subscriptionPath;
+    try {
+      subscriptionPath = SubscriptionPath.parse(subscriptionPathVal);
+    } catch (ApiException e) {
+      throw new IllegalArgumentException(
+          "Unable to parse subscription path " + subscriptionPathVal);
+    }
     return builder
-        .setSubscriptionPath(
-            SubscriptionPath.parse(options.get(Constants.SUBSCRIPTION_CONFIG_KEY).get()))
+        .setSubscriptionPath(subscriptionPath)
         .setFlowControlSettings(
             FlowControlSettings.builder()
                 .setMessagesOutstanding(
