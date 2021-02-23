@@ -93,7 +93,7 @@ To run the word count sample in Dataproc cluster, follow the steps:
 1. Permission not granted. <br>
    This could happen in when creating topic and subscription, or submitting job to Dataproc cluster.
    Make sure the account/service account has `editor` permission for Pub/Sub Lite and Dataproc. 
-   Dataproc cluster should have `scope=cloud-platform` to be able to access other cloud resources within the same
+   Your Dataproc cluster also needs `scope=cloud-platform` to access other services and resources within the same
    project such as Pub/Sub Lite.
 
 2. Dataproc job shows ClassNotFound or similar exceptions. <br>
