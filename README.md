@@ -88,13 +88,10 @@ and manual Spark installations.
 <!--- TODO(jiangmichael): Release on Maven Central and add Maven Central link -->
   The connector will be available from the Maven Central repository. It can be used using the `--packages` option or the `spark.jars.packages` configuration property.
 
-<!--
-  | Scala version | Connector Artifact |
-  | --- | --- |
-  | Scala 2.11 | `com.google.cloud.pubsublite.spark:pubsublite-spark-sql-streaming:0.1.0:with-dependencies` |
--->
-
-<!--- TODO(jiangmichael): Add exmaple code and brief description here -->
+## Compatibility
+| Connector version | Spark version |
+| --- | --- |
+| 0.1.0 | 2.4.X |
 
 ## Usage
 
