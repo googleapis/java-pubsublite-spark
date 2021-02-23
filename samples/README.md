@@ -98,4 +98,4 @@ To run the word count sample in Dataproc cluster, follow the steps:
    You should also make sure that your `gcloud` and your `GOOGLE_APPLICATION_CREDENTIALS`  access the same project. You can see which project your `gcloud` and `gstuil` commands use with `gcloud config get-value project`.
 
 2. Dataproc job shows `ClassNotFound` or similar exceptions. <br>
-   Make sure the Dataproc cluster you created uses images of [supported spark versions](https://github.com/googleapis/java-pubsublite-spark#compatibility). 
+   Make sure your Dataproc cluster uses images of [supported Spark versions](https://github.com/googleapis/java-pubsublite-spark#compatibility). 
