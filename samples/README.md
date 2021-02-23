@@ -91,7 +91,7 @@ To run the word count sample in Dataproc cluster, follow the steps:
 
 ## Common issues
 1. Permission not granted. <br>
-   This could happen when creating topic and subscription, or submitting job to Dataproc cluster.
+   This could happen when creating topic and subscription, or submitting a job to your Dataproc cluster.
    Make sure the account/service account has `editor` permission for Pub/Sub Lite and Dataproc. 
    Your Dataproc cluster needs `scope=cloud-platform` to access other services and resources within the same project.
    You should also make sure that your `gcloud` and your `GOOGLE_APPLICATION_CREDENTIALS`  access the same project. You can see which project your `gcloud` and `gstuil` commands use with `gcloud config get-value project`.
