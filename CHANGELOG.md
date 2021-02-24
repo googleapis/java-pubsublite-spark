@@ -6,15 +6,15 @@
 ### Features
 
 * Add max message per batch option ([#14](https://www.github.com/googleapis/java-pubsublite-spark/issues/14)) ([e9c640f](https://www.github.com/googleapis/java-pubsublite-spark/commit/e9c640f127005454d70868338851d7d8656714f5))
-* Close clients gracefully ([#56](https://www.github.com/googleapis/java-pubsublite-spark/issues/56)) ([ac48f12](https://www.github.com/googleapis/java-pubsublite-spark/commit/ac48f12c296752aef067d83d0f6c06a119692ff0))
-* fix offsets type check ([0571f75](https://www.github.com/googleapis/java-pubsublite-spark/commit/0571f759d01b6547753f7e71d67c67fbf515b042))
-* Fixes timestamps and more thorough testing ([#38](https://www.github.com/googleapis/java-pubsublite-spark/issues/38)) ([ab6a124](https://www.github.com/googleapis/java-pubsublite-spark/commit/ab6a124c3bdbe9b9b9fb715b7b734fbbd1fa9e9e))
 * Pub/Sub Lite Spark Connector ([#3](https://www.github.com/googleapis/java-pubsublite-spark/issues/3)) ([2921585](https://www.github.com/googleapis/java-pubsublite-spark/commit/292158597494f3ae8915b2e1468f082e1fc064ec))
 * use gson instead of jackson ([#25](https://www.github.com/googleapis/java-pubsublite-spark/issues/25)) ([64cad24](https://www.github.com/googleapis/java-pubsublite-spark/commit/64cad24dab014ae9bd64abc833c8f744b039e95a))
 
 
 ### Bug Fixes
 
+* Close clients gracefully ([#56](https://www.github.com/googleapis/java-pubsublite-spark/issues/56)) ([ac48f12](https://www.github.com/googleapis/java-pubsublite-spark/commit/ac48f12c296752aef067d83d0f6c06a119692ff0))
+* fix offsets type check ([0571f75](https://www.github.com/googleapis/java-pubsublite-spark/commit/0571f759d01b6547753f7e71d67c67fbf515b042))
+* Fixes timestamps and more thorough testing ([#38](https://www.github.com/googleapis/java-pubsublite-spark/issues/38)) ([ab6a124](https://www.github.com/googleapis/java-pubsublite-spark/commit/ab6a124c3bdbe9b9b9fb715b7b734fbbd1fa9e9e))
 * Better error message when subscription path is invalid. ([#87](https://www.github.com/googleapis/java-pubsublite-spark/issues/87)) ([103e1eb](https://www.github.com/googleapis/java-pubsublite-spark/commit/103e1ebf740929399677338a216ea5f187d3e4aa))
 * update env vars to export ([#60](https://www.github.com/googleapis/java-pubsublite-spark/issues/60)) ([09d565a](https://www.github.com/googleapis/java-pubsublite-spark/commit/09d565a4d33de7bd5330a6da0f24a90a52faeaf2))
 * update repo name ([#50](https://www.github.com/googleapis/java-pubsublite-spark/issues/50)) ([9becfc8](https://www.github.com/googleapis/java-pubsublite-spark/commit/9becfc8c5d5df9cc9316239126e843f726724dc9))
