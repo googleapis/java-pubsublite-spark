@@ -85,8 +85,7 @@ and manual Spark installations.
 
 ## Downloading and Using the Connector
 
-<!--- TODO(jiangmichael): Release on Maven Central and add Maven Central link -->
-  The connector will be available from the Maven Central repository. It can be used using the `--packages` option or the `spark.jars.packages` configuration property.
+  The connector is available from the [Maven Central repository](https://search.maven.org/artifact/com.google.cloud/pubsublite-spark-sql-streaming). You can download and pass it in the `--packages` option when using the `spark-submit` command or set it via the `spark.jars.packages` [configuration property](https://spark.apache.org/docs/latest/configuration.html#available-properties).
 
 ## Compatibility
 | Connector version | Spark version |
