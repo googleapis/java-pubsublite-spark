@@ -92,7 +92,7 @@ public class MultiPartitionCommitterImplTest {
 
   @Test
   public void testPartitionChange() {
-    List<Committer> committers = new ArrayList();
+    List<Committer> committers = new ArrayList<>();
     for (int i = 0; i < 4; i++) {
       Committer committer = mock(Committer.class);
       when(committer.startAsync())
