@@ -23,6 +23,8 @@ import com.google.api.core.SettableApiFuture;
 import com.google.cloud.pubsublite.*;
 import com.google.cloud.pubsublite.internal.wire.Committer;
 import com.google.common.collect.ImmutableMap;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Test;
 
 public class MultiPartitionCommitterImplTest {
@@ -47,8 +49,8 @@ public class MultiPartitionCommitterImplTest {
                 return committer2;
               }
             });
-    verify(committer1, times(1)).startAsync();
-    verify(committer2, times(1)).startAsync();
+    verify(committer1).startAsync();
+    verify(committer2).startAsync();
 
     PslSourceOffset offset =
         PslSourceOffset.builder()
@@ -62,8 +64,8 @@ public class MultiPartitionCommitterImplTest {
     when(committer1.commitOffset(eq(Offset.of(10L)))).thenReturn(future1);
     when(committer2.commitOffset(eq(Offset.of(8L)))).thenReturn(future2);
     multiCommitter.commit(offset);
-    verify(committer1, times(1)).commitOffset(eq(Offset.of(10L)));
-    verify(committer2, times(1)).commitOffset(eq(Offset.of(8L)));
+    verify(committer1).commitOffset(eq(Offset.of(10L)));
+    verify(committer2).commitOffset(eq(Offset.of(8L)));
   }
 
   @Test
@@ -86,5 +88,45 @@ public class MultiPartitionCommitterImplTest {
 
     multiCommitter.close();
     verify(committer, times(1)).stopAsync();
+  }
+
+  @Test
+  public void testPartitionChange() {
+    List<Committer> committers = new ArrayList();
+    for (int i = 0; i < 4; i++) {
+      Committer committer = mock(Committer.class);
+      when(committer.startAsync())
+          .thenReturn(committer)
+          .thenThrow(new IllegalStateException("should only init once"));
+      when(committer.commitOffset(eq(Offset.of(10L)))).thenReturn(SettableApiFuture.create());
+      committers.add(committer);
+    }
+    MultiPartitionCommitterImpl multiCommitter =
+        new MultiPartitionCommitterImpl(2, p -> committers.get((int) p.value()));
+    for (int i = 0; i < 2; i++) {
+      verify(committers.get(i)).startAsync();
+    }
+    for (int i = 2; i < 4; i++) {
+      verify(committers.get(i), times(0)).startAsync();
+    }
+
+    // Partitions increased to 4.
+    PslSourceOffset offset =
+        PslSourceOffset.builder()
+            .partitionOffsetMap(
+                ImmutableMap.of(
+                    Partition.of(0), Offset.of(10L),
+                    Partition.of(1), Offset.of(10L),
+                    Partition.of(2), Offset.of(10L),
+                    Partition.of(3), Offset.of(10L)))
+            .build();
+    multiCommitter.commit(offset);
+    for (int i = 0; i < 2; i++) {
+      verify(committers.get(i)).commitOffset(eq(Offset.of(10L)));
+    }
+    for (int i = 2; i < 4; i++) {
+      verify(committers.get(i)).startAsync();
+      verify(committers.get(i)).commitOffset(eq(Offset.of(10L)));
+    }
   }
 }

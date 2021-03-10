@@ -27,18 +27,22 @@ import com.google.common.util.concurrent.MoreExecutors;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A {@link MultiPartitionCommitter} that lazily adjusts for partition changes when {@link
+ * MultiPartitionCommitter#commit(PslSourceOffset)};
+ */
 public class MultiPartitionCommitterImpl implements MultiPartitionCommitter {
   private static final GoogleLogger log = GoogleLogger.forEnclosingClass();
 
+  private final CommitterFactory committerFactory;
   private final Map<Partition, Committer> committerMap = new HashMap<>();
 
   @VisibleForTesting
   MultiPartitionCommitterImpl(long topicPartitionCount, CommitterFactory committerFactory) {
+    this.committerFactory = committerFactory;
     for (int i = 0; i < topicPartitionCount; i++) {
       Partition p = Partition.of(i);
-      Committer committer = committerFactory.newCommitter(p);
-      committer.startAsync().awaitRunning();
-      committerMap.put(p, committer);
+      committerMap.put(p, createCommitter(p));
     }
   }
 
@@ -47,8 +51,24 @@ public class MultiPartitionCommitterImpl implements MultiPartitionCommitter {
     committerMap.values().forEach(c -> c.stopAsync().awaitTerminated());
   }
 
+  /** Adjust committerMap based on the partitions that needs to be committed. */
+  public synchronized void update(PslSourceOffset offset) {
+    for (Partition p : offset.partitionOffsetMap().keySet()) {
+      if (!committerMap.containsKey(p)) {
+        committerMap.put(p, createCommitter(p));
+      }
+    }
+  }
+
+  private synchronized Committer createCommitter(Partition p) {
+    Committer committer = committerFactory.newCommitter(p);
+    committer.startAsync().awaitRunning();
+    return committer;
+  }
+
   @Override
   public synchronized void commit(PslSourceOffset offset) {
+    update(offset);
     offset
         .partitionOffsetMap()
         .forEach(

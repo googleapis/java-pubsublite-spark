@@ -19,6 +19,7 @@ package com.google.cloud.pubsublite.spark;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
+import com.google.cloud.pubsublite.Partition;
 import com.google.cloud.pubsublite.SubscriptionPath;
 import com.google.cloud.pubsublite.cloudpubsub.FlowControlSettings;
 import com.google.cloud.pubsublite.internal.CursorClient;
@@ -34,14 +35,12 @@ import org.apache.spark.sql.sources.v2.reader.streaming.Offset;
 import org.apache.spark.sql.types.StructType;
 
 public class PslMicroBatchReader implements MicroBatchReader {
-
   private final CursorClient cursorClient;
   private final MultiPartitionCommitter committer;
   private final PartitionSubscriberFactory partitionSubscriberFactory;
   private final PerTopicHeadOffsetReader headOffsetReader;
   private final SubscriptionPath subscriptionPath;
   private final FlowControlSettings flowControlSettings;
-  private final long topicPartitionCount;
   private final long maxMessagesPerBatch;
   @Nullable private SparkSourceOffset startOffset = null;
   private SparkSourceOffset endOffset;
@@ -53,20 +52,30 @@ public class PslMicroBatchReader implements MicroBatchReader {
       PerTopicHeadOffsetReader headOffsetReader,
       SubscriptionPath subscriptionPath,
       FlowControlSettings flowControlSettings,
-      long maxMessagesPerBatch,
-      long topicPartitionCount) {
+      long maxMessagesPerBatch) {
     this.cursorClient = cursorClient;
     this.committer = committer;
     this.partitionSubscriberFactory = partitionSubscriberFactory;
     this.headOffsetReader = headOffsetReader;
     this.subscriptionPath = subscriptionPath;
     this.flowControlSettings = flowControlSettings;
-    this.topicPartitionCount = topicPartitionCount;
     this.maxMessagesPerBatch = maxMessagesPerBatch;
   }
 
   @Override
   public void setOffsetRange(Optional<Offset> start, Optional<Offset> end) {
+    int currentTopicPartitionCount;
+    if (end.isPresent()) {
+      checkArgument(
+          end.get() instanceof SparkSourceOffset,
+          "end offset is not instance of SparkSourceOffset.");
+      endOffset = (SparkSourceOffset) end.get();
+      currentTopicPartitionCount = ((SparkSourceOffset) end.get()).getPartitionOffsetMap().size();
+    } else {
+      endOffset = PslSparkUtils.toSparkSourceOffset(headOffsetReader.getHeadOffset());
+      currentTopicPartitionCount = endOffset.getPartitionOffsetMap().size();
+    }
+
     if (start.isPresent()) {
       checkArgument(
           start.get() instanceof SparkSourceOffset,
@@ -74,20 +83,14 @@ public class PslMicroBatchReader implements MicroBatchReader {
       startOffset = (SparkSourceOffset) start.get();
     } else {
       startOffset =
-          PslSparkUtils.getSparkStartOffset(cursorClient, subscriptionPath, topicPartitionCount);
+          PslSparkUtils.getSparkStartOffset(
+              cursorClient, subscriptionPath, currentTopicPartitionCount);
     }
-    if (end.isPresent()) {
-      checkArgument(
-          end.get() instanceof SparkSourceOffset,
-          "end offset is not instance of SparkSourceOffset.");
-      endOffset = (SparkSourceOffset) end.get();
-    } else {
-      SparkSourceOffset headOffset =
-          PslSparkUtils.toSparkSourceOffset(headOffsetReader.getHeadOffset());
-      endOffset =
-          PslSparkUtils.getSparkEndOffset(
-              headOffset, startOffset, maxMessagesPerBatch, topicPartitionCount);
-    }
+
+    // Limit endOffset by maxMessagesPerBatch.
+    endOffset =
+        PslSparkUtils.getSparkEndOffset(
+            endOffset, startOffset, maxMessagesPerBatch, currentTopicPartitionCount);
   }
 
   @Override
@@ -126,23 +129,28 @@ public class PslMicroBatchReader implements MicroBatchReader {
 
   @Override
   public List<InputPartition<InternalRow>> planInputPartitions() {
-    checkState(startOffset != null);
+    checkState(startOffset != null && endOffset != null);
+
     List<InputPartition<InternalRow>> list = new ArrayList<>();
-    for (SparkPartitionOffset offset : startOffset.getPartitionOffsetMap().values()) {
-      SparkPartitionOffset endPartitionOffset =
-          endOffset.getPartitionOffsetMap().get(offset.partition());
-      if (offset.equals(endPartitionOffset)) {
+    // Since this is called right after setOffsetRange, we could use partitions in endOffset as
+    // current partition count.
+    for (SparkPartitionOffset endPartitionOffset : endOffset.getPartitionOffsetMap().values()) {
+      Partition p = endPartitionOffset.partition();
+      SparkPartitionOffset startPartitionOffset =
+          startOffset.getPartitionOffsetMap().getOrDefault(p, SparkPartitionOffset.create(p, -1L));
+      if (startPartitionOffset.equals(endPartitionOffset)) {
         // There is no message to pull for this partition.
         continue;
       }
       PartitionSubscriberFactory partitionSubscriberFactory = this.partitionSubscriberFactory;
       SubscriberFactory subscriberFactory =
-          (consumer) -> partitionSubscriberFactory.newSubscriber(offset.partition(), consumer);
+          (consumer) ->
+              partitionSubscriberFactory.newSubscriber(endPartitionOffset.partition(), consumer);
       list.add(
           new PslMicroBatchInputPartition(
               subscriptionPath,
               flowControlSettings,
-              offset,
+              startPartitionOffset,
               endPartitionOffset,
               subscriberFactory));
     }

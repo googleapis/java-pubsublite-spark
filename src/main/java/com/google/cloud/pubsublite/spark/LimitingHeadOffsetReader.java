@@ -43,15 +43,18 @@ public class LimitingHeadOffsetReader implements PerTopicHeadOffsetReader {
 
   private final TopicStatsClient topicStatsClient;
   private final TopicPath topic;
-  private final long topicPartitionCount;
+  private final PartitionCountReader partitionCountReader;
   private final AsyncLoadingCache<Partition, Offset> cachedHeadOffsets;
 
   @VisibleForTesting
   public LimitingHeadOffsetReader(
-      TopicStatsClient topicStatsClient, TopicPath topic, long topicPartitionCount, Ticker ticker) {
+      TopicStatsClient topicStatsClient,
+      TopicPath topic,
+      PartitionCountReader partitionCountReader,
+      Ticker ticker) {
     this.topicStatsClient = topicStatsClient;
     this.topic = topic;
-    this.topicPartitionCount = topicPartitionCount;
+    this.partitionCountReader = partitionCountReader;
     this.cachedHeadOffsets =
         Caffeine.newBuilder()
             .ticker(ticker)
@@ -82,7 +85,7 @@ public class LimitingHeadOffsetReader implements PerTopicHeadOffsetReader {
   @Override
   public PslSourceOffset getHeadOffset() {
     Set<Partition> keySet = new HashSet<>();
-    for (int i = 0; i < topicPartitionCount; i++) {
+    for (int i = 0; i < partitionCountReader.getPartitionCount(); i++) {
       keySet.add(Partition.of(i));
     }
     CompletableFuture<Map<Partition, Offset>> future = cachedHeadOffsets.getAll(keySet);
@@ -96,5 +99,6 @@ public class LimitingHeadOffsetReader implements PerTopicHeadOffsetReader {
   @Override
   public void close() {
     topicStatsClient.close();
+    partitionCountReader.close();
   }
 }

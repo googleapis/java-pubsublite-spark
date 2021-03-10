@@ -27,6 +27,8 @@ import com.google.cloud.pubsublite.Partition;
 import com.google.cloud.pubsublite.internal.CursorClient;
 import com.google.cloud.pubsublite.internal.testing.UnitTestExamples;
 import com.google.common.collect.ImmutableMap;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import org.junit.Test;
 
@@ -49,31 +51,52 @@ public class PslMicroBatchReaderTest {
           headOffsetReader,
           UnitTestExamples.exampleSubscriptionPath(),
           OPTIONS.flowControlSettings(),
-          MAX_MESSAGES_PER_BATCH,
-          2);
+          MAX_MESSAGES_PER_BATCH);
 
-  private PslSourceOffset createPslSourceOffsetTwoPartition(long offset0, long offset1) {
-    return PslSourceOffset.builder()
-        .partitionOffsetMap(
-            ImmutableMap.of(
-                Partition.of(0L), Offset.of(offset0), Partition.of(1L), Offset.of(offset1)))
-        .build();
+  private PslSourceOffset createPslSourceOffset(long... offsets) {
+    Map<Partition, Offset> map = new HashMap<>();
+    int idx = 0;
+    for (long offset : offsets) {
+      map.put(Partition.of(idx++), Offset.of(offset));
+    }
+    return PslSourceOffset.builder().partitionOffsetMap(map).build();
   }
 
-  private SparkSourceOffset createSparkSourceOffsetTwoPartition(long offset0, long offset1) {
-    return new SparkSourceOffset(
-        ImmutableMap.of(
+  private SparkSourceOffset createSparkSourceOffset(long... offsets) {
+    Map<Partition, SparkPartitionOffset> map = new HashMap<>();
+    int idx = 0;
+    for (long offset : offsets) {
+      map.put(Partition.of(idx), SparkPartitionOffset.create(Partition.of(idx), offset));
+      idx++;
+    }
+    return new SparkSourceOffset(map);
+  }
+
+  @Test
+  public void testNoCommitCursors() {
+    when(cursorClient.listPartitionCursors(UnitTestExamples.exampleSubscriptionPath()))
+        .thenReturn(ApiFutures.immediateFuture(ImmutableMap.of()));
+    when(headOffsetReader.getHeadOffset()).thenReturn(createPslSourceOffset(301L, 200L));
+    reader.setOffsetRange(Optional.empty(), Optional.empty());
+    assertThat(((SparkSourceOffset) reader.getStartOffset()).getPartitionOffsetMap())
+        .containsExactly(
             Partition.of(0L),
-            SparkPartitionOffset.create(Partition.of(0L), offset0),
+            SparkPartitionOffset.create(Partition.of(0L), -1L),
             Partition.of(1L),
-            SparkPartitionOffset.create(Partition.of(1L), offset1)));
+            SparkPartitionOffset.create(Partition.of(1L), -1L));
+    assertThat(((SparkSourceOffset) reader.getEndOffset()).getPartitionOffsetMap())
+        .containsExactly(
+            Partition.of(0L),
+            SparkPartitionOffset.create(Partition.of(0L), 300L),
+            Partition.of(1L),
+            SparkPartitionOffset.create(Partition.of(1L), 199L));
   }
 
   @Test
   public void testEmptyOffsets() {
     when(cursorClient.listPartitionCursors(UnitTestExamples.exampleSubscriptionPath()))
         .thenReturn(ApiFutures.immediateFuture(ImmutableMap.of(Partition.of(0L), Offset.of(100L))));
-    when(headOffsetReader.getHeadOffset()).thenReturn(createPslSourceOffsetTwoPartition(301L, 0L));
+    when(headOffsetReader.getHeadOffset()).thenReturn(createPslSourceOffset(301L, 0L));
     reader.setOffsetRange(Optional.empty(), Optional.empty());
     assertThat(((SparkSourceOffset) reader.getStartOffset()).getPartitionOffsetMap())
         .containsExactly(
@@ -91,8 +114,8 @@ public class PslMicroBatchReaderTest {
 
   @Test
   public void testValidOffsets() {
-    SparkSourceOffset startOffset = createSparkSourceOffsetTwoPartition(10L, 100L);
-    SparkSourceOffset endOffset = createSparkSourceOffsetTwoPartition(20L, 300L);
+    SparkSourceOffset startOffset = createSparkSourceOffset(10L, 100L);
+    SparkSourceOffset endOffset = createSparkSourceOffset(20L, 300L);
     reader.setOffsetRange(Optional.of(startOffset), Optional.of(endOffset));
     assertThat(reader.getStartOffset()).isEqualTo(startOffset);
     assertThat(reader.getEndOffset()).isEqualTo(endOffset);
@@ -108,16 +131,16 @@ public class PslMicroBatchReaderTest {
 
   @Test
   public void testCommit() {
-    SparkSourceOffset offset = createSparkSourceOffsetTwoPartition(10L, 50L);
-    PslSourceOffset expectedCommitOffset = createPslSourceOffsetTwoPartition(11L, 51L);
+    SparkSourceOffset offset = createSparkSourceOffset(10L, 50L);
+    PslSourceOffset expectedCommitOffset = createPslSourceOffset(11L, 51L);
     reader.commit(offset);
     verify(committer, times(1)).commit(eq(expectedCommitOffset));
   }
 
   @Test
   public void testPlanInputPartitionNoMessage() {
-    SparkSourceOffset startOffset = createSparkSourceOffsetTwoPartition(10L, 100L);
-    SparkSourceOffset endOffset = createSparkSourceOffsetTwoPartition(20L, 100L);
+    SparkSourceOffset startOffset = createSparkSourceOffset(10L, 100L);
+    SparkSourceOffset endOffset = createSparkSourceOffset(20L, 100L);
     reader.setOffsetRange(Optional.of(startOffset), Optional.of(endOffset));
     assertThat(reader.planInputPartitions()).hasSize(1);
   }
@@ -126,8 +149,7 @@ public class PslMicroBatchReaderTest {
   public void testMaxMessagesPerBatch() {
     when(cursorClient.listPartitionCursors(UnitTestExamples.exampleSubscriptionPath()))
         .thenReturn(ApiFutures.immediateFuture(ImmutableMap.of(Partition.of(0L), Offset.of(100L))));
-    when(headOffsetReader.getHeadOffset())
-        .thenReturn(createPslSourceOffsetTwoPartition(10000000L, 0L));
+    when(headOffsetReader.getHeadOffset()).thenReturn(createPslSourceOffset(10000000L, 0L));
     reader.setOffsetRange(Optional.empty(), Optional.empty());
     assertThat(((SparkSourceOffset) reader.getEndOffset()).getPartitionOffsetMap())
         .containsExactly(
@@ -138,5 +160,53 @@ public class PslMicroBatchReaderTest {
             SparkPartitionOffset.create(Partition.of(0L), 100L + MAX_MESSAGES_PER_BATCH - 1L),
             Partition.of(1L),
             SparkPartitionOffset.create(Partition.of(1L), -1L));
+  }
+
+  @Test
+  public void testPartitionIncreasedRetry() {
+    SparkSourceOffset startOffset = createSparkSourceOffset(10L, 100L);
+    SparkSourceOffset endOffset = createSparkSourceOffset(20L, 300L, 100L);
+    reader.setOffsetRange(Optional.of(startOffset), Optional.of(endOffset));
+    assertThat(reader.getStartOffset()).isEqualTo(startOffset);
+    assertThat(reader.getEndOffset()).isEqualTo(endOffset);
+    assertThat(reader.planInputPartitions()).hasSize(3);
+  }
+
+  @Test
+  public void testPartitionIncreasedNewQuery() {
+    when(cursorClient.listPartitionCursors(UnitTestExamples.exampleSubscriptionPath()))
+        .thenReturn(ApiFutures.immediateFuture(ImmutableMap.of(Partition.of(0L), Offset.of(100L))));
+    SparkSourceOffset endOffset = createSparkSourceOffset(301L, 200L);
+    when(headOffsetReader.getHeadOffset()).thenReturn(PslSparkUtils.toPslSourceOffset(endOffset));
+    reader.setOffsetRange(Optional.empty(), Optional.empty());
+    assertThat(reader.getStartOffset()).isEqualTo(createSparkSourceOffset(99L, -1L));
+    assertThat(reader.getEndOffset()).isEqualTo(endOffset);
+    assertThat(reader.planInputPartitions()).hasSize(2);
+  }
+
+  @Test
+  public void testPartitionIncreasedBeforeSetOffsets() {
+    SparkSourceOffset endOffset = createSparkSourceOffset(301L, 200L);
+    SparkSourceOffset startOffset = createSparkSourceOffset(100L);
+    when(headOffsetReader.getHeadOffset()).thenReturn(PslSparkUtils.toPslSourceOffset(endOffset));
+    reader.setOffsetRange(Optional.of(startOffset), Optional.empty());
+    assertThat(reader.getStartOffset()).isEqualTo(startOffset);
+    assertThat(reader.getEndOffset()).isEqualTo(endOffset);
+    assertThat(reader.planInputPartitions()).hasSize(2);
+  }
+
+  @Test
+  public void testPartitionIncreasedBetweenSetOffsetsAndPlan() {
+    SparkSourceOffset startOffset = createSparkSourceOffset(100L);
+    SparkSourceOffset endOffset = createSparkSourceOffset(301L);
+    SparkSourceOffset newEndOffset = createSparkSourceOffset(600L, 300L);
+    when(headOffsetReader.getHeadOffset()).thenReturn(PslSparkUtils.toPslSourceOffset(endOffset));
+    reader.setOffsetRange(Optional.of(startOffset), Optional.empty());
+    assertThat(reader.getStartOffset()).isEqualTo(startOffset);
+    assertThat(reader.getEndOffset()).isEqualTo(endOffset);
+    when(headOffsetReader.getHeadOffset())
+        .thenReturn(PslSparkUtils.toPslSourceOffset(newEndOffset));
+    // headOffsetReader changes between setOffsets and plan should have no effect.
+    assertThat(reader.planInputPartitions()).hasSize(1);
   }
 }

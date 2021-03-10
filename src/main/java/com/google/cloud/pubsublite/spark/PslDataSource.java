@@ -80,25 +80,25 @@ public final class PslDataSource
         PslDataSourceOptions.fromSparkDataSourceOptions(options);
     SubscriptionPath subscriptionPath = pslDataSourceOptions.subscriptionPath();
     TopicPath topicPath;
-    long topicPartitionCount;
-    try (AdminClient adminClient = pslDataSourceOptions.newAdminClient()) {
+    AdminClient adminClient = pslDataSourceOptions.newAdminClient();
+    try {
       topicPath = TopicPath.parse(adminClient.getSubscription(subscriptionPath).get().getTopic());
-      topicPartitionCount = PartitionLookupUtils.numPartitions(topicPath, adminClient);
     } catch (Throwable t) {
       throw toCanonical(t).underlying;
     }
+    PartitionCountReader partitionCountReader =
+        new CachedPartitionCountReader(adminClient, topicPath);
     return new PslMicroBatchReader(
         pslDataSourceOptions.newCursorClient(),
-        pslDataSourceOptions.newMultiPartitionCommitter(topicPartitionCount),
+        pslDataSourceOptions.newMultiPartitionCommitter(partitionCountReader.getPartitionCount()),
         pslDataSourceOptions.getSubscriberFactory(),
         new LimitingHeadOffsetReader(
             pslDataSourceOptions.newTopicStatsClient(),
             topicPath,
-            topicPartitionCount,
+            partitionCountReader,
             Ticker.systemTicker()),
         subscriptionPath,
         Objects.requireNonNull(pslDataSourceOptions.flowControlSettings()),
-        pslDataSourceOptions.maxMessagesPerBatch(),
-        topicPartitionCount);
+        pslDataSourceOptions.maxMessagesPerBatch());
   }
 }
