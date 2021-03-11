@@ -47,7 +47,7 @@ public class WordCount {
     StreamingQuery query =
         df.writeStream()
             .format("console")
-            .outputMode(OutputMode.Complete())
+            .outputMode(OutputMode.Append())
             .trigger(Trigger.ProcessingTime(1, TimeUnit.SECONDS))
             .start();
     query.awaitTermination(60 * 1000); // 60s
