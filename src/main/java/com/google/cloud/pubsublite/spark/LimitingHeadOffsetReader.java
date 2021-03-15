@@ -27,6 +27,7 @@ import com.google.cloud.pubsublite.TopicPath;
 import com.google.cloud.pubsublite.internal.TopicStatsClient;
 import com.google.cloud.pubsublite.proto.Cursor;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.flogger.GoogleLogger;
 import com.google.common.util.concurrent.MoreExecutors;
 import java.util.HashSet;
 import java.util.Map;
@@ -40,6 +41,7 @@ import java.util.concurrent.TimeUnit;
  * offsets for the topic at most once per minute.
  */
 public class LimitingHeadOffsetReader implements PerTopicHeadOffsetReader {
+  private static final GoogleLogger log = GoogleLogger.forEnclosingClass();
 
   private final TopicStatsClient topicStatsClient;
   private final TopicPath topic;
@@ -98,7 +100,15 @@ public class LimitingHeadOffsetReader implements PerTopicHeadOffsetReader {
 
   @Override
   public void close() {
-    topicStatsClient.close();
-    partitionCountReader.close();
+    try {
+      topicStatsClient.close();
+    } catch (Exception e) {
+      log.atWarning().withCause(e).log("Unable to close TopicStatsClient.");
+    }
+    try {
+      partitionCountReader.close();
+    } catch (Exception e) {
+      log.atWarning().withCause(e).log("Unable to close PartitionCountReader.");
+    }
   }
 }

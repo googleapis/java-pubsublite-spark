@@ -55,14 +55,13 @@ public final class PslDataSource
         PslDataSourceOptions.fromSparkDataSourceOptions(options);
     SubscriptionPath subscriptionPath = pslDataSourceOptions.subscriptionPath();
     TopicPath topicPath;
-    AdminClient adminClient = pslDataSourceOptions.newAdminClient();
-    try {
+    try (AdminClient adminClient = pslDataSourceOptions.newAdminClient()) {
       topicPath = TopicPath.parse(adminClient.getSubscription(subscriptionPath).get().getTopic());
     } catch (Throwable t) {
       throw toCanonical(t).underlying;
     }
     PartitionCountReader partitionCountReader =
-        new CachedPartitionCountReader(adminClient, topicPath);
+        new CachedPartitionCountReader(pslDataSourceOptions.newAdminClient(), topicPath);
     return new PslContinuousReader(
         pslDataSourceOptions.newCursorClient(),
         pslDataSourceOptions.newMultiPartitionCommitter(partitionCountReader.getPartitionCount()),
@@ -84,14 +83,13 @@ public final class PslDataSource
         PslDataSourceOptions.fromSparkDataSourceOptions(options);
     SubscriptionPath subscriptionPath = pslDataSourceOptions.subscriptionPath();
     TopicPath topicPath;
-    AdminClient adminClient = pslDataSourceOptions.newAdminClient();
-    try {
+    try (AdminClient adminClient = pslDataSourceOptions.newAdminClient()) {
       topicPath = TopicPath.parse(adminClient.getSubscription(subscriptionPath).get().getTopic());
     } catch (Throwable t) {
       throw toCanonical(t).underlying;
     }
     PartitionCountReader partitionCountReader =
-        new CachedPartitionCountReader(adminClient, topicPath);
+        new CachedPartitionCountReader(pslDataSourceOptions.newAdminClient(), topicPath);
     return new PslMicroBatchReader(
         pslDataSourceOptions.newCursorClient(),
         pslDataSourceOptions.newMultiPartitionCommitter(partitionCountReader.getPartitionCount()),

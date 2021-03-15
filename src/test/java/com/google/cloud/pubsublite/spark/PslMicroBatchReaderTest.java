@@ -16,6 +16,8 @@
 
 package com.google.cloud.pubsublite.spark;
 
+import static com.google.cloud.pubsublite.spark.TestingUtils.createPslSourceOffset;
+import static com.google.cloud.pubsublite.spark.TestingUtils.createSparkSourceOffset;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -27,8 +29,6 @@ import com.google.cloud.pubsublite.Partition;
 import com.google.cloud.pubsublite.internal.CursorClient;
 import com.google.cloud.pubsublite.internal.testing.UnitTestExamples;
 import com.google.common.collect.ImmutableMap;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import org.junit.Test;
 
@@ -52,25 +52,6 @@ public class PslMicroBatchReaderTest {
           UnitTestExamples.exampleSubscriptionPath(),
           OPTIONS.flowControlSettings(),
           MAX_MESSAGES_PER_BATCH);
-
-  private PslSourceOffset createPslSourceOffset(long... offsets) {
-    Map<Partition, Offset> map = new HashMap<>();
-    int idx = 0;
-    for (long offset : offsets) {
-      map.put(Partition.of(idx++), Offset.of(offset));
-    }
-    return PslSourceOffset.builder().partitionOffsetMap(map).build();
-  }
-
-  private SparkSourceOffset createSparkSourceOffset(long... offsets) {
-    Map<Partition, SparkPartitionOffset> map = new HashMap<>();
-    int idx = 0;
-    for (long offset : offsets) {
-      map.put(Partition.of(idx), SparkPartitionOffset.create(Partition.of(idx), offset));
-      idx++;
-    }
-    return new SparkSourceOffset(map);
-  }
 
   @Test
   public void testNoCommitCursors() {
