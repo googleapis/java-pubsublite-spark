@@ -29,7 +29,6 @@ import com.google.cloud.pubsublite.proto.Cursor;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.flogger.GoogleLogger;
 import com.google.common.util.concurrent.MoreExecutors;
-
 import java.io.Closeable;
 import java.util.HashSet;
 import java.util.Map;
