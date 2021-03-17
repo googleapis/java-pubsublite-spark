@@ -33,7 +33,7 @@ public class CachedPartitionCountReader implements PartitionCountReader {
     this.adminClient = adminClient;
     this.supplier =
         Suppliers.memoizeWithExpiration(
-            () -> PartitionLookupUtils.numPartitions(topicPath, adminClient), 10, TimeUnit.SECONDS);
+            () -> PartitionLookupUtils.numPartitions(topicPath, adminClient), 1, TimeUnit.MINUTES);
   }
 
   @Override

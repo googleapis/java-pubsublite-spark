@@ -29,6 +29,8 @@ import com.google.cloud.pubsublite.proto.Cursor;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.flogger.GoogleLogger;
 import com.google.common.util.concurrent.MoreExecutors;
+
+import java.io.Closeable;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -100,15 +102,10 @@ public class LimitingHeadOffsetReader implements PerTopicHeadOffsetReader {
 
   @Override
   public void close() {
-    try {
-      topicStatsClient.close();
+    try (AutoCloseable a = topicStatsClient;
+        Closeable b = partitionCountReader) {
     } catch (Exception e) {
-      log.atWarning().withCause(e).log("Unable to close TopicStatsClient.");
-    }
-    try {
-      partitionCountReader.close();
-    } catch (Exception e) {
-      log.atWarning().withCause(e).log("Unable to close PartitionCountReader.");
+      log.atWarning().withCause(e).log("Unable to close LimitingHeadOffsetReader.");
     }
   }
 }
