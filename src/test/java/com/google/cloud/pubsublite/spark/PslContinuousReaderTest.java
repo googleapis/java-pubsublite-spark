@@ -38,6 +38,14 @@ public class PslContinuousReaderTest {
   private final MultiPartitionCommitter committer = mock(MultiPartitionCommitter.class);
   private final PartitionSubscriberFactory partitionSubscriberFactory =
       mock(PartitionSubscriberFactory.class);
+  private final PartitionCountReader partitionCountReader;
+
+  {
+    PartitionCountReader mock = mock(PartitionCountReader.class);
+    when(mock.getPartitionCount()).thenReturn(2);
+    partitionCountReader = mock;
+  }
+
   private final PslContinuousReader reader =
       new PslContinuousReader(
           cursorClient,
@@ -45,7 +53,7 @@ public class PslContinuousReaderTest {
           partitionSubscriberFactory,
           UnitTestExamples.exampleSubscriptionPath(),
           OPTIONS.flowControlSettings(),
-          2);
+          partitionCountReader);
 
   @Test
   public void testEmptyStartOffset() {
@@ -121,5 +129,11 @@ public class PslContinuousReaderTest {
             .build();
     reader.commit(offset);
     verify(committer, times(1)).commit(eq(expectedCommitOffset));
+  }
+
+  @Test
+  public void testPartitionIncrease() {
+    when(partitionCountReader.getPartitionCount()).thenReturn(4);
+    assertThat(reader.needsReconfiguration()).isTrue();
   }
 }

@@ -21,7 +21,6 @@ import static com.google.cloud.pubsublite.internal.ExtractStatus.toCanonical;
 import com.github.benmanes.caffeine.cache.Ticker;
 import com.google.auto.service.AutoService;
 import com.google.cloud.pubsublite.AdminClient;
-import com.google.cloud.pubsublite.PartitionLookupUtils;
 import com.google.cloud.pubsublite.SubscriptionPath;
 import com.google.cloud.pubsublite.TopicPath;
 import java.util.Objects;
@@ -55,17 +54,21 @@ public final class PslDataSource
     PslDataSourceOptions pslDataSourceOptions =
         PslDataSourceOptions.fromSparkDataSourceOptions(options);
     SubscriptionPath subscriptionPath = pslDataSourceOptions.subscriptionPath();
-    long topicPartitionCount;
+    TopicPath topicPath;
     try (AdminClient adminClient = pslDataSourceOptions.newAdminClient()) {
-      topicPartitionCount = PartitionLookupUtils.numPartitions(subscriptionPath, adminClient);
+      topicPath = TopicPath.parse(adminClient.getSubscription(subscriptionPath).get().getTopic());
+    } catch (Throwable t) {
+      throw toCanonical(t).underlying;
     }
+    PartitionCountReader partitionCountReader =
+        new CachedPartitionCountReader(pslDataSourceOptions.newAdminClient(), topicPath);
     return new PslContinuousReader(
         pslDataSourceOptions.newCursorClient(),
-        pslDataSourceOptions.newMultiPartitionCommitter(topicPartitionCount),
+        pslDataSourceOptions.newMultiPartitionCommitter(partitionCountReader.getPartitionCount()),
         pslDataSourceOptions.getSubscriberFactory(),
         subscriptionPath,
         Objects.requireNonNull(pslDataSourceOptions.flowControlSettings()),
-        topicPartitionCount);
+        partitionCountReader);
   }
 
   @Override
@@ -80,25 +83,24 @@ public final class PslDataSource
         PslDataSourceOptions.fromSparkDataSourceOptions(options);
     SubscriptionPath subscriptionPath = pslDataSourceOptions.subscriptionPath();
     TopicPath topicPath;
-    long topicPartitionCount;
     try (AdminClient adminClient = pslDataSourceOptions.newAdminClient()) {
       topicPath = TopicPath.parse(adminClient.getSubscription(subscriptionPath).get().getTopic());
-      topicPartitionCount = PartitionLookupUtils.numPartitions(topicPath, adminClient);
     } catch (Throwable t) {
       throw toCanonical(t).underlying;
     }
+    PartitionCountReader partitionCountReader =
+        new CachedPartitionCountReader(pslDataSourceOptions.newAdminClient(), topicPath);
     return new PslMicroBatchReader(
         pslDataSourceOptions.newCursorClient(),
-        pslDataSourceOptions.newMultiPartitionCommitter(topicPartitionCount),
+        pslDataSourceOptions.newMultiPartitionCommitter(partitionCountReader.getPartitionCount()),
         pslDataSourceOptions.getSubscriberFactory(),
         new LimitingHeadOffsetReader(
             pslDataSourceOptions.newTopicStatsClient(),
             topicPath,
-            topicPartitionCount,
+            partitionCountReader,
             Ticker.systemTicker()),
         subscriptionPath,
         Objects.requireNonNull(pslDataSourceOptions.flowControlSettings()),
-        pslDataSourceOptions.maxMessagesPerBatch(),
-        topicPartitionCount);
+        pslDataSourceOptions.maxMessagesPerBatch());
   }
 }

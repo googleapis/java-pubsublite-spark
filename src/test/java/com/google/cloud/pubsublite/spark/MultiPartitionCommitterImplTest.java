@@ -16,75 +16,124 @@
 
 package com.google.cloud.pubsublite.spark;
 
+import static com.google.cloud.pubsublite.spark.TestingUtils.createPslSourceOffset;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import com.google.api.core.SettableApiFuture;
 import com.google.cloud.pubsublite.*;
 import com.google.cloud.pubsublite.internal.wire.Committer;
-import com.google.common.collect.ImmutableMap;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 public class MultiPartitionCommitterImplTest {
 
-  @Test
-  public void testCommit() {
-    Committer committer1 = mock(Committer.class);
-    Committer committer2 = mock(Committer.class);
-    when(committer1.startAsync())
-        .thenReturn(committer1)
-        .thenThrow(new IllegalStateException("should only init once"));
-    when(committer2.startAsync())
-        .thenReturn(committer2)
-        .thenThrow(new IllegalStateException("should only init once"));
+  private Runnable task;
+  private List<Committer> committerList;
+
+  private MultiPartitionCommitterImpl createCommitter(int initialPartitions, int available) {
+    committerList = new ArrayList<>();
+    for (int i = 0; i < available; i++) {
+      Committer committer = mock(Committer.class);
+      when(committer.startAsync())
+          .thenReturn(committer)
+          .thenThrow(new IllegalStateException("should only init once"));
+      when(committer.commitOffset(eq(Offset.of(10L)))).thenReturn(SettableApiFuture.create());
+      committerList.add(committer);
+    }
+    ScheduledExecutorService mockExecutor = mock(ScheduledExecutorService.class);
+    ArgumentCaptor<Runnable> taskCaptor = ArgumentCaptor.forClass(Runnable.class);
+    when(mockExecutor.scheduleWithFixedDelay(
+            taskCaptor.capture(), anyLong(), anyLong(), any(TimeUnit.class)))
+        .thenReturn(null);
     MultiPartitionCommitterImpl multiCommitter =
         new MultiPartitionCommitterImpl(
-            2,
-            (p) -> {
-              if (p.value() == 0L) {
-                return committer1;
-              } else {
-                return committer2;
-              }
-            });
-    verify(committer1, times(1)).startAsync();
-    verify(committer2, times(1)).startAsync();
+            initialPartitions, p -> committerList.get((int) p.value()), mockExecutor);
+    task = taskCaptor.getValue();
+    return multiCommitter;
+  }
 
-    PslSourceOffset offset =
-        PslSourceOffset.builder()
-            .partitionOffsetMap(
-                ImmutableMap.of(
-                    Partition.of(0), Offset.of(10L),
-                    Partition.of(1), Offset.of(8L)))
-            .build();
+  private MultiPartitionCommitterImpl createCommitter(int initialPartitions) {
+    return createCommitter(initialPartitions, initialPartitions);
+  }
+
+  @Test
+  public void testCommit() {
+    MultiPartitionCommitterImpl multiCommitter = createCommitter(2);
+
+    verify(committerList.get(0)).startAsync();
+    verify(committerList.get(1)).startAsync();
+
+    PslSourceOffset offset = createPslSourceOffset(10L, 8L);
     SettableApiFuture<Void> future1 = SettableApiFuture.create();
     SettableApiFuture<Void> future2 = SettableApiFuture.create();
-    when(committer1.commitOffset(eq(Offset.of(10L)))).thenReturn(future1);
-    when(committer2.commitOffset(eq(Offset.of(8L)))).thenReturn(future2);
+    when(committerList.get(0).commitOffset(eq(Offset.of(10L)))).thenReturn(future1);
+    when(committerList.get(1).commitOffset(eq(Offset.of(8L)))).thenReturn(future2);
     multiCommitter.commit(offset);
-    verify(committer1, times(1)).commitOffset(eq(Offset.of(10L)));
-    verify(committer2, times(1)).commitOffset(eq(Offset.of(8L)));
+    verify(committerList.get(0)).commitOffset(eq(Offset.of(10L)));
+    verify(committerList.get(1)).commitOffset(eq(Offset.of(8L)));
   }
 
   @Test
   public void testClose() {
-    Committer committer = mock(Committer.class);
-    when(committer.startAsync())
-        .thenReturn(committer)
-        .thenThrow(new IllegalStateException("should only init once"));
-    MultiPartitionCommitterImpl multiCommitter =
-        new MultiPartitionCommitterImpl(1, (p) -> committer);
+    MultiPartitionCommitterImpl multiCommitter = createCommitter(1);
 
-    PslSourceOffset offset =
-        PslSourceOffset.builder()
-            .partitionOffsetMap(ImmutableMap.of(Partition.of(0), Offset.of(10L)))
-            .build();
+    PslSourceOffset offset = createPslSourceOffset(10L);
     SettableApiFuture<Void> future1 = SettableApiFuture.create();
-    when(committer.commitOffset(eq(Offset.of(10L)))).thenReturn(future1);
-    when(committer.stopAsync()).thenReturn(committer);
+    when(committerList.get(0).commitOffset(eq(Offset.of(10L)))).thenReturn(future1);
     multiCommitter.commit(offset);
+    when(committerList.get(0).stopAsync()).thenReturn(committerList.get(0));
 
     multiCommitter.close();
-    verify(committer, times(1)).stopAsync();
+    verify(committerList.get(0)).stopAsync();
+  }
+
+  @Test
+  public void testPartitionChange() {
+    // Creates committer with 2 partitions
+    MultiPartitionCommitterImpl multiCommitter = createCommitter(2, 4);
+    for (int i = 0; i < 2; i++) {
+      verify(committerList.get(i)).startAsync();
+    }
+    for (int i = 2; i < 4; i++) {
+      verify(committerList.get(i), times(0)).startAsync();
+    }
+
+    // Partitions increased to 4.
+    multiCommitter.commit(createPslSourceOffset(10L, 10L, 10L, 10L));
+    for (int i = 0; i < 2; i++) {
+      verify(committerList.get(i)).commitOffset(eq(Offset.of(10L)));
+    }
+    for (int i = 2; i < 4; i++) {
+      verify(committerList.get(i)).startAsync();
+      verify(committerList.get(i)).commitOffset(eq(Offset.of(10L)));
+    }
+
+    // Partitions decreased to 2
+    multiCommitter.commit(createPslSourceOffset(10L, 10L));
+    for (int i = 0; i < 2; i++) {
+      verify(committerList.get(i), times(2)).commitOffset(eq(Offset.of(10L)));
+    }
+    task.run();
+    for (int i = 2; i < 4; i++) {
+      verify(committerList.get(i)).stopAsync();
+    }
+  }
+
+  @Test
+  public void testDelayedPartitionRemoval() {
+    // Creates committer with 4 partitions, then decrease to 2, then increase to 3.
+    MultiPartitionCommitterImpl multiCommitter = createCommitter(4);
+    multiCommitter.commit(createPslSourceOffset(10L, 10L));
+    multiCommitter.commit(createPslSourceOffset(10L, 10L, 10L));
+    task.run();
+    verify(committerList.get(2)).startAsync();
+    verify(committerList.get(2), times(0)).stopAsync();
+    verify(committerList.get(3)).startAsync();
+    verify(committerList.get(3)).stopAsync();
   }
 }

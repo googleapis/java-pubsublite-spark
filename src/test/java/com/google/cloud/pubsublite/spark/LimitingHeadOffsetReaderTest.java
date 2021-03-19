@@ -38,12 +38,15 @@ public class LimitingHeadOffsetReaderTest {
 
   private final FakeTicker ticker = new FakeTicker();
   private final TopicStatsClient topicStatsClient = mock(TopicStatsClient.class);
+  private final PartitionCountReader partitionReader = mock(PartitionCountReader.class);
   private final LimitingHeadOffsetReader reader =
       new LimitingHeadOffsetReader(
-          topicStatsClient, UnitTestExamples.exampleTopicPath(), 1, ticker::read);
+          topicStatsClient, UnitTestExamples.exampleTopicPath(), partitionReader, ticker::read);
 
   @Test
   public void testRead() {
+    when(partitionReader.getPartitionCount()).thenReturn(1);
+
     Cursor cursor1 = Cursor.newBuilder().setOffset(10).build();
     Cursor cursor2 = Cursor.newBuilder().setOffset(13).build();
     when(topicStatsClient.computeHeadCursor(UnitTestExamples.exampleTopicPath(), Partition.of(0)))
@@ -65,5 +68,33 @@ public class LimitingHeadOffsetReaderTest {
     assertThat(reader.getHeadOffset().partitionOffsetMap())
         .containsExactly(Partition.of(0), Offset.of(cursor2.getOffset()));
     verify(topicStatsClient).computeHeadCursor(any(), any());
+  }
+
+  @Test
+  public void testPartitionChange() {
+    when(partitionReader.getPartitionCount()).thenReturn(1);
+
+    Cursor cursor1 = Cursor.newBuilder().setOffset(10).build();
+    when(topicStatsClient.computeHeadCursor(UnitTestExamples.exampleTopicPath(), Partition.of(0)))
+        .thenReturn(ApiFutures.immediateFuture(cursor1));
+    assertThat(reader.getHeadOffset().partitionOffsetMap())
+        .containsExactly(Partition.of(0), Offset.of(10));
+    verify(topicStatsClient).computeHeadCursor(any(), any());
+
+    when(partitionReader.getPartitionCount()).thenReturn(3);
+
+    for (int i = 0; i < 3; i++) {
+      when(topicStatsClient.computeHeadCursor(UnitTestExamples.exampleTopicPath(), Partition.of(i)))
+          .thenReturn(ApiFutures.immediateFuture(cursor1));
+    }
+    assertThat(reader.getHeadOffset().partitionOffsetMap())
+        .containsExactly(
+            Partition.of(0),
+            Offset.of(10),
+            Partition.of(1),
+            Offset.of(10),
+            Partition.of(2),
+            Offset.of(10));
+    verify(topicStatsClient, times(3)).computeHeadCursor(any(), any());
   }
 }
