@@ -19,11 +19,15 @@ package com.google.cloud.pubsublite.spark;
 import static com.google.common.base.Preconditions.checkArgument;
 import static scala.collection.JavaConverters.asScalaBufferConverter;
 
+import com.google.cloud.pubsublite.Message;
 import com.google.cloud.pubsublite.Offset;
 import com.google.cloud.pubsublite.Partition;
 import com.google.cloud.pubsublite.SequencedMessage;
 import com.google.cloud.pubsublite.SubscriptionPath;
 import com.google.cloud.pubsublite.internal.CursorClient;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.math.LongMath;
 import com.google.protobuf.ByteString;
@@ -34,15 +38,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.apache.spark.sql.catalyst.InternalRow;
 import org.apache.spark.sql.catalyst.util.ArrayBasedMapData;
+import org.apache.spark.sql.catalyst.util.ArrayData;
 import org.apache.spark.sql.catalyst.util.GenericArrayData;
+import org.apache.spark.sql.catalyst.util.MapData;
+import org.apache.spark.sql.types.DataType;
+import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.StructType;
 import org.apache.spark.unsafe.types.ByteArray;
 import org.apache.spark.unsafe.types.UTF8String;
+import scala.compat.java8.functionConverterImpls.FromJavaBiConsumer;
 
 public class PslSparkUtils {
-  private static ArrayBasedMapData convertAttributesToSparkMap(
+  @VisibleForTesting
+  public static ArrayBasedMapData convertAttributesToSparkMap(
       ListMultimap<String, ByteString> attributeMap) {
 
     List<UTF8String> keyList = new ArrayList<>();
@@ -81,6 +93,69 @@ public class PslSparkUtils {
                     : null,
                 convertAttributesToSparkMap(msg.message().attributes())));
     return InternalRow.apply(asScalaBufferConverter(list).asScala());
+  }
+
+  private static void extractVal(
+      StructType inputSchema,
+      InternalRow row,
+      String fieldName,
+      DataType expectedDataType,
+      Consumer<Object> consumer) {
+    if (!inputSchema.getFieldIndex(fieldName).isEmpty()) {
+      Integer idx = (Integer) inputSchema.getFieldIndex(fieldName).get();
+      try {
+        consumer.accept(row.get(idx, expectedDataType));
+      } catch (ClassCastException e) {
+        // This means the field has a wrong class type.
+      }
+    }
+  }
+
+  public static Message toPubSubMessage(StructType inputSchema, InternalRow row) {
+    Message.Builder builder = Message.builder();
+    extractVal(
+        inputSchema,
+        row,
+        "key",
+        DataTypes.BinaryType,
+        o -> builder.setKey(ByteString.copyFrom((byte[]) o)));
+    extractVal(
+        inputSchema,
+        row,
+        "data",
+        DataTypes.BinaryType,
+        o -> builder.setData(ByteString.copyFrom((byte[]) o)));
+    extractVal(
+        inputSchema,
+        row,
+        "event_timestamp",
+        DataTypes.TimestampType,
+        o -> builder.setEventTime(Timestamps.fromMicros((long) o)));
+    extractVal(
+        inputSchema,
+        row,
+        "attributes",
+        Constants.ATTRIBUTES_DATATYPE,
+        o -> {
+          MapData mapData = (MapData) o;
+          ListMultimap<String, ByteString> attributeMap = ArrayListMultimap.create();
+          mapData.foreach(
+              DataTypes.StringType,
+              Constants.ATTRIBUTES_PER_KEY_DATATYPE,
+              new FromJavaBiConsumer<>(
+                  (k, v) -> {
+                    String key = ((UTF8String) k).toString();
+                    ArrayData values = (ArrayData) v;
+                    values.foreach(
+                        DataTypes.BinaryType,
+                        new FromJavaBiConsumer<>(
+                            (idx, a) -> {
+                              attributeMap.put(key, ByteString.copyFrom((byte[]) a));
+                            }));
+                  }));
+          builder.setAttributes(ImmutableListMultimap.copyOf(attributeMap));
+        });
+    return builder.build();
   }
 
   public static SparkSourceOffset toSparkSourceOffset(PslSourceOffset pslSourceOffset) {

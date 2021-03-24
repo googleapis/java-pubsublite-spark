@@ -47,7 +47,7 @@ import javax.annotation.Nullable;
 import org.apache.spark.sql.sources.v2.DataSourceOptions;
 
 @AutoValue
-public abstract class PslDataSourceOptions implements Serializable {
+public abstract class PslReadDataSourceOptions implements Serializable {
   private static final long serialVersionUID = 2680059304693561607L;
 
   @Nullable
@@ -60,7 +60,7 @@ public abstract class PslDataSourceOptions implements Serializable {
   public abstract long maxMessagesPerBatch();
 
   public static Builder builder() {
-    return new AutoValue_PslDataSourceOptions.Builder()
+    return new AutoValue_PslReadDataSourceOptions.Builder()
         .setCredentialsKey(null)
         .setMaxMessagesPerBatch(Constants.DEFAULT_MAX_MESSAGES_PER_BATCH)
         .setFlowControlSettings(
@@ -70,7 +70,7 @@ public abstract class PslDataSourceOptions implements Serializable {
                 .build());
   }
 
-  public static PslDataSourceOptions fromSparkDataSourceOptions(DataSourceOptions options) {
+  public static PslReadDataSourceOptions fromSparkDataSourceOptions(DataSourceOptions options) {
     if (!options.get(Constants.SUBSCRIPTION_CONFIG_KEY).isPresent()) {
       throw new IllegalArgumentException(Constants.SUBSCRIPTION_CONFIG_KEY + " is required.");
     }
@@ -115,7 +115,7 @@ public abstract class PslDataSourceOptions implements Serializable {
 
     public abstract Builder setFlowControlSettings(FlowControlSettings flowControlSettings);
 
-    public abstract PslDataSourceOptions build();
+    public abstract PslReadDataSourceOptions build();
   }
 
   MultiPartitionCommitter newMultiPartitionCommitter(long topicPartitionCount) {

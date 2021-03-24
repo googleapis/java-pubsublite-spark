@@ -28,7 +28,15 @@ public class PslCredentialsProvider implements CredentialsProvider {
 
   private final Credentials credentials;
 
-  public PslCredentialsProvider(PslDataSourceOptions options) {
+  public PslCredentialsProvider(PslReadDataSourceOptions options) {
+    if (options.credentialsKey() != null) {
+      this.credentials = createCredentialsFromKey(options.credentialsKey());
+    } else {
+      this.credentials = createDefaultCredentials();
+    }
+  }
+
+  public PslCredentialsProvider(PslWriteDataSourceOptions options) {
     if (options.credentialsKey() != null) {
       this.credentials = createCredentialsFromKey(options.credentialsKey());
     } else {

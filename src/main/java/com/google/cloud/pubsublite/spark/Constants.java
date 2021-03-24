@@ -17,7 +17,9 @@
 package com.google.cloud.pubsublite.spark;
 
 import com.google.cloud.pubsublite.internal.wire.PubsubContext;
+import org.apache.spark.sql.types.ArrayType;
 import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.MapType;
 import org.apache.spark.sql.types.Metadata;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
@@ -26,6 +28,10 @@ public class Constants {
   public static long DEFAULT_BYTES_OUTSTANDING = 50_000_000;
   public static long DEFAULT_MESSAGES_OUTSTANDING = Long.MAX_VALUE;
   public static long DEFAULT_MAX_MESSAGES_PER_BATCH = Long.MAX_VALUE;
+  public static ArrayType ATTRIBUTES_PER_KEY_DATATYPE =
+      DataTypes.createArrayType(DataTypes.BinaryType);
+  public static MapType ATTRIBUTES_DATATYPE =
+      DataTypes.createMapType(DataTypes.StringType, ATTRIBUTES_PER_KEY_DATATYPE);
   public static StructType DEFAULT_SCHEMA =
       new StructType(
           new StructField[] {
@@ -36,12 +42,7 @@ public class Constants {
             new StructField("data", DataTypes.BinaryType, false, Metadata.empty()),
             new StructField("publish_timestamp", DataTypes.TimestampType, false, Metadata.empty()),
             new StructField("event_timestamp", DataTypes.TimestampType, true, Metadata.empty()),
-            new StructField(
-                "attributes",
-                DataTypes.createMapType(
-                    DataTypes.StringType, DataTypes.createArrayType(DataTypes.BinaryType)),
-                true,
-                Metadata.empty())
+            new StructField("attributes", ATTRIBUTES_DATATYPE, true, Metadata.empty())
           });
 
   public static final PubsubContext.Framework FRAMEWORK = PubsubContext.Framework.of("SPARK");
@@ -52,6 +53,7 @@ public class Constants {
       "pubsublite.flowcontrol.byteoutstandingperpartition";
   public static String MESSAGES_OUTSTANDING_CONFIG_KEY =
       "pubsublite.flowcontrol.messageoutstandingperparition";
+  public static String TOPIC_CONFIG_KEY = "pubsublite.topic";
   public static String SUBSCRIPTION_CONFIG_KEY = "pubsublite.subscription";
   public static String CREDENTIALS_KEY_CONFIG_KEY = "gcp.credentials.key";
 }

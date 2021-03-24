@@ -17,6 +17,7 @@
 package com.google.cloud.pubsublite.spark;
 
 import static com.google.common.truth.Truth.assertThat;
+import static scala.collection.JavaConverters.asScalaBufferConverter;
 
 import com.google.cloud.pubsublite.Message;
 import com.google.cloud.pubsublite.Offset;
@@ -29,10 +30,18 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.Timestamps;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import org.apache.spark.sql.catalyst.InternalRow;
 import org.apache.spark.sql.catalyst.util.ArrayData;
 import org.apache.spark.sql.catalyst.util.GenericArrayData;
 import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.Metadata;
+import org.apache.spark.sql.types.StructField;
+import org.apache.spark.sql.types.StructType;
+import org.apache.spark.unsafe.types.ByteArray;
 import org.junit.Test;
 
 public class PslSparkUtilsTest {
@@ -104,5 +113,72 @@ public class PslSparkUtilsTest {
         PslPartitionOffset.builder().partition(Partition.of(1L)).offset(Offset.of(11L)).build();
     assertThat(PslSparkUtils.toPslPartitionOffset(sparkPartitionOffset))
         .isEqualTo(pslPartitionOffset);
+  }
+
+  @Test
+  public void testToPubSubMessage() {
+    Timestamp eventTimestamp = Timestamp.newBuilder().setSeconds(10000000L).build();
+    Message message =
+        Message.builder()
+            .setKey(ByteString.copyFromUtf8("key"))
+            .setData(ByteString.copyFromUtf8("data"))
+            .setEventTime(eventTimestamp)
+            .setAttributes(
+                ImmutableListMultimap.of(
+                    "key1", ByteString.copyFromUtf8("val1"),
+                    "key1", ByteString.copyFromUtf8("val2"),
+                    "key2", ByteString.copyFromUtf8("val3")))
+            .build();
+    List<Object> list =
+        new ArrayList<>(
+            Arrays.asList(
+                ByteArray.concat(message.key().toByteArray()),
+                ByteArray.concat(message.data().toByteArray()),
+                PslSparkUtils.convertAttributesToSparkMap(message.attributes()),
+                Timestamps.toMicros(message.eventTime().get()),
+                "abc".getBytes()));
+    InternalRow row = InternalRow.apply(asScalaBufferConverter(list).asScala());
+
+    StructType structType =
+        new StructType(
+            new StructField[] {
+              new StructField("key", DataTypes.BinaryType, false, Metadata.empty()),
+              new StructField("data", DataTypes.BinaryType, false, Metadata.empty()),
+              new StructField("attributes", Constants.ATTRIBUTES_DATATYPE, true, Metadata.empty()),
+              new StructField("event_timestamp", DataTypes.TimestampType, true, Metadata.empty()),
+              new StructField("random_extra_field", DataTypes.BinaryType, false, Metadata.empty())
+            });
+
+    assertThat(message).isEqualTo(PslSparkUtils.toPubSubMessage(structType, row));
+  }
+
+  @Test
+  public void testToPubSubMessageTypeMismatch() {
+    StructType structType =
+        new StructType(
+            new StructField[] {
+              new StructField("key", DataTypes.TimestampType, false, Metadata.empty())
+            });
+    List<Object> list = Collections.singletonList(/*Timestamp=*/ 100000L);
+    InternalRow row = InternalRow.apply(asScalaBufferConverter(list).asScala());
+
+    Message message = PslSparkUtils.toPubSubMessage(structType, row);
+    assertThat(message).isEqualTo(Message.builder().build());
+  }
+
+  @Test
+  public void testToPubSubMessageLongForEventTimestamp() {
+    Message expectedMsg = Message.builder().setEventTime(Timestamps.fromMicros(100000L)).build();
+
+    StructType structType =
+        new StructType(
+            new StructField[] {
+              new StructField("event_timestamp", DataTypes.LongType, false, Metadata.empty())
+            });
+    List<Object> list = Collections.singletonList(/*Timestamp=*/ 100000L);
+    InternalRow row = InternalRow.apply(asScalaBufferConverter(list).asScala());
+
+    Message message = PslSparkUtils.toPubSubMessage(structType, row);
+    assertThat(message).isEqualTo(expectedMsg);
   }
 }

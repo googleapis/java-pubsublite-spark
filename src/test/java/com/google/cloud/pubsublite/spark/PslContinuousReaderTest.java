@@ -30,8 +30,8 @@ import org.junit.Test;
 
 public class PslContinuousReaderTest {
 
-  private static final PslDataSourceOptions OPTIONS =
-      PslDataSourceOptions.builder()
+  private static final PslReadDataSourceOptions OPTIONS =
+      PslReadDataSourceOptions.builder()
           .setSubscriptionPath(UnitTestExamples.exampleSubscriptionPath())
           .build();
   private final CursorClient cursorClient = mock(CursorClient.class);

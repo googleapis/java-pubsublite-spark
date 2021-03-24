@@ -22,7 +22,7 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.spark.sql.sources.v2.DataSourceOptions;
 import org.junit.Test;
 
-public class PslDataSourceOptionsTest {
+public class PslReadDataSourceOptionsTest {
 
   @Test
   public void testInvalidSubPath() {
@@ -30,6 +30,6 @@ public class PslDataSourceOptionsTest {
         new DataSourceOptions(ImmutableMap.of(Constants.SUBSCRIPTION_CONFIG_KEY, "invalid/path"));
     assertThrows(
         IllegalArgumentException.class,
-        () -> PslDataSourceOptions.fromSparkDataSourceOptions(options));
+        () -> PslReadDataSourceOptions.fromSparkDataSourceOptions(options));
   }
 }
