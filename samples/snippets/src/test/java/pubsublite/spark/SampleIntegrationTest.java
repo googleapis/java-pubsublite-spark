@@ -165,9 +165,30 @@ public class SampleIntegrationTest {
   private void verifyWordCountResult() {
     List<PubsubMessage> results = subscriberExample(cloudRegion.value(), cloudZone.zoneId(),
             projectNumber.value(), subscriptionNameResult.value());
-    Map<String, Integer> expected = ImmutableMap.of(
-            "the", 24, "of", 16, "and", 14
-    );
+    Map<String, Integer> expected = new HashMap<String, Integer>() {
+      {
+        put("the", 24);
+        put("of", 16);
+        put("and", 14);
+        put("i", 13);
+        put("my", 10);
+        put("a", 6);
+        put("in", 5);
+        put("that", 5);
+        put("soul", 4);
+        put("with", 4);
+        put("as", 3);
+        put("feel", 3);
+        put("like", 3);
+        put("me", 3);
+        put("so", 3);
+        put("then", 3);
+        put("us", 3);
+        put("when", 3);
+        put("which", 3);
+        put("am", 2);
+      }
+    };
     Map<String, Integer> actual = new HashMap<>();
     for (PubsubMessage m : results) {
       String[] pair = m.getData().toStringUtf8().split("_");
