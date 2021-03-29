@@ -18,7 +18,10 @@ package pubsublite.spark;
 
 import static com.google.common.truth.Truth.assertThat;
 import static pubsublite.spark.AdminUtils.createSubscriptionExample;
+import static pubsublite.spark.AdminUtils.createTopicExample;
 import static pubsublite.spark.AdminUtils.deleteSubscriptionExample;
+import static pubsublite.spark.AdminUtils.deleteTopicExample;
+import static pubsublite.spark.AdminUtils.subscriberExample;
 
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.dataproc.v1.Job;
@@ -34,12 +37,13 @@ import com.google.cloud.pubsublite.ProjectNumber;
 import com.google.cloud.pubsublite.SubscriptionName;
 import com.google.cloud.pubsublite.SubscriptionPath;
 import com.google.cloud.pubsublite.TopicName;
-import com.google.cloud.storage.Blob;
+import com.google.cloud.pubsublite.TopicPath;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.io.BufferedReader;
@@ -47,11 +51,13 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import com.google.pubsub.v1.PubsubMessage;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.shared.invoker.DefaultInvocationRequest;
 import org.apache.maven.shared.invoker.DefaultInvoker;
@@ -82,9 +88,12 @@ public class SampleIntegrationTest {
   private CloudZone cloudZone;
   private ProjectNumber projectNumber;
   private ProjectId projectId;
-  private TopicName topicId;
-  private SubscriptionName subscriptionName;
-  private SubscriptionPath subscriptionPath;
+  private TopicName topicIdRaw;
+  private SubscriptionName subscriptionNameRaw;
+  private SubscriptionPath subscriptionPathRaw;
+  private TopicName topicIdResult;
+  private SubscriptionName subscriptionNameResult;
+  private SubscriptionPath subscriptionPathResult;
   private String clusterName;
   private String bucketName;
   private String workingDir;
@@ -143,7 +152,7 @@ public class SampleIntegrationTest {
               .addJarFileUris(String.format("gs://%s/%s", bucketName, sampleJarNameInGCS))
               .addJarFileUris(String.format("gs://%s/%s", bucketName, connectorJarNameInGCS))
               .setMainClass("pubsublite.spark.WordCount")
-              .addArgs(subscriptionPath.toString())
+              .addArgs(subscriptionPathRaw.toString())
               .build();
       Job job = Job.newBuilder().setPlacement(jobPlacement).setSparkJob(sparkJob).build();
       OperationFuture<Job, JobMetadata> submitJobAsOperationAsyncRequest =
@@ -153,39 +162,18 @@ public class SampleIntegrationTest {
     }
   }
 
-  private void verifyDataprocOutput(Storage storage, Job job) {
-    Matcher matches = Pattern.compile("gs://(.*?)/(.*)").matcher(job.getDriverOutputResourceUri());
-    assertThat(matches.matches()).isTrue();
-
-    Blob blob = storage.get(matches.group(1), String.format("%s.000000000", matches.group(2)));
-    String sparkJobOutput = new String(blob.getContent());
-    String expectedWordCountResult =
-        "+-----+---------------+\n"
-            + "| word|sum(word_count)|\n"
-            + "+-----+---------------+\n"
-            + "|  the|             24|\n"
-            + "|   of|             16|\n"
-            + "|  and|             14|\n"
-            + "|    i|             13|\n"
-            + "|   my|             10|\n"
-            + "|    a|              6|\n"
-            + "|   in|              5|\n"
-            + "| that|              5|\n"
-            + "| soul|              4|\n"
-            + "| with|              4|\n"
-            + "|   as|              3|\n"
-            + "| feel|              3|\n"
-            + "| like|              3|\n"
-            + "|   me|              3|\n"
-            + "|   so|              3|\n"
-            + "| then|              3|\n"
-            + "|   us|              3|\n"
-            + "| when|              3|\n"
-            + "|which|              3|\n"
-            + "|   am|              2|\n"
-            + "+-----+---------------+\n"
-            + "only showing top 20 rows";
-    assertThat(sparkJobOutput).contains(expectedWordCountResult);
+  private void verifyWordCountResult() {
+    List<PubsubMessage> results = subscriberExample(cloudRegion.value(), cloudZone.zoneId(),
+            projectNumber.value(), subscriptionNameResult.value());
+    Map<String, Integer> expected = ImmutableMap.of(
+            "the", 24, "of", 16, "and", 14
+    );
+    Map<String, Integer> actual = new HashMap<>();
+    for (PubsubMessage m : results) {
+      String[] pair = m.getData().toStringUtf8().split("_");
+      actual.put(pair[0], Integer.parseInt(pair[1]));
+    }
+    assertThat(actual).isEqualTo(expected);
   }
 
   private void setUpVariables() {
@@ -208,13 +196,20 @@ public class SampleIntegrationTest {
     cloudZone = CloudZone.of(cloudRegion, env.get(CLOUD_ZONE).charAt(0));
     projectId = ProjectId.of(env.get(PROJECT_ID));
     projectNumber = ProjectNumber.of(Long.parseLong(env.get(PROJECT_NUMBER)));
-    topicId = TopicName.of(env.get(TOPIC_ID));
-    subscriptionName = SubscriptionName.of("sample-integration-sub-" + runId);
-    subscriptionPath =
+    topicIdRaw = TopicName.of(env.get(TOPIC_ID));
+    subscriptionNameRaw = SubscriptionName.of("sample-integration-sub-raw-" + runId);
+    subscriptionPathRaw =
         SubscriptionPath.newBuilder()
             .setProject(projectId)
             .setLocation(cloudZone)
-            .setName(subscriptionName)
+            .setName(subscriptionNameRaw)
+            .build();
+    topicIdResult = TopicName.of("sample-integration-topic-result-" + runId);
+    subscriptionNameResult = SubscriptionName.of("sample-integration-sub-result-" + runId);
+    subscriptionPathResult = SubscriptionPath.newBuilder()
+            .setProject(projectId)
+            .setLocation(cloudZone)
+            .setName(subscriptionNameResult)
             .build();
     clusterName = env.get(CLUSTER_NAME);
     bucketName = env.get(BUCKET_NAME);
@@ -240,22 +235,47 @@ public class SampleIntegrationTest {
     setUpVariables();
     findMavenHome();
 
-    // Create a subscription
+    // Create a subscription to read raw word messages
     createSubscriptionExample(
         cloudRegion.value(),
         cloudZone.zoneId(),
         projectNumber.value(),
-        topicId.value(),
-        subscriptionName.value());
+        topicIdRaw.value(),
+        subscriptionNameRaw.value());
+
+    // Create a topic and subscription for word count final results
+    createTopicExample(
+            cloudRegion.value(),
+            cloudZone.zoneId(),
+            projectNumber.value(),
+            topicIdResult.value(),
+            /*partitions=*/1
+    );
+    createSubscriptionExample(
+            cloudRegion.value(),
+            cloudZone.zoneId(),
+            projectNumber.value(),
+            topicIdResult.value(),
+            subscriptionNameResult.value()
+    );
   }
 
   @After
   public void tearDown() throws Exception {
-    // Cleanup the subscription
+    // Cleanup the topics and subscriptions
     deleteSubscriptionExample(
-        cloudRegion.value(), cloudZone.zoneId(), projectNumber.value(), subscriptionName.value());
+        cloudRegion.value(), subscriptionPathRaw);
+    deleteSubscriptionExample(
+        cloudRegion.value(), subscriptionPathResult);
+    deleteTopicExample(cloudRegion.value(),
+            TopicPath.newBuilder()
+            .setLocation(cloudZone)
+            .setProject(projectNumber).setName(topicIdResult).build());
   }
 
+  /**
+   * Note that raw single word messages have been published to a permanent topic.
+   */
   @Test
   public void test() throws Exception {
     // Maven package into jars
@@ -268,8 +288,10 @@ public class SampleIntegrationTest {
     uploadGCS(storage, sampleJarNameInGCS, sampleJarLoc);
     uploadGCS(storage, connectorJarNameInGCS, connectorJarLoc);
 
-    // Run Dataproc job and verify output
-    Job jobResponse = runDataprocJob();
-    verifyDataprocOutput(storage, jobResponse);
+    // Run Dataproc job, block until it finishes
+    runDataprocJob();
+
+    // Verify final result messages in Pub/Sub Lite
+    verifyWordCountResult();
   }
 }

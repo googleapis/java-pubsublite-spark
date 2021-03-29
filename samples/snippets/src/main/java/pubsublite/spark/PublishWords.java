@@ -34,27 +34,31 @@ public class PublishWords {
 
   private static final String REGION = "REGION";
   private static final String ZONE_ID = "ZONE_ID";
-  private static final String TOPIC_ID = "TOPIC_ID";
-  private static final String SUBSCRIPTION_ID = "SUBSCRIPTION_ID";
+  private static final String TOPIC_ID_RAW = "TOPIC_ID_RAW";
+  private static final String SUBSCRIPTION_ID_RAW = "SUBSCRIPTION_ID_RAW";
+  private static final String TOPIC_ID_RESULT = "TOPIC_ID_RESULT";
+  private static final String SUBSCRIPTION_ID_RESULT = "SUBSCRIPTION_ID_RESULT";
   private static final String PROJECT_NUMBER = "PROJECT_NUMBER";
-  private static final String PARTITIONS = "PARTITIONS";
 
   public static void main(String[] args) throws Exception {
 
     Map<String, String> env = System.getenv();
     Set<String> missingVars =
         Sets.difference(
-            ImmutableSet.of(REGION, ZONE_ID, TOPIC_ID, SUBSCRIPTION_ID, PROJECT_NUMBER, PARTITIONS),
+            ImmutableSet.of(REGION, ZONE_ID, TOPIC_ID_RAW, SUBSCRIPTION_ID_RAW, TOPIC_ID_RESULT,
+                    SUBSCRIPTION_ID_RESULT, PROJECT_NUMBER),
             env.keySet());
     Preconditions.checkState(
         missingVars.isEmpty(), "Missing required environment variables: " + missingVars);
 
     String cloudRegion = env.get(REGION);
     char zoneId = env.get(ZONE_ID).charAt(0);
-    String topicId = env.get(TOPIC_ID);
-    String subscriptionId = env.get(SUBSCRIPTION_ID);
+    String topicIdRaw = env.get(TOPIC_ID_RAW);
+    String subscriptionIdRaw = env.get(SUBSCRIPTION_ID_RAW);
+    String topicIdResult = env.get(TOPIC_ID_RESULT);
+    String subscriptionIdResult = env.get(SUBSCRIPTION_ID_RESULT);
     long projectNumber = Long.parseLong(env.get(PROJECT_NUMBER));
-    int partitions = Integer.parseInt(env.get(PARTITIONS));
+    int partitions = 1;
 
     String snippets =
         Resources.toString(Resources.getResource("text_snippets.txt"), Charset.defaultCharset());
@@ -66,10 +70,12 @@ public class PublishWords {
             .toLowerCase();
     List<String> words = Arrays.asList(snippets.split(" "));
 
-    createTopicExample(cloudRegion, zoneId, projectNumber, topicId, partitions);
-    createSubscriptionExample(cloudRegion, zoneId, projectNumber, topicId, subscriptionId);
+    createTopicExample(cloudRegion, zoneId, projectNumber, topicIdRaw, partitions);
+    createSubscriptionExample(cloudRegion, zoneId, projectNumber, topicIdRaw, subscriptionIdRaw);
+    createTopicExample(cloudRegion, zoneId, projectNumber, topicIdResult, partitions);
+    createSubscriptionExample(cloudRegion, zoneId, projectNumber, topicIdResult, subscriptionIdResult);
 
-    publisherExample(cloudRegion, zoneId, projectNumber, topicId, words);
+    publisherExample(cloudRegion, zoneId, projectNumber, topicIdRaw, words);
 
     System.exit(0);
   }

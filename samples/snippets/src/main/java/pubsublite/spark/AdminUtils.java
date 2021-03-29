@@ -20,6 +20,8 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.gax.rpc.AlreadyExistsException;
 import com.google.api.gax.rpc.ApiException;
+import com.google.cloud.pubsub.v1.AckReplyConsumer;
+import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsublite.AdminClient;
 import com.google.cloud.pubsublite.AdminClientSettings;
 import com.google.cloud.pubsublite.CloudRegion;
@@ -32,14 +34,20 @@ import com.google.cloud.pubsublite.TopicName;
 import com.google.cloud.pubsublite.TopicPath;
 import com.google.cloud.pubsublite.cloudpubsub.Publisher;
 import com.google.cloud.pubsublite.cloudpubsub.PublisherSettings;
+import com.google.cloud.pubsublite.cloudpubsub.Subscriber;
+import com.google.cloud.pubsublite.cloudpubsub.SubscriberSettings;
+import com.google.cloud.pubsublite.internal.CloseableMonitor;
 import com.google.cloud.pubsublite.proto.Subscription;
 import com.google.cloud.pubsublite.proto.Topic;
+import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.util.Durations;
 import com.google.pubsub.v1.PubsubMessage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class AdminUtils {
 
@@ -144,20 +152,24 @@ public class AdminUtils {
   }
 
   public static void deleteSubscriptionExample(
-      String cloudRegion, char zoneId, long projectNumber, String subscriptionId) throws Exception {
-    SubscriptionPath subscriptionPath =
-        SubscriptionPath.newBuilder()
-            .setLocation(CloudZone.of(CloudRegion.of(cloudRegion), zoneId))
-            .setProject(ProjectNumber.of(projectNumber))
-            .setName(SubscriptionName.of(subscriptionId))
-            .build();
-
+      String cloudRegion, SubscriptionPath subscriptionPath) throws Exception {
     AdminClientSettings adminClientSettings =
         AdminClientSettings.newBuilder().setRegion(CloudRegion.of(cloudRegion)).build();
 
     try (AdminClient adminClient = AdminClient.create(adminClientSettings)) {
       adminClient.deleteSubscription(subscriptionPath).get();
       System.out.println(subscriptionPath + " deleted successfully.");
+    }
+  }
+
+  public static void deleteTopicExample(String cloudRegion, TopicPath topicPath)
+    throws Exception {
+    AdminClientSettings adminClientSettings =
+            AdminClientSettings.newBuilder().setRegion(CloudRegion.of(cloudRegion)).build();
+
+    try (AdminClient adminClient = AdminClient.create(adminClientSettings)) {
+      adminClient.deleteTopic(topicPath).get();
+      System.out.println(topicPath + " deleted successfully.");
     }
   }
 
@@ -207,5 +219,52 @@ public class AdminUtils {
         System.out.println("Publisher is shut down.");
       }
     }
+  }
+
+  public static List<PubsubMessage> subscriberExample(
+          String cloudRegion, char zoneId, long projectNumber, String subscriptionId)
+          throws ApiException {
+    CloseableMonitor m = new CloseableMonitor();
+    List<PubsubMessage> result = new ArrayList<>();
+
+    SubscriptionPath subscriptionPath =
+            SubscriptionPath.newBuilder()
+                    .setLocation(CloudZone.of(CloudRegion.of(cloudRegion), zoneId))
+                    .setProject(ProjectNumber.of(projectNumber))
+                    .setName(SubscriptionName.of(subscriptionId))
+                    .build();
+
+    MessageReceiver receiver =
+            (PubsubMessage message, AckReplyConsumer consumer) -> {
+              try (CloseableMonitor.Hold h = m.enter()) {
+                result.add(message);
+              }
+              consumer.ack();
+            };
+
+    SubscriberSettings subscriberSettings =
+            SubscriberSettings.newBuilder()
+                    .setSubscriptionPath(subscriptionPath)
+                    .setReceiver(receiver)
+                    .build();
+
+    Subscriber subscriber = Subscriber.create(subscriberSettings);
+
+    // Start the subscriber. Upon successful starting, its state will become RUNNING.
+    subscriber.startAsync().awaitRunning();
+
+    try {
+      System.out.println(subscriber.state());
+      // Wait 90 seconds for the subscriber to reach TERMINATED state. If it encounters
+      // unrecoverable errors before then, its state will change to FAILED and an
+      // IllegalStateException will be thrown.
+      subscriber.awaitTerminated(90, TimeUnit.SECONDS);
+    } catch (TimeoutException t) {
+      // Shut down the subscriber. This will change the state of the subscriber to TERMINATED.
+      subscriber.stopAsync().awaitTerminated();
+      System.out.println("Subscriber is shut down: " + subscriber.state());
+    }
+
+    return result;
   }
 }
