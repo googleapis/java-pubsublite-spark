@@ -43,22 +43,19 @@ import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import com.google.pubsub.v1.PubsubMessage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
-
-import com.google.pubsub.v1.PubsubMessage;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.shared.invoker.DefaultInvocationRequest;
 import org.apache.maven.shared.invoker.DefaultInvoker;
@@ -164,32 +161,37 @@ public class SampleIntegrationTest {
   }
 
   private void verifyWordCountResult() {
-    Queue<PubsubMessage> results = subscriberExample(cloudRegion.value(), cloudZone.zoneId(),
-            projectNumber.value(), subscriptionNameResult.value());
-    Map<String, Integer> expected = new HashMap<String, Integer>() {
-      {
-        put("the", 24);
-        put("of", 16);
-        put("and", 14);
-        put("i", 13);
-        put("my", 10);
-        put("a", 6);
-        put("in", 5);
-        put("that", 5);
-        put("soul", 4);
-        put("with", 4);
-        put("as", 3);
-        put("feel", 3);
-        put("like", 3);
-        put("me", 3);
-        put("so", 3);
-        put("then", 3);
-        put("us", 3);
-        put("when", 3);
-        put("which", 3);
-        put("am", 2);
-      }
-    };
+    Queue<PubsubMessage> results =
+        subscriberExample(
+            cloudRegion.value(),
+            cloudZone.zoneId(),
+            projectNumber.value(),
+            subscriptionNameResult.value());
+    Map<String, Integer> expected =
+        new HashMap<String, Integer>() {
+          {
+            put("the", 24);
+            put("of", 16);
+            put("and", 14);
+            put("i", 13);
+            put("my", 10);
+            put("a", 6);
+            put("in", 5);
+            put("that", 5);
+            put("soul", 4);
+            put("with", 4);
+            put("as", 3);
+            put("feel", 3);
+            put("like", 3);
+            put("me", 3);
+            put("so", 3);
+            put("then", 3);
+            put("us", 3);
+            put("when", 3);
+            put("which", 3);
+            put("am", 2);
+          }
+        };
     Map<String, Integer> actual = new HashMap<>();
     for (PubsubMessage m : results) {
       String[] pair = m.getData().toStringUtf8().split("_");
@@ -228,7 +230,8 @@ public class SampleIntegrationTest {
             .build();
     topicIdResult = TopicName.of("sample-integration-topic-result-" + runId);
     subscriptionNameResult = SubscriptionName.of("sample-integration-sub-result-" + runId);
-    subscriptionPathResult = SubscriptionPath.newBuilder()
+    subscriptionPathResult =
+        SubscriptionPath.newBuilder()
             .setProject(projectId)
             .setLocation(cloudZone)
             .setName(subscriptionNameResult)
@@ -267,37 +270,34 @@ public class SampleIntegrationTest {
 
     // Create a topic and subscription for word count final results
     createTopicExample(
-            cloudRegion.value(),
-            cloudZone.zoneId(),
-            projectNumber.value(),
-            topicIdResult.value(),
-            /*partitions=*/1
-    );
+        cloudRegion.value(),
+        cloudZone.zoneId(),
+        projectNumber.value(),
+        topicIdResult.value(),
+        /*partitions=*/ 1);
     createSubscriptionExample(
-            cloudRegion.value(),
-            cloudZone.zoneId(),
-            projectNumber.value(),
-            topicIdResult.value(),
-            subscriptionNameResult.value()
-    );
+        cloudRegion.value(),
+        cloudZone.zoneId(),
+        projectNumber.value(),
+        topicIdResult.value(),
+        subscriptionNameResult.value());
   }
 
   @After
   public void tearDown() throws Exception {
     // Cleanup the topics and subscriptions
-    deleteSubscriptionExample(
-        cloudRegion.value(), subscriptionPathRaw);
-    deleteSubscriptionExample(
-        cloudRegion.value(), subscriptionPathResult);
-    deleteTopicExample(cloudRegion.value(),
-            TopicPath.newBuilder()
+    deleteSubscriptionExample(cloudRegion.value(), subscriptionPathRaw);
+    deleteSubscriptionExample(cloudRegion.value(), subscriptionPathResult);
+    deleteTopicExample(
+        cloudRegion.value(),
+        TopicPath.newBuilder()
             .setLocation(cloudZone)
-            .setProject(projectNumber).setName(topicIdResult).build());
+            .setProject(projectNumber)
+            .setName(topicIdResult)
+            .build());
   }
 
-  /**
-   * Note that raw single word messages have been published to a permanent topic.
-   */
+  /** Note that raw single word messages have been published to a permanent topic. */
   @Test
   public void test() throws Exception {
     // Maven package into jars

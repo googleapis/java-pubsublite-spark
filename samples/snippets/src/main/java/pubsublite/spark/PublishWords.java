@@ -45,8 +45,14 @@ public class PublishWords {
     Map<String, String> env = System.getenv();
     Set<String> missingVars =
         Sets.difference(
-            ImmutableSet.of(REGION, ZONE_ID, TOPIC_ID_RAW, SUBSCRIPTION_ID_RAW, TOPIC_ID_RESULT,
-                    SUBSCRIPTION_ID_RESULT, PROJECT_NUMBER),
+            ImmutableSet.of(
+                REGION,
+                ZONE_ID,
+                TOPIC_ID_RAW,
+                SUBSCRIPTION_ID_RAW,
+                TOPIC_ID_RESULT,
+                SUBSCRIPTION_ID_RESULT,
+                PROJECT_NUMBER),
             env.keySet());
     Preconditions.checkState(
         missingVars.isEmpty(), "Missing required environment variables: " + missingVars);
@@ -73,7 +79,8 @@ public class PublishWords {
     createTopicExample(cloudRegion, zoneId, projectNumber, topicIdRaw, partitions);
     createSubscriptionExample(cloudRegion, zoneId, projectNumber, topicIdRaw, subscriptionIdRaw);
     createTopicExample(cloudRegion, zoneId, projectNumber, topicIdResult, partitions);
-    createSubscriptionExample(cloudRegion, zoneId, projectNumber, topicIdResult, subscriptionIdResult);
+    createSubscriptionExample(
+        cloudRegion, zoneId, projectNumber, topicIdResult, subscriptionIdResult);
 
     publisherExample(cloudRegion, zoneId, projectNumber, topicIdRaw, words);
 

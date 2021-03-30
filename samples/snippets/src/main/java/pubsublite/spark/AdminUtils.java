@@ -37,7 +37,6 @@ import com.google.cloud.pubsublite.cloudpubsub.Publisher;
 import com.google.cloud.pubsublite.cloudpubsub.PublisherSettings;
 import com.google.cloud.pubsublite.cloudpubsub.Subscriber;
 import com.google.cloud.pubsublite.cloudpubsub.SubscriberSettings;
-import com.google.cloud.pubsublite.internal.CloseableMonitor;
 import com.google.cloud.pubsublite.proto.Subscription;
 import com.google.cloud.pubsublite.proto.Topic;
 import com.google.protobuf.ByteString;
@@ -164,10 +163,9 @@ public class AdminUtils {
     }
   }
 
-  public static void deleteTopicExample(String cloudRegion, TopicPath topicPath)
-    throws Exception {
+  public static void deleteTopicExample(String cloudRegion, TopicPath topicPath) throws Exception {
     AdminClientSettings adminClientSettings =
-            AdminClientSettings.newBuilder().setRegion(CloudRegion.of(cloudRegion)).build();
+        AdminClientSettings.newBuilder().setRegion(CloudRegion.of(cloudRegion)).build();
 
     try (AdminClient adminClient = AdminClient.create(adminClientSettings)) {
       adminClient.deleteTopic(topicPath).get();
@@ -224,35 +222,35 @@ public class AdminUtils {
   }
 
   public static Queue<PubsubMessage> subscriberExample(
-          String cloudRegion, char zoneId, long projectNumber, String subscriptionId)
-          throws ApiException {
+      String cloudRegion, char zoneId, long projectNumber, String subscriptionId)
+      throws ApiException {
     // Sample has at most 200 messages.
     Queue<PubsubMessage> result = new ArrayBlockingQueue<>(1000);
 
     SubscriptionPath subscriptionPath =
-            SubscriptionPath.newBuilder()
-                    .setLocation(CloudZone.of(CloudRegion.of(cloudRegion), zoneId))
-                    .setProject(ProjectNumber.of(projectNumber))
-                    .setName(SubscriptionName.of(subscriptionId))
-                    .build();
+        SubscriptionPath.newBuilder()
+            .setLocation(CloudZone.of(CloudRegion.of(cloudRegion), zoneId))
+            .setProject(ProjectNumber.of(projectNumber))
+            .setName(SubscriptionName.of(subscriptionId))
+            .build();
 
     MessageReceiver receiver =
-            (PubsubMessage message, AckReplyConsumer consumer) -> {
-              result.add(message);
-              consumer.ack();
-            };
+        (PubsubMessage message, AckReplyConsumer consumer) -> {
+          result.add(message);
+          consumer.ack();
+        };
     FlowControlSettings flowControlSettings =
-            FlowControlSettings.builder()
-                    .setBytesOutstanding(10 * 1024 * 1024L)
-                    .setMessagesOutstanding(1000L)
-                    .build();
+        FlowControlSettings.builder()
+            .setBytesOutstanding(10 * 1024 * 1024L)
+            .setMessagesOutstanding(1000L)
+            .build();
 
     SubscriberSettings subscriberSettings =
-            SubscriberSettings.newBuilder()
-                    .setSubscriptionPath(subscriptionPath)
-                    .setReceiver(receiver)
-                    .setPerPartitionFlowControlSettings(flowControlSettings)
-                    .build();
+        SubscriberSettings.newBuilder()
+            .setSubscriptionPath(subscriptionPath)
+            .setReceiver(receiver)
+            .setPerPartitionFlowControlSettings(flowControlSettings)
+            .build();
 
     Subscriber subscriber = Subscriber.create(subscriberSettings);
 

@@ -16,6 +16,11 @@
 
 package pubsublite.spark;
 
+import static org.apache.spark.sql.functions.concat;
+import static org.apache.spark.sql.functions.lit;
+import static org.apache.spark.sql.functions.split;
+
+import java.util.concurrent.TimeUnit;
 import org.apache.spark.sql.Column;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -24,12 +29,6 @@ import org.apache.spark.sql.streaming.OutputMode;
 import org.apache.spark.sql.streaming.StreamingQuery;
 import org.apache.spark.sql.streaming.Trigger;
 import org.apache.spark.sql.types.DataTypes;
-
-import java.util.concurrent.TimeUnit;
-
-import static org.apache.spark.sql.functions.concat;
-import static org.apache.spark.sql.functions.lit;
-import static org.apache.spark.sql.functions.split;
 
 public class WordCount {
 
@@ -41,7 +40,11 @@ public class WordCount {
 
     // Reads messages from Pub/Sub Lite
     Dataset<Row> df =
-        spark.readStream().format("pubsublite").option("pubsublite.subscription", subscription_path_raw).load();
+        spark
+            .readStream()
+            .format("pubsublite")
+            .option("pubsublite.subscription", subscription_path_raw)
+            .load();
 
     // Aggregate word counts
     Column splitCol = split(df.col("data"), "_");
@@ -52,8 +55,7 @@ public class WordCount {
     df = df.orderBy(df.col("sum(word_count)").desc(), df.col("word").asc());
 
     // Adds Pub/Sub Lite message data field
-    df = df.withColumn("data", concat(df.col("word"),
-            lit("_"), df.col("sum(word_count)")));
+    df = df.withColumn("data", concat(df.col("word"), lit("_"), df.col("sum(word_count)")));
 
     // Write word count results to Pub/Sub Lite
     StreamingQuery query =
