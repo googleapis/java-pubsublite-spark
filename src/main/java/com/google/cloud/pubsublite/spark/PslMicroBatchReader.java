@@ -28,6 +28,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
+
+import com.google.cloud.pubsublite.spark.internal.MultiPartitionCommitter;
+import com.google.cloud.pubsublite.spark.internal.PartitionSubscriberFactory;
+import com.google.cloud.pubsublite.spark.internal.PerTopicHeadOffsetReader;
 import org.apache.spark.sql.catalyst.InternalRow;
 import org.apache.spark.sql.sources.v2.reader.InputPartition;
 import org.apache.spark.sql.sources.v2.reader.streaming.MicroBatchReader;

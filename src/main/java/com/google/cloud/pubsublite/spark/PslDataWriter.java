@@ -19,6 +19,8 @@ package com.google.cloud.pubsublite.spark;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.pubsublite.MessageMetadata;
 import com.google.cloud.pubsublite.TopicPath;
+import com.google.cloud.pubsublite.spark.internal.CachedPublishers;
+import com.google.cloud.pubsublite.spark.internal.PublisherFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.flogger.GoogleLogger;
 import java.io.IOException;

@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-package com.google.cloud.pubsublite.spark;
+package com.google.cloud.pubsublite.spark.internal;
 
-import java.io.Closeable;
+import com.google.api.gax.rpc.ApiException;
+import com.google.cloud.pubsublite.MessageMetadata;
+import com.google.cloud.pubsublite.TopicPath;
+import com.google.cloud.pubsublite.internal.Publisher;
+import java.io.Serializable;
 
-public interface PartitionCountReader extends Closeable {
-  int getPartitionCount();
+public interface PublisherFactory extends Serializable {
 
-  @Override
-  void close();
+  Publisher<MessageMetadata> newPublisher(TopicPath topicPath) throws ApiException;
 }

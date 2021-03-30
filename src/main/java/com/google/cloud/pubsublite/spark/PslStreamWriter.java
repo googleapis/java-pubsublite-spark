@@ -19,6 +19,7 @@ package com.google.cloud.pubsublite.spark;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.cloud.pubsublite.TopicPath;
+import com.google.cloud.pubsublite.spark.internal.PublisherFactory;
 import com.google.common.flogger.GoogleLogger;
 import org.apache.spark.sql.catalyst.InternalRow;
 import org.apache.spark.sql.sources.v2.writer.DataWriterFactory;

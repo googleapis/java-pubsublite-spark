@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package com.google.cloud.pubsublite.spark;
+package com.google.cloud.pubsublite.spark.internal;
 
 import com.google.api.core.ApiService;
 import com.google.cloud.pubsublite.MessageMetadata;
 import com.google.cloud.pubsublite.TopicPath;
 import com.google.cloud.pubsublite.internal.CloseableMonitor;
 import com.google.cloud.pubsublite.internal.Publisher;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executor;

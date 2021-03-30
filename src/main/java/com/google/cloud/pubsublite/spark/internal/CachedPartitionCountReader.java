@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.cloud.pubsublite.spark;
+package com.google.cloud.pubsublite.spark.internal;
 
 import com.google.cloud.pubsublite.AdminClient;
 import com.google.cloud.pubsublite.PartitionLookupUtils;

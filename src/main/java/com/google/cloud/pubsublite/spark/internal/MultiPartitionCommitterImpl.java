@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package com.google.cloud.pubsublite.spark;
+package com.google.cloud.pubsublite.spark.internal;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.pubsublite.Partition;
 import com.google.cloud.pubsublite.internal.wire.Committer;
+import com.google.cloud.pubsublite.spark.PslSourceOffset;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.flogger.GoogleLogger;
 import com.google.common.util.concurrent.MoreExecutors;

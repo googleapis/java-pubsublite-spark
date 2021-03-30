@@ -18,6 +18,8 @@ package com.google.cloud.pubsublite.spark;
 
 import com.google.cloud.pubsublite.TopicPath;
 import java.io.Serializable;
+
+import com.google.cloud.pubsublite.spark.internal.PublisherFactory;
 import org.apache.spark.sql.catalyst.InternalRow;
 import org.apache.spark.sql.sources.v2.writer.DataWriter;
 import org.apache.spark.sql.sources.v2.writer.DataWriterFactory;

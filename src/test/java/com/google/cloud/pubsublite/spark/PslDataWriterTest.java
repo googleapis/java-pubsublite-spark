@@ -30,6 +30,8 @@ import com.google.cloud.pubsublite.Partition;
 import com.google.cloud.pubsublite.internal.Publisher;
 import com.google.cloud.pubsublite.internal.testing.UnitTestExamples;
 import java.io.IOException;
+
+import com.google.cloud.pubsublite.spark.internal.CachedPublishers;
 import org.apache.spark.sql.catalyst.InternalRow;
 import org.apache.spark.sql.types.DataType;
 import org.junit.Test;
