@@ -18,6 +18,7 @@ package com.google.cloud.pubsublite.spark;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.cloud.pubsublite.TopicPath;
 import com.google.common.flogger.GoogleLogger;
 import org.apache.spark.sql.catalyst.InternalRow;
 import org.apache.spark.sql.sources.v2.writer.DataWriterFactory;
@@ -30,11 +31,14 @@ public class PslStreamWriter implements StreamWriter {
   private static final GoogleLogger log = GoogleLogger.forEnclosingClass();
 
   private final StructType inputSchema;
-  private final PslWriteDataSourceOptions writeOptions;
+  private final TopicPath topicPath;
+  private final PublisherFactory publisherFactory;
 
-  public PslStreamWriter(StructType schema, PslWriteDataSourceOptions writeOptions) {
+  public PslStreamWriter(
+      StructType schema, TopicPath topicPath, PublisherFactory publisherFactory) {
     this.inputSchema = schema;
-    this.writeOptions = writeOptions;
+    this.topicPath = topicPath;
+    this.publisherFactory = publisherFactory;
   }
 
   @Override
@@ -60,6 +64,6 @@ public class PslStreamWriter implements StreamWriter {
 
   @Override
   public DataWriterFactory<InternalRow> createWriterFactory() {
-    return new PslDataWriterFactory(inputSchema, writeOptions);
+    return new PslDataWriterFactory(inputSchema, topicPath, publisherFactory);
   }
 }

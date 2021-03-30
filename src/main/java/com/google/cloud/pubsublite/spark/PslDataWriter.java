@@ -18,6 +18,7 @@ package com.google.cloud.pubsublite.spark;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.pubsublite.MessageMetadata;
+import com.google.cloud.pubsublite.TopicPath;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.flogger.GoogleLogger;
 import java.io.IOException;
@@ -39,7 +40,8 @@ public class PslDataWriter implements DataWriter<InternalRow> {
 
   private final long partitionId, taskId, epochId;
   private final StructType inputSchema;
-  private final PslWriteDataSourceOptions writeOptions;
+  private final TopicPath topicPath;
+  private final PublisherFactory publisherFactory;
   private final CachedPublishers cachedPublishers; // just a reference
 
   @GuardedBy("this")
@@ -50,8 +52,9 @@ public class PslDataWriter implements DataWriter<InternalRow> {
       long taskId,
       long epochId,
       StructType schema,
-      PslWriteDataSourceOptions writeOptions) {
-    this(partitionId, taskId, epochId, schema, writeOptions, CACHED_PUBLISHERS);
+      TopicPath topicPath,
+      PublisherFactory publisherFactory) {
+    this(partitionId, taskId, epochId, schema, topicPath, publisherFactory, CACHED_PUBLISHERS);
   }
 
   @VisibleForTesting
@@ -60,13 +63,15 @@ public class PslDataWriter implements DataWriter<InternalRow> {
       long taskId,
       long epochId,
       StructType schema,
-      PslWriteDataSourceOptions writeOptions,
+      TopicPath topicPath,
+      PublisherFactory publisherFactory,
       CachedPublishers cachedPublishers) {
     this.partitionId = partitionId;
     this.taskId = taskId;
     this.epochId = epochId;
     this.inputSchema = schema;
-    this.writeOptions = writeOptions;
+    this.topicPath = topicPath;
+    this.publisherFactory = publisherFactory;
     this.cachedPublishers = cachedPublishers;
   }
 
@@ -74,7 +79,7 @@ public class PslDataWriter implements DataWriter<InternalRow> {
   public synchronized void write(InternalRow record) {
     futures.add(
         cachedPublishers
-            .getOrCreate(writeOptions)
+            .getOrCreate(topicPath, publisherFactory)
             .publish(Objects.requireNonNull(PslSparkUtils.toPubSubMessage(inputSchema, record))));
   }
 
