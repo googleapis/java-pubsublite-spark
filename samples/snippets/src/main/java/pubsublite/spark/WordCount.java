@@ -60,6 +60,7 @@ public class WordCount {
         df.writeStream()
             .format("pubsublite")
             .option("pubsublite.topic", topic_path_result)
+            .option("checkpointLocation", "/tmp/checkpoint")
             .outputMode(OutputMode.Complete())
             .trigger(Trigger.ProcessingTime(1, TimeUnit.SECONDS))
             .start();
