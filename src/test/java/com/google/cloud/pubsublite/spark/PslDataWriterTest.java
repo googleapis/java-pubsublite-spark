@@ -29,9 +29,8 @@ import com.google.cloud.pubsublite.Offset;
 import com.google.cloud.pubsublite.Partition;
 import com.google.cloud.pubsublite.internal.Publisher;
 import com.google.cloud.pubsublite.internal.testing.UnitTestExamples;
-import java.io.IOException;
-
 import com.google.cloud.pubsublite.spark.internal.CachedPublishers;
+import java.io.IOException;
 import org.apache.spark.sql.catalyst.InternalRow;
 import org.apache.spark.sql.types.DataType;
 import org.junit.Test;
@@ -40,21 +39,15 @@ public class PslDataWriterTest {
 
   private final InternalRow row = mock(InternalRow.class);
 
-  private final PslWriteDataSourceOptions writeOptions = PslWriteDataSourceOptions.builder()
-          .setTopicPath(UnitTestExamples.exampleTopicPath())
-          .build();
+  private final PslWriteDataSourceOptions writeOptions =
+      PslWriteDataSourceOptions.builder().setTopicPath(UnitTestExamples.exampleTopicPath()).build();
+
   @SuppressWarnings("unchecked")
   private final Publisher<MessageMetadata> publisher = mock(Publisher.class);
 
   private final CachedPublishers cachedPublishers = mock(CachedPublishers.class);
   private final PslDataWriter writer =
-      new PslDataWriter(
-          1L,
-          2L,
-          3L,
-          Constants.DEFAULT_SCHEMA,
-          writeOptions,
-          cachedPublishers);
+      new PslDataWriter(1L, 2L, 3L, Constants.DEFAULT_SCHEMA, writeOptions, cachedPublishers);
 
   @Test
   public void testAllSuccess() throws IOException {

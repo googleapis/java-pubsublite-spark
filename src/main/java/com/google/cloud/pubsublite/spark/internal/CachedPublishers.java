@@ -20,7 +20,6 @@ import com.google.api.core.ApiService;
 import com.google.cloud.pubsublite.MessageMetadata;
 import com.google.cloud.pubsublite.internal.Publisher;
 import com.google.cloud.pubsublite.spark.PslWriteDataSourceOptions;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executor;
@@ -33,27 +32,28 @@ public class CachedPublishers {
   private final Executor listenerExecutor = Executors.newSingleThreadExecutor();
 
   @GuardedBy("this")
-  private static final Map<PslWriteDataSourceOptions, Publisher<MessageMetadata>> publishers = new HashMap<>();
+  private static final Map<PslWriteDataSourceOptions, Publisher<MessageMetadata>> publishers =
+      new HashMap<>();
 
   public synchronized Publisher<MessageMetadata> getOrCreate(
-          PslWriteDataSourceOptions writeOptions) {
-      Publisher<MessageMetadata> publisher = publishers.get(writeOptions);
-      if (publisher != null) {
-        return publisher;
-      }
-
-      publisher = writeOptions.getPublisherFactory().newPublisher(writeOptions);
-      publishers.put(writeOptions, publisher);
-      publisher.addListener(
-          new ApiService.Listener() {
-            @Override
-            public void failed(ApiService.State s, Throwable t) {
-              removePublisher(writeOptions);
-            }
-          },
-          listenerExecutor);
-      publisher.startAsync().awaitRunning();
+      PslWriteDataSourceOptions writeOptions) {
+    Publisher<MessageMetadata> publisher = publishers.get(writeOptions);
+    if (publisher != null) {
       return publisher;
+    }
+
+    publisher = PslWriteDataSourceOptions.createNewPublisher(writeOptions);
+    publishers.put(writeOptions, publisher);
+    publisher.addListener(
+        new ApiService.Listener() {
+          @Override
+          public void failed(ApiService.State s, Throwable t) {
+            removePublisher(writeOptions);
+          }
+        },
+        listenerExecutor);
+    publisher.startAsync().awaitRunning();
+    return publisher;
   }
 
   private synchronized void removePublisher(PslWriteDataSourceOptions writeOptions) {

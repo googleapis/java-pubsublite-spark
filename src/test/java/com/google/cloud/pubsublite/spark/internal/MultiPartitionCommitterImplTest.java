@@ -23,13 +23,11 @@ import static org.mockito.Mockito.*;
 import com.google.api.core.SettableApiFuture;
 import com.google.cloud.pubsublite.*;
 import com.google.cloud.pubsublite.internal.wire.Committer;
+import com.google.cloud.pubsublite.spark.PslSourceOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import com.google.cloud.pubsublite.spark.PslSourceOffset;
-import com.google.cloud.pubsublite.spark.internal.MultiPartitionCommitterImpl;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 

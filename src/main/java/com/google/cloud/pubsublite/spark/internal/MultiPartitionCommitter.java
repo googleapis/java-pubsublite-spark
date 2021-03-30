@@ -19,7 +19,6 @@ package com.google.cloud.pubsublite.spark.internal;
 import com.google.cloud.pubsublite.Partition;
 import com.google.cloud.pubsublite.internal.wire.Committer;
 import com.google.cloud.pubsublite.spark.PslSourceOffset;
-
 import java.io.Closeable;
 
 public interface MultiPartitionCommitter extends Closeable {

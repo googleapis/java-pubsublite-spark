@@ -33,7 +33,6 @@ import com.google.cloud.pubsublite.internal.wire.PubsubContext;
 import com.google.cloud.pubsublite.internal.wire.RoutingMetadata;
 import com.google.cloud.pubsublite.internal.wire.SinglePartitionPublisherBuilder;
 import com.google.cloud.pubsublite.spark.internal.PslCredentialsProvider;
-import com.google.cloud.pubsublite.spark.internal.PublisherFactory;
 import com.google.cloud.pubsublite.v1.AdminServiceClient;
 import com.google.cloud.pubsublite.v1.AdminServiceSettings;
 import com.google.cloud.pubsublite.v1.PublisherServiceClient;
@@ -84,8 +83,20 @@ public abstract class PslWriteDataSourceOptions implements Serializable {
     return new PslCredentialsProvider(this);
   }
 
-  public PublisherFactory getPublisherFactory() {
-    return PslWriteDataSourceOptions::createPublisherInternal;
+  public static Publisher<MessageMetadata> createNewPublisher(
+      PslWriteDataSourceOptions writeOptions) {
+    return PartitionCountWatchingPublisherSettings.newBuilder()
+        .setTopic(writeOptions.topicPath())
+        .setPublisherFactory(
+            partition ->
+                SinglePartitionPublisherBuilder.newBuilder()
+                    .setTopic(writeOptions.topicPath())
+                    .setPartition(partition)
+                    .setServiceClient(newServiceClient(writeOptions, partition))
+                    .build())
+        .setAdminClient(getAdminClient(writeOptions))
+        .build()
+        .instantiate();
   }
 
   private static PublisherServiceClient newServiceClient(
@@ -106,7 +117,7 @@ public abstract class PslWriteDataSourceOptions implements Serializable {
   }
 
   private static AdminClient getAdminClient(PslWriteDataSourceOptions writeOptions)
-          throws ApiException {
+      throws ApiException {
     try {
       return AdminClient.create(
           AdminClientSettings.newBuilder()
@@ -121,21 +132,5 @@ public abstract class PslWriteDataSourceOptions implements Serializable {
     } catch (Throwable t) {
       throw toCanonical(t).underlying;
     }
-  }
-
-  private static Publisher<MessageMetadata> createPublisherInternal(
-      PslWriteDataSourceOptions writeOptions) {
-    return PartitionCountWatchingPublisherSettings.newBuilder()
-        .setTopic(writeOptions.topicPath())
-        .setPublisherFactory(
-            partition ->
-                SinglePartitionPublisherBuilder.newBuilder()
-                    .setTopic(writeOptions.topicPath())
-                    .setPartition(partition)
-                    .setServiceClient(newServiceClient(writeOptions, partition))
-                    .build())
-        .setAdminClient(getAdminClient(writeOptions))
-        .build()
-        .instantiate();
   }
 }
