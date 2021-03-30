@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.cloud.pubsublite.spark;
+package com.google.cloud.pubsublite.spark.internal;
 
 import com.google.api.gax.rpc.ApiException;
 import com.google.cloud.pubsublite.Partition;

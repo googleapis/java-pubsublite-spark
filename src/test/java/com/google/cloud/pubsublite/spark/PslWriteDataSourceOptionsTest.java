@@ -19,6 +19,7 @@ package com.google.cloud.pubsublite.spark;
 import static org.junit.Assert.assertThrows;
 
 import com.google.cloud.pubsublite.internal.testing.UnitTestExamples;
+import com.google.cloud.pubsublite.spark.internal.PublisherFactory;
 import com.google.common.collect.ImmutableMap;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

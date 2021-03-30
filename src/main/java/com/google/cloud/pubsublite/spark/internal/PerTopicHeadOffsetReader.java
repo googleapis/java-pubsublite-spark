@@ -14,19 +14,17 @@
  * limitations under the License.
  */
 
-package com.google.cloud.pubsublite.spark;
+package com.google.cloud.pubsublite.spark.internal;
 
-import com.google.cloud.pubsublite.Partition;
-import com.google.cloud.pubsublite.internal.wire.Committer;
+import com.google.cloud.pubsublite.spark.PslSourceOffset;
+
 import java.io.Closeable;
 
-public interface MultiPartitionCommitter extends Closeable {
+public interface PerTopicHeadOffsetReader extends Closeable {
 
-  interface CommitterFactory {
-    Committer newCommitter(Partition partition);
-  }
+  // Gets the head offsets for all partitions in the topic. Blocks.
+  PslSourceOffset getHeadOffset();
 
-  void commit(PslSourceOffset offset);
-
+  @Override
   void close();
 }

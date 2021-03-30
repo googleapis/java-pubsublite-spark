@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.google.cloud.pubsublite.spark;
+package com.google.cloud.pubsublite.spark.internal;
 
 import com.google.api.core.ApiService;
 import com.google.cloud.pubsublite.MessageMetadata;
-import com.google.cloud.pubsublite.TopicPath;
-import com.google.cloud.pubsublite.internal.CloseableMonitor;
 import com.google.cloud.pubsublite.internal.Publisher;
+import com.google.cloud.pubsublite.spark.PslWriteDataSourceOptions;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executor;
@@ -30,35 +30,33 @@ import javax.annotation.concurrent.GuardedBy;
 /** Cached {@link Publisher}s to reuse publisher of same settings in the same task. */
 public class CachedPublishers {
 
-  private final CloseableMonitor monitor = new CloseableMonitor();
-
   private final Executor listenerExecutor = Executors.newSingleThreadExecutor();
 
-  @GuardedBy("monitor.monitor")
-  private static final Map<TopicPath, Publisher<MessageMetadata>> publishers = new HashMap<>();
+  @GuardedBy("this")
+  private static final Map<PslWriteDataSourceOptions, Publisher<MessageMetadata>> publishers = new HashMap<>();
 
-  public Publisher<MessageMetadata> getOrCreate(
-      TopicPath topicPath, PublisherFactory publisherFactory) {
-    try (CloseableMonitor.Hold h = monitor.enter()) {
-      Publisher<MessageMetadata> publisher = publishers.get(topicPath);
+  public synchronized Publisher<MessageMetadata> getOrCreate(
+          PslWriteDataSourceOptions writeOptions) {
+      Publisher<MessageMetadata> publisher = publishers.get(writeOptions);
       if (publisher != null) {
         return publisher;
       }
 
-      publisher = publisherFactory.newPublisher(topicPath);
-      publishers.put(topicPath, publisher);
+      publisher = writeOptions.getPublisherFactory().newPublisher(writeOptions);
+      publishers.put(writeOptions, publisher);
       publisher.addListener(
           new ApiService.Listener() {
             @Override
             public void failed(ApiService.State s, Throwable t) {
-              try (CloseableMonitor.Hold h = monitor.enter()) {
-                publishers.remove(topicPath);
-              }
+              removePublisher(writeOptions);
             }
           },
           listenerExecutor);
       publisher.startAsync().awaitRunning();
       return publisher;
-    }
+  }
+
+  private synchronized void removePublisher(PslWriteDataSourceOptions writeOptions) {
+    publishers.remove(writeOptions);
   }
 }

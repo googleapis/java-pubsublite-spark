@@ -33,6 +33,8 @@ import com.google.cloud.pubsublite.internal.wire.PartitionCountWatchingPublisher
 import com.google.cloud.pubsublite.internal.wire.PubsubContext;
 import com.google.cloud.pubsublite.internal.wire.RoutingMetadata;
 import com.google.cloud.pubsublite.internal.wire.SinglePartitionPublisherBuilder;
+import com.google.cloud.pubsublite.spark.internal.PslCredentialsProvider;
+import com.google.cloud.pubsublite.spark.internal.PublisherFactory;
 import com.google.cloud.pubsublite.v1.AdminServiceClient;
 import com.google.cloud.pubsublite.v1.AdminServiceSettings;
 import com.google.cloud.pubsublite.v1.PublisherServiceClient;
@@ -84,10 +86,10 @@ public abstract class PslWriteDataSourceOptions implements Serializable {
   }
 
   public PublisherFactory getPublisherFactory() {
-    return (topicPath) -> createPublisherInternal(this);
+    return PslWriteDataSourceOptions::createPublisherInternal;
   }
 
-  private PublisherServiceClient newServiceClient(
+  private static PublisherServiceClient newServiceClient(
       PslWriteDataSourceOptions writeOptions, Partition partition) throws ApiException {
     PublisherServiceSettings.Builder settingsBuilder = PublisherServiceSettings.newBuilder();
     settingsBuilder = settingsBuilder.setCredentialsProvider(writeOptions.getCredentialProvider());
@@ -104,7 +106,8 @@ public abstract class PslWriteDataSourceOptions implements Serializable {
     }
   }
 
-  private AdminClient getAdminClient(PslWriteDataSourceOptions writeOptions) throws ApiException {
+  private static AdminClient getAdminClient(PslWriteDataSourceOptions writeOptions)
+          throws ApiException {
     try {
       return AdminClient.create(
           AdminClientSettings.newBuilder()
@@ -121,7 +124,7 @@ public abstract class PslWriteDataSourceOptions implements Serializable {
     }
   }
 
-  private Publisher<MessageMetadata> createPublisherInternal(
+  private static Publisher<MessageMetadata> createPublisherInternal(
       PslWriteDataSourceOptions writeOptions) {
     return PartitionCountWatchingPublisherSettings.newBuilder()
         .setTopic(writeOptions.topicPath())

@@ -30,6 +30,8 @@ import com.google.cloud.pubsublite.Partition;
 import com.google.cloud.pubsublite.internal.Publisher;
 import com.google.cloud.pubsublite.internal.testing.UnitTestExamples;
 import java.io.IOException;
+
+import com.google.cloud.pubsublite.spark.internal.CachedPublishers;
 import org.apache.spark.sql.catalyst.InternalRow;
 import org.apache.spark.sql.types.DataType;
 import org.junit.Test;
@@ -38,6 +40,9 @@ public class PslDataWriterTest {
 
   private final InternalRow row = mock(InternalRow.class);
 
+  private final PslWriteDataSourceOptions writeOptions = PslWriteDataSourceOptions.builder()
+          .setTopicPath(UnitTestExamples.exampleTopicPath())
+          .build();
   @SuppressWarnings("unchecked")
   private final Publisher<MessageMetadata> publisher = mock(Publisher.class);
 
@@ -48,13 +53,12 @@ public class PslDataWriterTest {
           2L,
           3L,
           SparkStructs.DEFAULT_SCHEMA,
-          UnitTestExamples.exampleTopicPath(),
-          (t) -> null,
+          writeOptions,
           cachedPublishers);
 
   @Test
   public void testAllSuccess() throws IOException {
-    when(cachedPublishers.getOrCreate(any(), any())).thenReturn(publisher);
+    when(cachedPublishers.getOrCreate(any())).thenReturn(publisher);
     when(publisher.publish(any()))
         .thenReturn(
             ApiFutures.immediateFuture(MessageMetadata.of(Partition.of(0L), Offset.of(0L))));
@@ -66,7 +70,7 @@ public class PslDataWriterTest {
 
   @Test
   public void testPartialFail() {
-    when(cachedPublishers.getOrCreate(any(), any())).thenReturn(publisher);
+    when(cachedPublishers.getOrCreate(any())).thenReturn(publisher);
     when(publisher.publish(any()))
         .thenReturn(ApiFutures.immediateFuture(MessageMetadata.of(Partition.of(0L), Offset.of(0L))))
         .thenReturn(ApiFutures.immediateFailedFuture(new InternalError("")));
