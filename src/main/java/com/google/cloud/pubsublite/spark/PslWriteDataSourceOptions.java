@@ -36,11 +36,12 @@ import com.google.cloud.pubsublite.v1.AdminServiceClient;
 import com.google.cloud.pubsublite.v1.AdminServiceSettings;
 import com.google.cloud.pubsublite.v1.PublisherServiceClient;
 import com.google.cloud.pubsublite.v1.PublisherServiceSettings;
+import java.io.Serializable;
 import javax.annotation.Nullable;
 import org.apache.spark.sql.sources.v2.DataSourceOptions;
 
 @AutoValue
-public abstract class PslWriteDataSourceOptions {
+public abstract class PslWriteDataSourceOptions implements Serializable {
 
   @Nullable
   public abstract String credentialsKey();
