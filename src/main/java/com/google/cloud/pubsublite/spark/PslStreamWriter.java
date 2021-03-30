@@ -16,8 +16,6 @@
 
 package com.google.cloud.pubsublite.spark;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import com.google.common.flogger.GoogleLogger;
 import org.apache.spark.sql.catalyst.InternalRow;
 import org.apache.spark.sql.sources.v2.writer.DataWriterFactory;
@@ -45,15 +43,17 @@ public class PslStreamWriter implements StreamWriter {
   @Override
   public void abort(long epochId, WriterCommitMessage[] messages) {
     log.atWarning().log(
-        "Epoch id: %d is aborted, including %d messages.", epochId, countMessages(messages));
+        "Epoch id: %d is aborted, %d messages might have been published.",
+        epochId, countMessages(messages));
   }
 
   private long countMessages(WriterCommitMessage[] messages) {
     long cnt = 0;
     for (WriterCommitMessage m : messages) {
-      checkArgument(
-          m instanceof PslWriterCommitMessage, "commit message not typed PslWriterCommitMessage");
-      cnt += ((PslWriterCommitMessage) m).numMessages();
+      // It's not guaranteed to be typed PslWriterCommitMessage when abort.
+      if (m instanceof PslWriterCommitMessage) {
+        cnt += ((PslWriterCommitMessage) m).numMessages();
+      }
     }
     return cnt;
   }

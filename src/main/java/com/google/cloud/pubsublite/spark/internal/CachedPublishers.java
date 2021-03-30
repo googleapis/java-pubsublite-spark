@@ -29,6 +29,8 @@ import javax.annotation.concurrent.GuardedBy;
 /** Cached {@link Publisher}s to reuse publisher of same settings in the same task. */
 public class CachedPublishers {
 
+  // TODO(b/182322450): Use com.google.cloud.pubsublite.internal.wire.SystemExecutors
+  // once new PSL client library is released.
   private final Executor listenerExecutor = Executors.newSingleThreadExecutor();
 
   @GuardedBy("this")

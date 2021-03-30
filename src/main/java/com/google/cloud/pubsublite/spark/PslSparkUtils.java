@@ -95,16 +95,17 @@ public class PslSparkUtils {
     return InternalRow.apply(asScalaBufferConverter(list).asScala());
   }
 
-  private static void extractVal(
+  @SuppressWarnings("unchecked")
+  private static <T> void extractVal(
       StructType inputSchema,
       InternalRow row,
       String fieldName,
       DataType expectedDataType,
-      Consumer<Object> consumer) {
+      Consumer<T> consumer) {
     if (!inputSchema.getFieldIndex(fieldName).isEmpty()) {
       Integer idx = (Integer) inputSchema.getFieldIndex(fieldName).get();
       try {
-        consumer.accept(row.get(idx, expectedDataType));
+        consumer.accept((T) row.get(idx, expectedDataType));
       } catch (ClassCastException e) {
         // This means the field has a wrong class type.
       }
@@ -118,28 +119,27 @@ public class PslSparkUtils {
         row,
         "key",
         DataTypes.BinaryType,
-        o -> builder.setKey(ByteString.copyFrom((byte[]) o)));
+        (byte[] o) -> builder.setKey(ByteString.copyFrom(o)));
     extractVal(
         inputSchema,
         row,
         "data",
         DataTypes.BinaryType,
-        o -> builder.setData(ByteString.copyFrom((byte[]) o)));
+        (byte[] o) -> builder.setData(ByteString.copyFrom(o)));
     extractVal(
         inputSchema,
         row,
         "event_timestamp",
         DataTypes.TimestampType,
-        o -> builder.setEventTime(Timestamps.fromMicros((long) o)));
+        (Long o) -> builder.setEventTime(Timestamps.fromMicros(o)));
     extractVal(
         inputSchema,
         row,
         "attributes",
         Constants.ATTRIBUTES_DATATYPE,
-        o -> {
-          MapData mapData = (MapData) o;
+        (MapData o) -> {
           ListMultimap<String, ByteString> attributeMap = ArrayListMultimap.create();
-          mapData.foreach(
+          o.foreach(
               DataTypes.StringType,
               Constants.ATTRIBUTES_PER_KEY_DATATYPE,
               new FromJavaBiConsumer<>(
@@ -149,9 +149,7 @@ public class PslSparkUtils {
                     values.foreach(
                         DataTypes.BinaryType,
                         new FromJavaBiConsumer<>(
-                            (idx, a) -> {
-                              attributeMap.put(key, ByteString.copyFrom((byte[]) a));
-                            }));
+                            (idx, a) -> attributeMap.put(key, ByteString.copyFrom((byte[]) a))));
                   }));
           builder.setAttributes(ImmutableListMultimap.copyOf(attributeMap));
         });

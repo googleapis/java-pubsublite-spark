@@ -80,7 +80,7 @@ public abstract class PslWriteDataSourceOptions implements Serializable {
   }
 
   public PslCredentialsProvider getCredentialProvider() {
-    return new PslCredentialsProvider(this);
+    return new PslCredentialsProvider(credentialsKey());
   }
 
   public static Publisher<MessageMetadata> createNewPublisher(
