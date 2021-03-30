@@ -117,9 +117,10 @@ public final class PslDataSource
   public StreamWriter createStreamWriter(
       String queryId, StructType schema, OutputMode mode, DataSourceOptions options) {
     PslWriteDataSourceOptions pslWriteDataSourceOptions =
-            PslWriteDataSourceOptions.fromSparkDataSourceOptions(options);
+        PslWriteDataSourceOptions.fromSparkDataSourceOptions(options);
     return new PslStreamWriter(
-        schema, pslWriteDataSourceOptions.topicPath(),
-            pslWriteDataSourceOptions.getPublisherFactory());
+        schema,
+        pslWriteDataSourceOptions.topicPath(),
+        pslWriteDataSourceOptions.getPublisherFactory());
   }
 }

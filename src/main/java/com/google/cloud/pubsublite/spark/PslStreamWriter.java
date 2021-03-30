@@ -34,7 +34,8 @@ public class PslStreamWriter implements StreamWriter {
   private final TopicPath topicPath;
   private final PublisherFactory publisherFactory;
 
-  public PslStreamWriter(StructType schema, TopicPath topicPath, PublisherFactory publisherFactory) {
+  public PslStreamWriter(
+      StructType schema, TopicPath topicPath, PublisherFactory publisherFactory) {
     this.inputSchema = schema;
     this.topicPath = topicPath;
     this.publisherFactory = publisherFactory;

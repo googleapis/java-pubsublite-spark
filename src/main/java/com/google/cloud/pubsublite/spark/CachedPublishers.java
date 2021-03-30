@@ -21,12 +21,11 @@ import com.google.cloud.pubsublite.MessageMetadata;
 import com.google.cloud.pubsublite.TopicPath;
 import com.google.cloud.pubsublite.internal.CloseableMonitor;
 import com.google.cloud.pubsublite.internal.Publisher;
-
-import javax.annotation.concurrent.GuardedBy;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import javax.annotation.concurrent.GuardedBy;
 
 /** Cached {@link Publisher}s to reuse publisher of same settings in the same task. */
 public class CachedPublishers {
@@ -36,10 +35,10 @@ public class CachedPublishers {
   private final Executor listenerExecutor = Executors.newSingleThreadExecutor();
 
   @GuardedBy("monitor.monitor")
-  private static final Map<TopicPath, Publisher<MessageMetadata>> publishers =
-      new HashMap<>();
+  private static final Map<TopicPath, Publisher<MessageMetadata>> publishers = new HashMap<>();
 
-  public Publisher<MessageMetadata> getOrCreate(TopicPath topicPath, PublisherFactory publisherFactory) {
+  public Publisher<MessageMetadata> getOrCreate(
+      TopicPath topicPath, PublisherFactory publisherFactory) {
     try (CloseableMonitor.Hold h = monitor.enter()) {
       Publisher<MessageMetadata> publisher = publishers.get(topicPath);
       if (publisher != null) {
@@ -62,5 +61,4 @@ public class CachedPublishers {
       return publisher;
     }
   }
-
 }

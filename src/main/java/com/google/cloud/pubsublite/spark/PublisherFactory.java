@@ -20,11 +20,9 @@ import com.google.api.gax.rpc.ApiException;
 import com.google.cloud.pubsublite.MessageMetadata;
 import com.google.cloud.pubsublite.TopicPath;
 import com.google.cloud.pubsublite.internal.Publisher;
-
 import java.io.Serializable;
 
 interface PublisherFactory extends Serializable {
 
-    Publisher<MessageMetadata> newPublisher(
-            TopicPath topicPath) throws ApiException;
+  Publisher<MessageMetadata> newPublisher(TopicPath topicPath) throws ApiException;
 }

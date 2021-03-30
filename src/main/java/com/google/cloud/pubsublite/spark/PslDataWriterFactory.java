@@ -16,9 +16,8 @@
 
 package com.google.cloud.pubsublite.spark;
 
-import java.io.Serializable;
-
 import com.google.cloud.pubsublite.TopicPath;
+import java.io.Serializable;
 import org.apache.spark.sql.catalyst.InternalRow;
 import org.apache.spark.sql.sources.v2.writer.DataWriter;
 import org.apache.spark.sql.sources.v2.writer.DataWriterFactory;
@@ -31,7 +30,8 @@ public class PslDataWriterFactory implements Serializable, DataWriterFactory<Int
   private final TopicPath topicPath;
   private final PublisherFactory publisherFactory;
 
-  public PslDataWriterFactory(StructType inputSchema, TopicPath topicPath, PublisherFactory publisherFactory) {
+  public PslDataWriterFactory(
+      StructType inputSchema, TopicPath topicPath, PublisherFactory publisherFactory) {
     this.inputSchema = inputSchema;
     this.topicPath = topicPath;
     this.publisherFactory = publisherFactory;
@@ -39,6 +39,7 @@ public class PslDataWriterFactory implements Serializable, DataWriterFactory<Int
 
   @Override
   public DataWriter<InternalRow> createDataWriter(int partitionId, long taskId, long epochId) {
-    return new PslDataWriter(partitionId, taskId, epochId, inputSchema, topicPath, publisherFactory);
+    return new PslDataWriter(
+        partitionId, taskId, epochId, inputSchema, topicPath, publisherFactory);
   }
 }

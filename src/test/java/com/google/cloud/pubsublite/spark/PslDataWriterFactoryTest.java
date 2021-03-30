@@ -16,34 +16,31 @@
 
 package com.google.cloud.pubsublite.spark;
 
-
 import com.google.cloud.pubsublite.internal.testing.UnitTestExamples;
-import org.junit.Test;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import org.junit.Test;
 
 public class PslDataWriterFactoryTest {
 
-    @Test
-    public void testSerializable() throws Exception {
-        PslDataWriterFactory obj = new PslDataWriterFactory(
-                Constants.DEFAULT_SCHEMA,
-                UnitTestExamples.exampleTopicPath(),
-                (t) -> null);
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(bos);
-        oos.writeObject(obj);
-        oos.flush();
-        byte[] data = bos.toByteArray();
+  @Test
+  public void testSerializable() throws Exception {
+    PslDataWriterFactory obj =
+        new PslDataWriterFactory(
+            Constants.DEFAULT_SCHEMA, UnitTestExamples.exampleTopicPath(), (t) -> null);
+    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    ObjectOutputStream oos = new ObjectOutputStream(bos);
+    oos.writeObject(obj);
+    oos.flush();
+    byte[] data = bos.toByteArray();
 
-        PslDataWriterFactory obj2;
-        ByteArrayInputStream bis = new ByteArrayInputStream(data);
-        ObjectInput in = new ObjectInputStream(bis);
-        obj2 = (PslDataWriterFactory) in.readObject();
-        obj2.createDataWriter(1, 1, 1);
-    }
+    PslDataWriterFactory obj2;
+    ByteArrayInputStream bis = new ByteArrayInputStream(data);
+    ObjectInput in = new ObjectInputStream(bis);
+    obj2 = (PslDataWriterFactory) in.readObject();
+    obj2.createDataWriter(1, 1, 1);
+  }
 }
