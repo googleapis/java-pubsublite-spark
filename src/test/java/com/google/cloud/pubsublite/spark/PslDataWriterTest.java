@@ -48,14 +48,13 @@ public class PslDataWriterTest {
           2L,
           3L,
           Constants.DEFAULT_SCHEMA,
-          PslWriteDataSourceOptions.builder()
-              .setTopicPath(UnitTestExamples.exampleTopicPath())
-              .build(),
+          UnitTestExamples.exampleTopicPath(),
+          (t) -> null,
           cachedPublishers);
 
   @Test
   public void testAllSuccess() throws IOException {
-    when(cachedPublishers.getOrCreate(any())).thenReturn(publisher);
+    when(cachedPublishers.getOrCreate(any(), any())).thenReturn(publisher);
     when(publisher.publish(any()))
         .thenReturn(
             ApiFutures.immediateFuture(MessageMetadata.of(Partition.of(0L), Offset.of(0L))));
@@ -67,7 +66,7 @@ public class PslDataWriterTest {
 
   @Test
   public void testPartialFail() {
-    when(cachedPublishers.getOrCreate(any())).thenReturn(publisher);
+    when(cachedPublishers.getOrCreate(any(), any())).thenReturn(publisher);
     when(publisher.publish(any()))
         .thenReturn(ApiFutures.immediateFuture(MessageMetadata.of(Partition.of(0L), Offset.of(0L))))
         .thenReturn(ApiFutures.immediateFailedFuture(new InternalError("")));

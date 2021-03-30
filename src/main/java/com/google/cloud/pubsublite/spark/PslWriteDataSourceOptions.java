@@ -18,9 +18,27 @@ package com.google.cloud.pubsublite.spark;
 
 import com.google.api.gax.rpc.ApiException;
 import com.google.auto.value.AutoValue;
+import com.google.cloud.pubsublite.AdminClient;
+import com.google.cloud.pubsublite.AdminClientSettings;
+import com.google.cloud.pubsublite.MessageMetadata;
+import com.google.cloud.pubsublite.Partition;
 import com.google.cloud.pubsublite.TopicPath;
 import javax.annotation.Nullable;
+
+import com.google.cloud.pubsublite.internal.Publisher;
+import com.google.cloud.pubsublite.internal.wire.PartitionCountWatchingPublisherSettings;
+import com.google.cloud.pubsublite.internal.wire.PubsubContext;
+import com.google.cloud.pubsublite.internal.wire.RoutingMetadata;
+import com.google.cloud.pubsublite.internal.wire.SinglePartitionPublisherBuilder;
+import com.google.cloud.pubsublite.v1.AdminServiceClient;
+import com.google.cloud.pubsublite.v1.AdminServiceSettings;
+import com.google.cloud.pubsublite.v1.PublisherServiceClient;
+import com.google.cloud.pubsublite.v1.PublisherServiceSettings;
 import org.apache.spark.sql.sources.v2.DataSourceOptions;
+
+import static com.google.cloud.pubsublite.internal.ExtractStatus.toCanonical;
+import static com.google.cloud.pubsublite.internal.wire.ServiceClients.addDefaultMetadata;
+import static com.google.cloud.pubsublite.internal.wire.ServiceClients.addDefaultSettings;
 
 @AutoValue
 public abstract class PslWriteDataSourceOptions {
@@ -62,5 +80,59 @@ public abstract class PslWriteDataSourceOptions {
 
   public PslCredentialsProvider getCredentialProvider() {
     return new PslCredentialsProvider(this);
+  }
+
+  public PublisherFactory getPublisherFactory() {
+    return (topicPath) -> createPublisherInternal(this);
+  }
+
+  private PublisherServiceClient newServiceClient(
+          PslWriteDataSourceOptions writeOptions, Partition partition) throws ApiException {
+    PublisherServiceSettings.Builder settingsBuilder = PublisherServiceSettings.newBuilder();
+    settingsBuilder = settingsBuilder.setCredentialsProvider(writeOptions.getCredentialProvider());
+    settingsBuilder =
+            addDefaultMetadata(
+                    PubsubContext.of(Constants.FRAMEWORK),
+                    RoutingMetadata.of(writeOptions.topicPath(), partition),
+                    settingsBuilder);
+    try {
+      return PublisherServiceClient.create(
+              addDefaultSettings(writeOptions.topicPath().location().region(), settingsBuilder));
+    } catch (Throwable t) {
+      throw toCanonical(t).underlying;
+    }
+  }
+
+  private AdminClient getAdminClient(PslWriteDataSourceOptions writeOptions) throws ApiException {
+    try {
+      return AdminClient.create(
+              AdminClientSettings.newBuilder()
+                      .setServiceClient(
+                              AdminServiceClient.create(
+                                      addDefaultSettings(
+                                              writeOptions.topicPath().location().region(),
+                                              AdminServiceSettings.newBuilder()
+                                                      .setCredentialsProvider(writeOptions.getCredentialProvider()))))
+                      .setRegion(writeOptions.topicPath().location().region())
+                      .build());
+    } catch (Throwable t) {
+      throw toCanonical(t).underlying;
+    }
+  }
+
+  private Publisher<MessageMetadata> createPublisherInternal(
+      PslWriteDataSourceOptions writeOptions) {
+    return PartitionCountWatchingPublisherSettings.newBuilder()
+            .setTopic(writeOptions.topicPath())
+            .setPublisherFactory(
+                    partition ->
+                            SinglePartitionPublisherBuilder.newBuilder()
+                                    .setTopic(writeOptions.topicPath())
+                                    .setPartition(partition)
+                                    .setServiceClient(newServiceClient(writeOptions, partition))
+                                    .build())
+            .setAdminClient(getAdminClient(writeOptions))
+            .build()
+            .instantiate();
   }
 }
