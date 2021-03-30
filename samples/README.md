@@ -61,8 +61,7 @@ To run the word count sample in Dataproc cluster, follow the steps:
    ```sh
    mvn clean package -Dmaven.test.skip=true
    ```
-<!-- TODO: provide link to maven central --> 
-6. Download `pubsublite-spark-sql-streaming-$CONNECTOR_VERSION-with-dependencies.jar` from Maven Central and set `PUBSUBLITE_SPARK_SQL_STREAMING_JAR_LOCATION` environment variable.
+6. Download `pubsublite-spark-sql-streaming-$CONNECTOR_VERSION-with-dependencies.jar` from [Maven Central](https://search.maven.org/artifact/com.google.cloud/pubsublite-spark-sql-streaming) and set `PUBSUBLITE_SPARK_SQL_STREAMING_JAR_LOCATION` environment variable.
 7. Create GCS bucket and upload both `pubsublite-spark-sql-streaming-$CONNECTOR_VERSION-with-dependencies.jar` and the sample jar onto GCS
    ```sh
    gsutil mb $BUCKET
@@ -73,7 +72,6 @@ To run the word count sample in Dataproc cluster, follow the steps:
    ```sh
    gcloud config set dataproc/region $REGION
    ```
-<!-- TODO: set up bots to update jar version -->
 9. Run the sample in Dataproc. This will perform word count aggregation and publish word count results to Pub/Sub Lite.
    ```sh
    gcloud dataproc jobs submit spark --cluster=$CLUSTER_NAME \
