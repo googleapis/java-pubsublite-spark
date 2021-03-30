@@ -123,8 +123,6 @@ public final class PslDataSource
     PslWriteDataSourceOptions pslWriteDataSourceOptions =
         PslWriteDataSourceOptions.fromSparkDataSourceOptions(options);
     return new PslStreamWriter(
-        schema,
-        pslWriteDataSourceOptions.topicPath(),
-        pslWriteDataSourceOptions.getPublisherFactory());
+        schema, pslWriteDataSourceOptions);
   }
 }

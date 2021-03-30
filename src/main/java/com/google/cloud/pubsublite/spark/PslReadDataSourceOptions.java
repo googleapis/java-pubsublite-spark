@@ -36,6 +36,7 @@ import com.google.cloud.pubsublite.internal.wire.SubscriberBuilder;
 import com.google.cloud.pubsublite.spark.internal.MultiPartitionCommitter;
 import com.google.cloud.pubsublite.spark.internal.MultiPartitionCommitterImpl;
 import com.google.cloud.pubsublite.spark.internal.PartitionSubscriberFactory;
+import com.google.cloud.pubsublite.spark.internal.PslCredentialsProvider;
 import com.google.cloud.pubsublite.v1.AdminServiceClient;
 import com.google.cloud.pubsublite.v1.AdminServiceSettings;
 import com.google.cloud.pubsublite.v1.CursorServiceClient;

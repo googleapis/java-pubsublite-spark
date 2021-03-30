@@ -18,11 +18,12 @@ package com.google.cloud.pubsublite.spark.internal;
 
 import com.google.api.gax.rpc.ApiException;
 import com.google.cloud.pubsublite.MessageMetadata;
-import com.google.cloud.pubsublite.TopicPath;
 import com.google.cloud.pubsublite.internal.Publisher;
+import com.google.cloud.pubsublite.spark.PslWriteDataSourceOptions;
+
 import java.io.Serializable;
 
 public interface PublisherFactory extends Serializable {
 
-  Publisher<MessageMetadata> newPublisher(TopicPath topicPath) throws ApiException;
+  Publisher<MessageMetadata> newPublisher(PslWriteDataSourceOptions writeOptions) throws ApiException;
 }
