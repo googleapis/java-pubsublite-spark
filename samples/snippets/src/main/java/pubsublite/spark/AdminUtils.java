@@ -32,6 +32,7 @@ import com.google.cloud.pubsublite.SubscriptionName;
 import com.google.cloud.pubsublite.SubscriptionPath;
 import com.google.cloud.pubsublite.TopicName;
 import com.google.cloud.pubsublite.TopicPath;
+import com.google.cloud.pubsublite.cloudpubsub.FlowControlSettings;
 import com.google.cloud.pubsublite.cloudpubsub.Publisher;
 import com.google.cloud.pubsublite.cloudpubsub.PublisherSettings;
 import com.google.cloud.pubsublite.cloudpubsub.Subscriber;
@@ -39,7 +40,6 @@ import com.google.cloud.pubsublite.cloudpubsub.SubscriberSettings;
 import com.google.cloud.pubsublite.internal.CloseableMonitor;
 import com.google.cloud.pubsublite.proto.Subscription;
 import com.google.cloud.pubsublite.proto.Topic;
-import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.util.Durations;
 import com.google.pubsub.v1.PubsubMessage;
@@ -241,11 +241,17 @@ public class AdminUtils {
               }
               consumer.ack();
             };
+    FlowControlSettings flowControlSettings =
+            FlowControlSettings.builder()
+                    .setBytesOutstanding(10 * 1024 * 1024L)
+                    .setMessagesOutstanding(1000L)
+                    .build();
 
     SubscriberSettings subscriberSettings =
             SubscriberSettings.newBuilder()
                     .setSubscriptionPath(subscriptionPath)
                     .setReceiver(receiver)
+                    .setPerPartitionFlowControlSettings(flowControlSettings)
                     .build();
 
     Subscriber subscriber = Subscriber.create(subscriberSettings);

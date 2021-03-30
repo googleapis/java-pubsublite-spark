@@ -135,13 +135,13 @@ public class PslSparkUtils {
         inputSchema,
         row,
         "attributes",
-        Constants.ATTRIBUTES_DATATYPE,
+        SparkStructs.ATTRIBUTES_DATATYPE,
         o -> {
           MapData mapData = (MapData) o;
           ListMultimap<String, ByteString> attributeMap = ArrayListMultimap.create();
           mapData.foreach(
               DataTypes.StringType,
-              Constants.ATTRIBUTES_PER_KEY_DATATYPE,
+              SparkStructs.ATTRIBUTES_PER_KEY_DATATYPE,
               new FromJavaBiConsumer<>(
                   (k, v) -> {
                     String key = ((UTF8String) k).toString();

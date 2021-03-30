@@ -47,10 +47,7 @@ public class PslStreamWriter implements StreamWriter {
   }
 
   @Override
-  public void abort(long epochId, WriterCommitMessage[] messages) {
-    log.atWarning().log(
-        "Epoch id: %d is aborted, including %d messages.", epochId, countMessages(messages));
-  }
+  public void abort(long epochId, WriterCommitMessage[] messages) {}
 
   private long countMessages(WriterCommitMessage[] messages) {
     long cnt = 0;

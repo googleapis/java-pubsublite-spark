@@ -194,7 +194,7 @@ public class SampleIntegrationTest {
       String[] pair = m.getData().toStringUtf8().split("_");
       actual.put(pair[0], Integer.parseInt(pair[1]));
     }
-    assertThat(actual).isEqualTo(expected);
+    assertThat(actual).containsAtLeastEntriesIn(expected);
   }
 
   private void setUpVariables() {

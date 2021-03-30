@@ -47,7 +47,7 @@ public class PslDataWriterTest {
           1L,
           2L,
           3L,
-          Constants.DEFAULT_SCHEMA,
+          SparkStructs.DEFAULT_SCHEMA,
           UnitTestExamples.exampleTopicPath(),
           (t) -> null,
           cachedPublishers);

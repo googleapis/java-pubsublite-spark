@@ -144,7 +144,8 @@ public class PslSparkUtilsTest {
             new StructField[] {
               new StructField("key", DataTypes.BinaryType, false, Metadata.empty()),
               new StructField("data", DataTypes.BinaryType, false, Metadata.empty()),
-              new StructField("attributes", Constants.ATTRIBUTES_DATATYPE, true, Metadata.empty()),
+              new StructField(
+                  "attributes", SparkStructs.ATTRIBUTES_DATATYPE, true, Metadata.empty()),
               new StructField("event_timestamp", DataTypes.TimestampType, true, Metadata.empty()),
               new StructField("random_extra_field", DataTypes.BinaryType, false, Metadata.empty())
             });
