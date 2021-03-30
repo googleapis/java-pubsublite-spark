@@ -56,6 +56,5 @@ public class PslWriteDataSourceOptionsTest {
     ByteArrayInputStream bis = new ByteArrayInputStream(data);
     ObjectInput in = new ObjectInputStream(bis);
     obj2 = (PublisherFactory) in.readObject();
-    obj2.newPublisher(UnitTestExamples.exampleTopicPath());
   }
 }
