@@ -57,12 +57,12 @@ public class PublishWords {
     Preconditions.checkState(
         missingVars.isEmpty(), "Missing required environment variables: " + missingVars);
 
-    String cloudRegion = env.get(REGION);
+    final String cloudRegion = env.get(REGION);
     char zoneId = env.get(ZONE_ID).charAt(0);
-    String topicIdRaw = env.get(TOPIC_ID_RAW);
-    String subscriptionIdRaw = env.get(SUBSCRIPTION_ID_RAW);
-    String topicIdResult = env.get(TOPIC_ID_RESULT);
-    String subscriptionIdResult = env.get(SUBSCRIPTION_ID_RESULT);
+    final String topicIdRaw = env.get(TOPIC_ID_RAW);
+    final String subscriptionIdRaw = env.get(SUBSCRIPTION_ID_RAW);
+    final String topicIdResult = env.get(TOPIC_ID_RESULT);
+    final String subscriptionIdResult = env.get(SUBSCRIPTION_ID_RESULT);
     long projectNumber = Long.parseLong(env.get(PROJECT_NUMBER));
     int partitions = 1;
 
@@ -74,7 +74,7 @@ public class PublishWords {
             .replaceAll("\n", " ")
             .replaceAll("\\s+", " ")
             .toLowerCase();
-    List<String> words = Arrays.asList(snippets.split(" "));
+    final List<String> words = Arrays.asList(snippets.split(" "));
 
     createTopicExample(cloudRegion, zoneId, projectNumber, topicIdRaw, partitions);
     createSubscriptionExample(cloudRegion, zoneId, projectNumber, topicIdRaw, subscriptionIdRaw);

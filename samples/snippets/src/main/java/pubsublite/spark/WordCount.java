@@ -33,8 +33,8 @@ import org.apache.spark.sql.types.DataTypes;
 public class WordCount {
 
   public static void main(String[] args) throws Exception {
-    String subscriptionPathRaw = args[0];
-    String topicPathResult = args[1];
+    final String subscriptionPathRaw = args[0];
+    final String topicPathResult = args[1];
 
     SparkSession spark = SparkSession.builder().appName("Word count").master("yarn").getOrCreate();
 
