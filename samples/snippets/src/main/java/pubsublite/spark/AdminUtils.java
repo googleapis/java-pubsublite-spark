@@ -45,6 +45,8 @@ import com.google.protobuf.util.Durations;
 import com.google.pubsub.v1.PubsubMessage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -221,11 +223,11 @@ public class AdminUtils {
     }
   }
 
-  public static List<PubsubMessage> subscriberExample(
+  public static Queue<PubsubMessage> subscriberExample(
           String cloudRegion, char zoneId, long projectNumber, String subscriptionId)
           throws ApiException {
-    CloseableMonitor m = new CloseableMonitor();
-    List<PubsubMessage> result = new ArrayList<>();
+    // Sample has at most 200 messages.
+    Queue<PubsubMessage> result = new ArrayBlockingQueue<>(1000);
 
     SubscriptionPath subscriptionPath =
             SubscriptionPath.newBuilder()
@@ -236,9 +238,7 @@ public class AdminUtils {
 
     MessageReceiver receiver =
             (PubsubMessage message, AckReplyConsumer consumer) -> {
-              try (CloseableMonitor.Hold h = m.enter()) {
-                result.add(message);
-              }
+              result.add(message);
               consumer.ack();
             };
     FlowControlSettings flowControlSettings =

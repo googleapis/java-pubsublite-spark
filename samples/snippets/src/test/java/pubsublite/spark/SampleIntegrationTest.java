@@ -54,6 +54,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
 
@@ -163,7 +164,7 @@ public class SampleIntegrationTest {
   }
 
   private void verifyWordCountResult() {
-    List<PubsubMessage> results = subscriberExample(cloudRegion.value(), cloudZone.zoneId(),
+    Queue<PubsubMessage> results = subscriberExample(cloudRegion.value(), cloudZone.zoneId(),
             projectNumber.value(), subscriptionNameResult.value());
     Map<String, Integer> expected = new HashMap<String, Integer>() {
       {
