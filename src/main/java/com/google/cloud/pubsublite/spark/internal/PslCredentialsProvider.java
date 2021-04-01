@@ -20,31 +20,20 @@ import com.google.api.client.util.Base64;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.GoogleCredentials;
-import com.google.cloud.pubsublite.spark.PslReadDataSourceOptions;
-import com.google.cloud.pubsublite.spark.PslWriteDataSourceOptions;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import javax.annotation.Nullable;
 
 public class PslCredentialsProvider implements CredentialsProvider {
 
   private final Credentials credentials;
 
-  public PslCredentialsProvider(PslReadDataSourceOptions options) {
-    if (options.credentialsKey() != null) {
-      this.credentials = createCredentialsFromKey(options.credentialsKey());
-    } else {
-      this.credentials = createDefaultCredentials();
-    }
-  }
-
-  public PslCredentialsProvider(PslWriteDataSourceOptions options) {
-    if (options.credentialsKey() != null) {
-      this.credentials = createCredentialsFromKey(options.credentialsKey());
-    } else {
-      this.credentials = createDefaultCredentials();
-    }
+  public PslCredentialsProvider(@Nullable String credentialsKey) {
+    this.credentials =
+        credentialsKey != null
+            ? createCredentialsFromKey(credentialsKey)
+            : createDefaultCredentials();
   }
 
   private static Credentials createCredentialsFromKey(String key) {

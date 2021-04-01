@@ -139,7 +139,7 @@ public abstract class PslReadDataSourceOptions implements Serializable {
       PubsubContext context = PubsubContext.of(Constants.FRAMEWORK);
       SubscriberServiceSettings.Builder settingsBuilder =
           SubscriberServiceSettings.newBuilder()
-              .setCredentialsProvider(new PslCredentialsProvider(this));
+              .setCredentialsProvider(new PslCredentialsProvider(credentialsKey()));
       ServiceClients.addDefaultMetadata(
           context, RoutingMetadata.of(this.subscriptionPath(), partition), settingsBuilder);
       try {
@@ -165,7 +165,7 @@ public abstract class PslReadDataSourceOptions implements Serializable {
           addDefaultSettings(
               this.subscriptionPath().location().region(),
               CursorServiceSettings.newBuilder()
-                  .setCredentialsProvider(new PslCredentialsProvider(this))));
+                  .setCredentialsProvider(new PslCredentialsProvider(credentialsKey()))));
     } catch (IOException e) {
       throw new IllegalStateException("Unable to create CursorServiceClient.");
     }
@@ -185,7 +185,7 @@ public abstract class PslReadDataSourceOptions implements Serializable {
           addDefaultSettings(
               this.subscriptionPath().location().region(),
               AdminServiceSettings.newBuilder()
-                  .setCredentialsProvider(new PslCredentialsProvider(this))));
+                  .setCredentialsProvider(new PslCredentialsProvider(credentialsKey()))));
     } catch (IOException e) {
       throw new IllegalStateException("Unable to create AdminServiceClient.");
     }
@@ -205,7 +205,7 @@ public abstract class PslReadDataSourceOptions implements Serializable {
           addDefaultSettings(
               this.subscriptionPath().location().region(),
               TopicStatsServiceSettings.newBuilder()
-                  .setCredentialsProvider(new PslCredentialsProvider(this))));
+                  .setCredentialsProvider(new PslCredentialsProvider(credentialsKey()))));
     } catch (IOException e) {
       throw new IllegalStateException("Unable to create TopicStatsServiceClient.");
     }

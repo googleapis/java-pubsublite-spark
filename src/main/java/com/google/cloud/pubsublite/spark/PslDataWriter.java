@@ -17,16 +17,17 @@
 package com.google.cloud.pubsublite.spark;
 
 import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiService;
 import com.google.cloud.pubsublite.MessageMetadata;
-import com.google.cloud.pubsublite.TopicPath;
+import com.google.cloud.pubsublite.internal.Publisher;
 import com.google.cloud.pubsublite.spark.internal.CachedPublishers;
 import com.google.cloud.pubsublite.spark.internal.PublisherFactory;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.flogger.GoogleLogger;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import javax.annotation.concurrent.GuardedBy;
 import org.apache.spark.sql.catalyst.InternalRow;
@@ -42,8 +43,10 @@ public class PslDataWriter implements DataWriter<InternalRow> {
 
   private final long partitionId, taskId, epochId;
   private final StructType inputSchema;
-  private final PslWriteDataSourceOptions writeOptions;
-  private final CachedPublishers cachedPublishers; // just a reference
+  private final PublisherFactory publisherFactory;
+
+  @GuardedBy("this")
+  private Optional<Publisher<MessageMetadata>> publisher = Optional.empty();
 
   @GuardedBy("this")
   private final List<ApiFuture<MessageMetadata>> futures = new ArrayList<>();
@@ -53,31 +56,22 @@ public class PslDataWriter implements DataWriter<InternalRow> {
       long taskId,
       long epochId,
       StructType schema,
-      PslWriteDataSourceOptions writeOptions) {
-    this(partitionId, taskId, epochId, schema, writeOptions, CACHED_PUBLISHERS);
-  }
-
-  @VisibleForTesting
-  public PslDataWriter(
-      long partitionId,
-      long taskId,
-      long epochId,
-      StructType schema,
-      PslWriteDataSourceOptions writeOptions,
-      CachedPublishers cachedPublishers) {
+      PublisherFactory publisherFactory) {
     this.partitionId = partitionId;
     this.taskId = taskId;
     this.epochId = epochId;
     this.inputSchema = schema;
-    this.writeOptions = writeOptions;
-    this.cachedPublishers = cachedPublishers;
+    this.publisherFactory = publisherFactory;
   }
 
   @Override
   public synchronized void write(InternalRow record) {
+    if (!publisher.isPresent() || publisher.get().state() != ApiService.State.RUNNING) {
+      publisher = Optional.of(publisherFactory.newPublisher(CACHED_PUBLISHERS));
+    }
     futures.add(
-        cachedPublishers
-            .getOrCreate(writeOptions)
+        publisher
+            .get()
             .publish(Objects.requireNonNull(PslSparkUtils.toPubSubMessage(inputSchema, record))));
   }
 
@@ -87,6 +81,7 @@ public class PslDataWriter implements DataWriter<InternalRow> {
       try {
         f.get();
       } catch (InterruptedException | ExecutionException e) {
+        publisher = Optional.empty();
         throw new IOException(e);
       }
     }

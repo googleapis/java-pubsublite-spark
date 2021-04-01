@@ -30,8 +30,6 @@ import com.google.cloud.pubsublite.Partition;
 import com.google.cloud.pubsublite.internal.TopicStatsClient;
 import com.google.cloud.pubsublite.internal.testing.UnitTestExamples;
 import com.google.cloud.pubsublite.proto.Cursor;
-import com.google.cloud.pubsublite.spark.internal.LimitingHeadOffsetReader;
-import com.google.cloud.pubsublite.spark.internal.PartitionCountReader;
 import com.google.common.testing.FakeTicker;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;

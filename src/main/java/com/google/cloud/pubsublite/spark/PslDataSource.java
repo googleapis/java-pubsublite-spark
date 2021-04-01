@@ -23,12 +23,11 @@ import com.google.auto.service.AutoService;
 import com.google.cloud.pubsublite.AdminClient;
 import com.google.cloud.pubsublite.SubscriptionPath;
 import com.google.cloud.pubsublite.TopicPath;
-import java.util.Objects;
-import java.util.Optional;
-
 import com.google.cloud.pubsublite.spark.internal.CachedPartitionCountReader;
 import com.google.cloud.pubsublite.spark.internal.LimitingHeadOffsetReader;
 import com.google.cloud.pubsublite.spark.internal.PartitionCountReader;
+import java.util.Objects;
+import java.util.Optional;
 import org.apache.spark.sql.sources.DataSourceRegister;
 import org.apache.spark.sql.sources.v2.ContinuousReadSupport;
 import org.apache.spark.sql.sources.v2.DataSourceOptions;
@@ -120,9 +119,9 @@ public final class PslDataSource
   @Override
   public StreamWriter createStreamWriter(
       String queryId, StructType schema, OutputMode mode, DataSourceOptions options) {
+    PslSparkUtils.verifyWriteInputSchema(schema);
     PslWriteDataSourceOptions pslWriteDataSourceOptions =
         PslWriteDataSourceOptions.fromSparkDataSourceOptions(options);
-    return new PslStreamWriter(
-        schema, pslWriteDataSourceOptions);
+    return new PslStreamWriter(schema, pslWriteDataSourceOptions);
   }
 }

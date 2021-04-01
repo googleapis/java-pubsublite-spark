@@ -18,14 +18,7 @@ package com.google.cloud.pubsublite.spark;
 
 import static org.junit.Assert.assertThrows;
 
-import com.google.cloud.pubsublite.internal.testing.UnitTestExamples;
-import com.google.cloud.pubsublite.spark.internal.PublisherFactory;
 import com.google.common.collect.ImmutableMap;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import org.apache.spark.sql.sources.v2.DataSourceOptions;
 import org.junit.Test;
 
@@ -38,24 +31,5 @@ public class PslWriteDataSourceOptionsTest {
     assertThrows(
         IllegalArgumentException.class,
         () -> PslWriteDataSourceOptions.fromSparkDataSourceOptions(options));
-  }
-
-  @Test
-  public void testPublisherFactorySerializable() throws Exception {
-    PslWriteDataSourceOptions options =
-        PslWriteDataSourceOptions.builder()
-            .setTopicPath(UnitTestExamples.exampleTopicPath())
-            .build();
-    PublisherFactory obj = options.getPublisherFactory();
-    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-    ObjectOutputStream oos = new ObjectOutputStream(bos);
-    oos.writeObject(obj);
-    oos.flush();
-    byte[] data = bos.toByteArray();
-
-    PublisherFactory obj2;
-    ByteArrayInputStream bis = new ByteArrayInputStream(data);
-    ObjectInput in = new ObjectInputStream(bis);
-    obj2 = (PublisherFactory) in.readObject();
   }
 }

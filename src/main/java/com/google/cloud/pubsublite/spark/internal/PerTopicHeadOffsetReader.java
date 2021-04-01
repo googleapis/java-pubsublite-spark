@@ -17,7 +17,6 @@
 package com.google.cloud.pubsublite.spark.internal;
 
 import com.google.cloud.pubsublite.spark.PslSourceOffset;
-
 import java.io.Closeable;
 
 public interface PerTopicHeadOffsetReader extends Closeable {
