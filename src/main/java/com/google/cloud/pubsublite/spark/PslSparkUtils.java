@@ -107,8 +107,8 @@ public class PslSparkUtils {
       String fieldName,
       DataType expectedDataType,
       Consumer<T> consumer) {
-    Option<Object> idxOr;
-    if (!(idxOr = inputSchema.getFieldIndex(fieldName)).isEmpty()) {
+    Option<Object> idxOr = inputSchema.getFieldIndex(fieldName);
+    if (!idxOr.isEmpty()) {
       Integer idx = (Integer) idxOr.get();
       try {
         consumer.accept((T) row.get(idx, expectedDataType));
