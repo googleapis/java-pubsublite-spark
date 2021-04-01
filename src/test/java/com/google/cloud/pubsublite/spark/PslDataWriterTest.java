@@ -28,8 +28,7 @@ import com.google.cloud.pubsublite.MessageMetadata;
 import com.google.cloud.pubsublite.Offset;
 import com.google.cloud.pubsublite.Partition;
 import com.google.cloud.pubsublite.internal.Publisher;
-import com.google.cloud.pubsublite.internal.testing.UnitTestExamples;
-import com.google.cloud.pubsublite.spark.internal.CachedPublishers;
+import com.google.cloud.pubsublite.spark.internal.PublisherFactory;
 import java.io.IOException;
 import org.apache.spark.sql.catalyst.InternalRow;
 import org.apache.spark.sql.types.DataType;
@@ -39,19 +38,17 @@ public class PslDataWriterTest {
 
   private final InternalRow row = mock(InternalRow.class);
 
-  private final PslWriteDataSourceOptions writeOptions =
-      PslWriteDataSourceOptions.builder().setTopicPath(UnitTestExamples.exampleTopicPath()).build();
-
   @SuppressWarnings("unchecked")
   private final Publisher<MessageMetadata> publisher = mock(Publisher.class);
 
-  private final CachedPublishers cachedPublishers = mock(CachedPublishers.class);
+  private final PublisherFactory publisherFactory = mock(PublisherFactory.class);
+
   private final PslDataWriter writer =
-      new PslDataWriter(1L, 2L, 3L, Constants.DEFAULT_SCHEMA, writeOptions, cachedPublishers);
+      new PslDataWriter(1L, 2L, 3L, Constants.DEFAULT_SCHEMA, publisherFactory);
 
   @Test
   public void testAllSuccess() throws IOException {
-    when(cachedPublishers.getOrCreate(any())).thenReturn(publisher);
+    when(publisherFactory.newPublisher(any())).thenReturn(publisher);
     when(publisher.publish(any()))
         .thenReturn(
             ApiFutures.immediateFuture(MessageMetadata.of(Partition.of(0L), Offset.of(0L))));
@@ -63,7 +60,7 @@ public class PslDataWriterTest {
 
   @Test
   public void testPartialFail() {
-    when(cachedPublishers.getOrCreate(any())).thenReturn(publisher);
+    when(publisherFactory.newPublisher(any())).thenReturn(publisher);
     when(publisher.publish(any()))
         .thenReturn(ApiFutures.immediateFuture(MessageMetadata.of(Partition.of(0L), Offset.of(0L))))
         .thenReturn(ApiFutures.immediateFailedFuture(new InternalError("")));

@@ -17,6 +17,7 @@
 package com.google.cloud.pubsublite.spark;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static scala.collection.JavaConverters.asScalaBufferConverter;
 
 import com.google.cloud.pubsublite.Message;
@@ -153,20 +154,6 @@ public class PslSparkUtilsTest {
   }
 
   @Test
-  public void testToPubSubMessageTypeMismatch() {
-    StructType structType =
-        new StructType(
-            new StructField[] {
-              new StructField("key", DataTypes.TimestampType, false, Metadata.empty())
-            });
-    List<Object> list = Collections.singletonList(/*Timestamp=*/ 100000L);
-    InternalRow row = InternalRow.apply(asScalaBufferConverter(list).asScala());
-
-    Message message = PslSparkUtils.toPubSubMessage(structType, row);
-    assertThat(message).isEqualTo(Message.builder().build());
-  }
-
-  @Test
   public void testToPubSubMessageLongForEventTimestamp() {
     Message expectedMsg = Message.builder().setEventTime(Timestamps.fromMicros(100000L)).build();
 
@@ -180,5 +167,42 @@ public class PslSparkUtilsTest {
 
     Message message = PslSparkUtils.toPubSubMessage(structType, row);
     assertThat(message).isEqualTo(expectedMsg);
+  }
+
+  @Test
+  public void testVerifyWriteInputSchema() {
+    PslSparkUtils.verifyWriteInputSchema(Constants.DEFAULT_SCHEMA);
+
+    StructType goodThoughMissing =
+        new StructType(
+            new StructField[] {
+              new StructField("offset", DataTypes.LongType, false, Metadata.empty()),
+              new StructField(
+                  "key", Constants.PUBLISH_FIELD_TYPES.get("key"), false, Metadata.empty()),
+              new StructField(
+                  "publish_timestamp", DataTypes.TimestampType, false, Metadata.empty()),
+              new StructField(
+                  "attributes",
+                  Constants.PUBLISH_FIELD_TYPES.get("attributes"),
+                  true,
+                  Metadata.empty())
+            });
+    PslSparkUtils.verifyWriteInputSchema(goodThoughMissing);
+
+    StructType bad =
+        new StructType(
+            new StructField[] {
+              new StructField("offset", DataTypes.LongType, false, Metadata.empty()),
+              // Key field wrong DataType
+              new StructField("key", DataTypes.StringType, false, Metadata.empty()),
+              new StructField(
+                  "publish_timestamp", DataTypes.TimestampType, false, Metadata.empty()),
+              new StructField(
+                  "attributes",
+                  Constants.PUBLISH_FIELD_TYPES.get("attributes"),
+                  true,
+                  Metadata.empty())
+            });
+    assertThrows(IllegalArgumentException.class, () -> PslSparkUtils.verifyWriteInputSchema(bad));
   }
 }

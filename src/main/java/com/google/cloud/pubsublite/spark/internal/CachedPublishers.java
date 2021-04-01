@@ -40,7 +40,7 @@ public class CachedPublishers {
   public synchronized Publisher<MessageMetadata> getOrCreate(
       PslWriteDataSourceOptions writeOptions) {
     Publisher<MessageMetadata> publisher = publishers.get(writeOptions);
-    if (publisher != null) {
+    if (publisher != null && publisher.state() == ApiService.State.RUNNING) {
       return publisher;
     }
 

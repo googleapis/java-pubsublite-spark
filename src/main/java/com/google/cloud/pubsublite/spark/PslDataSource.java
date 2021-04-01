@@ -119,6 +119,7 @@ public final class PslDataSource
   @Override
   public StreamWriter createStreamWriter(
       String queryId, StructType schema, OutputMode mode, DataSourceOptions options) {
+    PslSparkUtils.verifyWriteInputSchema(schema);
     PslWriteDataSourceOptions pslWriteDataSourceOptions =
         PslWriteDataSourceOptions.fromSparkDataSourceOptions(options);
     return new PslStreamWriter(schema, pslWriteDataSourceOptions);

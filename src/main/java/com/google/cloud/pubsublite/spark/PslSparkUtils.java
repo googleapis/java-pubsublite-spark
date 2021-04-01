@@ -48,6 +48,7 @@ import org.apache.spark.sql.catalyst.util.GenericArrayData;
 import org.apache.spark.sql.catalyst.util.MapData;
 import org.apache.spark.sql.types.DataType;
 import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import org.apache.spark.unsafe.types.ByteArray;
 import org.apache.spark.unsafe.types.UTF8String;
@@ -110,14 +111,9 @@ public class PslSparkUtils {
     Option<Object> idxOr = inputSchema.getFieldIndex(fieldName);
     if (!idxOr.isEmpty()) {
       Integer idx = (Integer) idxOr.get();
-      try {
-        consumer.accept((T) row.get(idx, expectedDataType));
-      } catch (ClassCastException e) {
-        // This means the field has a wrong class type.
-        log.atInfo().atMostEvery(5, TimeUnit.MINUTES).log(
-            "Col %s was dropped since the type doesn't match. Actual type: %s, expected type: %s.",
-            fieldName, inputSchema.apply(idx).dataType(), expectedDataType);
-      }
+      // DateType should match and not throw ClassCastException, as we already verified
+      // type match in driver node.
+      consumer.accept((T) row.get(idx, expectedDataType));
     }
   }
 
@@ -127,25 +123,25 @@ public class PslSparkUtils {
         inputSchema,
         row,
         "key",
-        DataTypes.BinaryType,
+        Constants.PUBLISH_FIELD_TYPES.get("key"),
         (byte[] o) -> builder.setKey(ByteString.copyFrom(o)));
     extractVal(
         inputSchema,
         row,
         "data",
-        DataTypes.BinaryType,
+        Constants.PUBLISH_FIELD_TYPES.get("data"),
         (byte[] o) -> builder.setData(ByteString.copyFrom(o)));
     extractVal(
         inputSchema,
         row,
         "event_timestamp",
-        DataTypes.TimestampType,
+        Constants.PUBLISH_FIELD_TYPES.get("event_timestamp"),
         (Long o) -> builder.setEventTime(Timestamps.fromMicros(o)));
     extractVal(
         inputSchema,
         row,
         "attributes",
-        Constants.ATTRIBUTES_DATATYPE,
+        Constants.PUBLISH_FIELD_TYPES.get("attributes"),
         (MapData o) -> {
           ImmutableListMultimap.Builder<String, ByteString> attributeMapBuilder =
               ImmutableListMultimap.builder();
@@ -165,6 +161,35 @@ public class PslSparkUtils {
           builder.setAttributes(attributeMapBuilder.build());
         });
     return builder.build();
+  }
+
+  /**
+   * Make sure data fields for publish have expected Spark DataType if they exist.
+   *
+   * @param inputSchema input table schema to write to Pub/Sub Lite.
+   * @throws IllegalArgumentException if any DataType mismatch detected.
+   */
+  public static void verifyWriteInputSchema(StructType inputSchema) {
+    Constants.PUBLISH_FIELD_TYPES.forEach(
+        (k, v) -> {
+          Option<Object> idxOr = inputSchema.getFieldIndex(k);
+          if (!idxOr.isEmpty()) {
+            StructField f = inputSchema.apply((int) idxOr.get());
+            if (f.dataType() != v) {
+              throw new IllegalArgumentException(
+                  String.format(
+                      "Column %s in input schema to write to "
+                          + "Pub/Sub Lite has a wrong DataType. Actual: %s, expected: %s.",
+                      k, f.dataType(), v));
+            }
+          } else {
+            log.atInfo().atMostEvery(5, TimeUnit.MINUTES).log(
+                "Input schema to write "
+                    + "to Pub/Sub Lite doesn't contain %s column, this field for all rows will "
+                    + "be set to empty.",
+                k);
+          }
+        });
   }
 
   public static SparkSourceOffset toSparkSourceOffset(PslSourceOffset pslSourceOffset) {
