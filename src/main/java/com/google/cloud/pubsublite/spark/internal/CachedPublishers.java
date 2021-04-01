@@ -29,7 +29,7 @@ import javax.annotation.concurrent.GuardedBy;
 /** Cached {@link Publisher}s to reuse publisher of same settings in the same task. */
 public class CachedPublishers {
 
-  // TODO(b/182322450): Use com.google.cloud.pubsublite.internal.wire.SystemExecutors
+  // TODO(jiangmichaellll): Use com.google.cloud.pubsublite.internal.wire.SystemExecutors
   // once new PSL client library is released.
   private final Executor listenerExecutor = Executors.newSingleThreadExecutor();
 
@@ -44,7 +44,7 @@ public class CachedPublishers {
       return publisher;
     }
 
-    publisher = PslWriteDataSourceOptions.createNewPublisher(writeOptions);
+    publisher = writeOptions.createNewPublisher();
     publishers.put(writeOptions, publisher);
     publisher.addListener(
         new ApiService.Listener() {

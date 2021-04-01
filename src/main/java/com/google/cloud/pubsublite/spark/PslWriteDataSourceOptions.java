@@ -83,51 +83,48 @@ public abstract class PslWriteDataSourceOptions implements Serializable {
     return new PslCredentialsProvider(credentialsKey());
   }
 
-  public static Publisher<MessageMetadata> createNewPublisher(
-      PslWriteDataSourceOptions writeOptions) {
+  public Publisher<MessageMetadata> createNewPublisher() {
     return PartitionCountWatchingPublisherSettings.newBuilder()
-        .setTopic(writeOptions.topicPath())
+        .setTopic(topicPath())
         .setPublisherFactory(
             partition ->
                 SinglePartitionPublisherBuilder.newBuilder()
-                    .setTopic(writeOptions.topicPath())
+                    .setTopic(topicPath())
                     .setPartition(partition)
-                    .setServiceClient(newServiceClient(writeOptions, partition))
+                    .setServiceClient(newServiceClient(partition))
                     .build())
-        .setAdminClient(getAdminClient(writeOptions))
+        .setAdminClient(getAdminClient())
         .build()
         .instantiate();
   }
 
-  private static PublisherServiceClient newServiceClient(
-      PslWriteDataSourceOptions writeOptions, Partition partition) throws ApiException {
+  private PublisherServiceClient newServiceClient(Partition partition) throws ApiException {
     PublisherServiceSettings.Builder settingsBuilder = PublisherServiceSettings.newBuilder();
-    settingsBuilder = settingsBuilder.setCredentialsProvider(writeOptions.getCredentialProvider());
+    settingsBuilder = settingsBuilder.setCredentialsProvider(getCredentialProvider());
     settingsBuilder =
         addDefaultMetadata(
             PubsubContext.of(Constants.FRAMEWORK),
-            RoutingMetadata.of(writeOptions.topicPath(), partition),
+            RoutingMetadata.of(topicPath(), partition),
             settingsBuilder);
     try {
       return PublisherServiceClient.create(
-          addDefaultSettings(writeOptions.topicPath().location().region(), settingsBuilder));
+          addDefaultSettings(topicPath().location().region(), settingsBuilder));
     } catch (Throwable t) {
       throw toCanonical(t).underlying;
     }
   }
 
-  private static AdminClient getAdminClient(PslWriteDataSourceOptions writeOptions)
-      throws ApiException {
+  private AdminClient getAdminClient() throws ApiException {
     try {
       return AdminClient.create(
           AdminClientSettings.newBuilder()
               .setServiceClient(
                   AdminServiceClient.create(
                       addDefaultSettings(
-                          writeOptions.topicPath().location().region(),
+                          topicPath().location().region(),
                           AdminServiceSettings.newBuilder()
-                              .setCredentialsProvider(writeOptions.getCredentialProvider()))))
-              .setRegion(writeOptions.topicPath().location().region())
+                              .setCredentialsProvider(getCredentialProvider()))))
+              .setRegion(topicPath().location().region())
               .build());
     } catch (Throwable t) {
       throw toCanonical(t).underlying;

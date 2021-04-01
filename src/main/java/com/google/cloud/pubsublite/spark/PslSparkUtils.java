@@ -26,9 +26,9 @@ import com.google.cloud.pubsublite.SequencedMessage;
 import com.google.cloud.pubsublite.SubscriptionPath;
 import com.google.cloud.pubsublite.internal.CursorClient;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
+import com.google.common.flogger.GoogleLogger;
 import com.google.common.math.LongMath;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.util.Timestamps;
@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.apache.spark.sql.catalyst.InternalRow;
@@ -50,9 +51,13 @@ import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructType;
 import org.apache.spark.unsafe.types.ByteArray;
 import org.apache.spark.unsafe.types.UTF8String;
+import scala.Option;
 import scala.compat.java8.functionConverterImpls.FromJavaBiConsumer;
 
 public class PslSparkUtils {
+
+  private static final GoogleLogger log = GoogleLogger.forEnclosingClass();
+
   @VisibleForTesting
   public static ArrayBasedMapData convertAttributesToSparkMap(
       ListMultimap<String, ByteString> attributeMap) {
@@ -102,12 +107,16 @@ public class PslSparkUtils {
       String fieldName,
       DataType expectedDataType,
       Consumer<T> consumer) {
-    if (!inputSchema.getFieldIndex(fieldName).isEmpty()) {
-      Integer idx = (Integer) inputSchema.getFieldIndex(fieldName).get();
+    Option<Object> idxOr;
+    if (!(idxOr = inputSchema.getFieldIndex(fieldName)).isEmpty()) {
+      Integer idx = (Integer) idxOr.get();
       try {
         consumer.accept((T) row.get(idx, expectedDataType));
       } catch (ClassCastException e) {
         // This means the field has a wrong class type.
+        log.atInfo().atMostEvery(5, TimeUnit.MINUTES).log(
+            "Col %s was dropped since the type doesn't match. Actual type: %s, expected type: %s.",
+            fieldName, inputSchema.apply(idx).dataType(), expectedDataType);
       }
     }
   }
@@ -138,7 +147,8 @@ public class PslSparkUtils {
         "attributes",
         Constants.ATTRIBUTES_DATATYPE,
         (MapData o) -> {
-          ListMultimap<String, ByteString> attributeMap = ArrayListMultimap.create();
+          ImmutableListMultimap.Builder<String, ByteString> attributeMapBuilder =
+              ImmutableListMultimap.builder();
           o.foreach(
               DataTypes.StringType,
               Constants.ATTRIBUTES_PER_KEY_DATATYPE,
@@ -149,9 +159,10 @@ public class PslSparkUtils {
                     values.foreach(
                         DataTypes.BinaryType,
                         new FromJavaBiConsumer<>(
-                            (idx, a) -> attributeMap.put(key, ByteString.copyFrom((byte[]) a))));
+                            (idx, a) ->
+                                attributeMapBuilder.put(key, ByteString.copyFrom((byte[]) a))));
                   }));
-          builder.setAttributes(ImmutableListMultimap.copyOf(attributeMap));
+          builder.setAttributes(attributeMapBuilder.build());
         });
     return builder.build();
   }
