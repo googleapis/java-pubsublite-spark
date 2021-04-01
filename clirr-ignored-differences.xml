@@ -12,4 +12,29 @@
         <method>*</method>
         <to>*</to>
     </difference>
+    <difference>
+        <differenceType>8001</differenceType>
+        <className>com/google/cloud/pubsublite/spark/LimitingHeadOffsetReader</className>
+    </difference>
+    <difference>
+        <differenceType>8001</differenceType>
+        <className>com/google/cloud/pubsublite/spark/MultiPartitionCommitter*</className>
+    </difference>
+    <difference>
+        <differenceType>8001</differenceType>
+        <className>com/google/cloud/pubsublite/spark/PartitionSubscriberFactory</className>
+    </difference>
+    <difference>
+        <differenceType>8001</differenceType>
+        <className>com/google/cloud/pubsublite/spark/PerTopicHeadOffsetReader</className>
+    </difference>
+    <difference>
+        <differenceType>8001</differenceType>
+        <className>com/google/cloud/pubsublite/spark/PslCredentialsProvider</className>
+    </difference>
+    <difference>
+        <differenceType>8001</differenceType>
+        <className>com/google/cloud/pubsublite/spark/PslDataSourceOptions*</className>
+    </difference>
+
 </differences>
