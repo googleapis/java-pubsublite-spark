@@ -109,7 +109,7 @@ public class PslContinuousReader implements ContinuousReader {
 
   @Override
   public StructType readSchema() {
-    return Constants.DEFAULT_SCHEMA;
+    return SparkStructs.DEFAULT_SCHEMA;
   }
 
   @Override

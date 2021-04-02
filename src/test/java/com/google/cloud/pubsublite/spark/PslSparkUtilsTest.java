@@ -145,7 +145,8 @@ public class PslSparkUtilsTest {
             new StructField[] {
               new StructField("key", DataTypes.BinaryType, false, Metadata.empty()),
               new StructField("data", DataTypes.BinaryType, false, Metadata.empty()),
-              new StructField("attributes", Constants.ATTRIBUTES_DATATYPE, true, Metadata.empty()),
+              new StructField(
+                  "attributes", SparkStructs.ATTRIBUTES_DATATYPE, true, Metadata.empty()),
               new StructField("event_timestamp", DataTypes.TimestampType, true, Metadata.empty()),
               new StructField("random_extra_field", DataTypes.BinaryType, false, Metadata.empty())
             });
@@ -171,19 +172,19 @@ public class PslSparkUtilsTest {
 
   @Test
   public void testVerifyWriteInputSchema() {
-    PslSparkUtils.verifyWriteInputSchema(Constants.DEFAULT_SCHEMA);
+    PslSparkUtils.verifyWriteInputSchema(SparkStructs.DEFAULT_SCHEMA);
 
     StructType goodThoughMissing =
         new StructType(
             new StructField[] {
               new StructField("offset", DataTypes.LongType, false, Metadata.empty()),
               new StructField(
-                  "key", Constants.PUBLISH_FIELD_TYPES.get("key"), false, Metadata.empty()),
+                  "key", SparkStructs.PUBLISH_FIELD_TYPES.get("key"), false, Metadata.empty()),
               new StructField(
                   "publish_timestamp", DataTypes.TimestampType, false, Metadata.empty()),
               new StructField(
                   "attributes",
-                  Constants.PUBLISH_FIELD_TYPES.get("attributes"),
+                  SparkStructs.PUBLISH_FIELD_TYPES.get("attributes"),
                   true,
                   Metadata.empty())
             });
@@ -199,7 +200,7 @@ public class PslSparkUtilsTest {
                   "publish_timestamp", DataTypes.TimestampType, false, Metadata.empty()),
               new StructField(
                   "attributes",
-                  Constants.PUBLISH_FIELD_TYPES.get("attributes"),
+                  SparkStructs.PUBLISH_FIELD_TYPES.get("attributes"),
                   true,
                   Metadata.empty())
             });
