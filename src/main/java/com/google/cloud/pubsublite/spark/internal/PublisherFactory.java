@@ -22,5 +22,5 @@ import java.io.Serializable;
 
 public interface PublisherFactory extends Serializable {
 
-  Publisher<MessageMetadata> newPublisher(CachedPublishers cp);
+  Publisher<MessageMetadata> newPublisher();
 }

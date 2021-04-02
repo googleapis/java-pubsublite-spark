@@ -27,6 +27,7 @@ import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 
 public class SparkStructs {
+
   public static ArrayType ATTRIBUTES_PER_KEY_DATATYPE =
       DataTypes.createArrayType(DataTypes.BinaryType);
   public static MapType ATTRIBUTES_DATATYPE =

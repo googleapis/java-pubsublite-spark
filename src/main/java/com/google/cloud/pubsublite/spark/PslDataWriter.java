@@ -20,7 +20,6 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiService;
 import com.google.cloud.pubsublite.MessageMetadata;
 import com.google.cloud.pubsublite.internal.Publisher;
-import com.google.cloud.pubsublite.spark.internal.CachedPublishers;
 import com.google.cloud.pubsublite.spark.internal.PublisherFactory;
 import com.google.common.flogger.GoogleLogger;
 import java.io.IOException;
@@ -38,8 +37,6 @@ import org.apache.spark.sql.types.StructType;
 public class PslDataWriter implements DataWriter<InternalRow> {
 
   private static final GoogleLogger log = GoogleLogger.forEnclosingClass();
-
-  private static final CachedPublishers CACHED_PUBLISHERS = new CachedPublishers();
 
   private final long partitionId, taskId, epochId;
   private final StructType inputSchema;
@@ -67,7 +64,7 @@ public class PslDataWriter implements DataWriter<InternalRow> {
   @Override
   public synchronized void write(InternalRow record) {
     if (!publisher.isPresent() || publisher.get().state() != ApiService.State.RUNNING) {
-      publisher = Optional.of(publisherFactory.newPublisher(CACHED_PUBLISHERS));
+      publisher = Optional.of(publisherFactory.newPublisher());
     }
     futures.add(
         publisher
