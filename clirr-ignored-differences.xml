@@ -36,5 +36,9 @@
         <differenceType>8001</differenceType>
         <className>com/google/cloud/pubsublite/spark/PslDataSourceOptions*</className>
     </difference>
-
+    <difference>
+        <differenceType>6001</differenceType>
+        <className>com/google/cloud/pubsublite/spark/Constants</className>
+        <field>DEFAULT_SCHEMA</field>
+    </difference>
 </differences>
