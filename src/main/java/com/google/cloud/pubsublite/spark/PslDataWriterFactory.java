@@ -39,7 +39,7 @@ public class PslDataWriterFactory implements Serializable, DataWriterFactory<Int
 
   @Override
   public DataWriter<InternalRow> createDataWriter(int partitionId, long taskId, long epochId) {
-    PublisherFactory pg = () -> CACHED_PUBLISHERS.getOrCreate(writeOptions);
-    return new PslDataWriter(partitionId, taskId, epochId, inputSchema, pg);
+    PublisherFactory pf = () -> CACHED_PUBLISHERS.getOrCreate(writeOptions);
+    return new PslDataWriter(partitionId, taskId, epochId, inputSchema, pf);
   }
 }
