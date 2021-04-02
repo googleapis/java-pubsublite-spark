@@ -123,31 +123,31 @@ public class PslSparkUtils {
         inputSchema,
         row,
         "key",
-        SparkStucts.PUBLISH_FIELD_TYPES.get("key"),
+        SparkStructs.PUBLISH_FIELD_TYPES.get("key"),
         (byte[] o) -> builder.setKey(ByteString.copyFrom(o)));
     extractVal(
         inputSchema,
         row,
         "data",
-        SparkStucts.PUBLISH_FIELD_TYPES.get("data"),
+        SparkStructs.PUBLISH_FIELD_TYPES.get("data"),
         (byte[] o) -> builder.setData(ByteString.copyFrom(o)));
     extractVal(
         inputSchema,
         row,
         "event_timestamp",
-        SparkStucts.PUBLISH_FIELD_TYPES.get("event_timestamp"),
+        SparkStructs.PUBLISH_FIELD_TYPES.get("event_timestamp"),
         (Long o) -> builder.setEventTime(Timestamps.fromMicros(o)));
     extractVal(
         inputSchema,
         row,
         "attributes",
-        SparkStucts.PUBLISH_FIELD_TYPES.get("attributes"),
+        SparkStructs.PUBLISH_FIELD_TYPES.get("attributes"),
         (MapData o) -> {
           ImmutableListMultimap.Builder<String, ByteString> attributeMapBuilder =
               ImmutableListMultimap.builder();
           o.foreach(
               DataTypes.StringType,
-              SparkStucts.ATTRIBUTES_PER_KEY_DATATYPE,
+              SparkStructs.ATTRIBUTES_PER_KEY_DATATYPE,
               new FromJavaBiConsumer<>(
                   (k, v) -> {
                     String key = ((UTF8String) k).toString();
@@ -170,7 +170,7 @@ public class PslSparkUtils {
    * @throws IllegalArgumentException if any DataType mismatch detected.
    */
   public static void verifyWriteInputSchema(StructType inputSchema) {
-    SparkStucts.PUBLISH_FIELD_TYPES.forEach(
+    SparkStructs.PUBLISH_FIELD_TYPES.forEach(
         (k, v) -> {
           Option<Object> idxOr = inputSchema.getFieldIndex(k);
           if (!idxOr.isEmpty()) {

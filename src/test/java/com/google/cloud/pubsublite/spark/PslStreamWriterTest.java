@@ -24,7 +24,7 @@ public class PslStreamWriterTest {
 
   private final PslStreamWriter writer =
       new PslStreamWriter(
-          SparkStucts.DEFAULT_SCHEMA,
+          SparkStructs.DEFAULT_SCHEMA,
           PslWriteDataSourceOptions.builder()
               .setTopicPath(UnitTestExamples.exampleTopicPath())
               .build());
