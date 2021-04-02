@@ -58,7 +58,7 @@ public class PslDataWriterTest {
 
   @Test
   public void testAllSuccess() throws IOException {
-    when(publisherFactory.newPublisher(any())).thenReturn(publisher);
+    when(publisherFactory.newPublisher()).thenReturn(publisher);
     when(publisher.publish(any()))
         .thenReturn(
             ApiFutures.immediateFuture(MessageMetadata.of(Partition.of(0L), Offset.of(0L))));
@@ -71,7 +71,7 @@ public class PslDataWriterTest {
 
   @Test
   public void testPartialFail() {
-    when(publisherFactory.newPublisher(any())).thenReturn(publisher);
+    when(publisherFactory.newPublisher()).thenReturn(publisher);
     when(publisher.publish(any()))
         .thenReturn(ApiFutures.immediateFuture(MessageMetadata.of(Partition.of(0L), Offset.of(0L))))
         .thenReturn(ApiFutures.immediateFailedFuture(new InternalError("")));
