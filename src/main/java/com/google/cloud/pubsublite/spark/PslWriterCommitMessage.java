@@ -16,17 +16,15 @@
 
 package com.google.cloud.pubsublite.spark;
 
-import com.google.cloud.pubsublite.Partition;
-import com.google.cloud.pubsublite.internal.wire.Committer;
-import java.io.Closeable;
+import com.google.auto.value.AutoValue;
+import org.apache.spark.sql.sources.v2.writer.WriterCommitMessage;
 
-public interface MultiPartitionCommitter extends Closeable {
+@AutoValue
+public abstract class PslWriterCommitMessage implements WriterCommitMessage {
 
-  interface CommitterFactory {
-    Committer newCommitter(Partition partition);
+  public abstract long numMessages();
+
+  public static PslWriterCommitMessage create(long numMessages) {
+    return new AutoValue_PslWriterCommitMessage(numMessages);
   }
-
-  void commit(PslSourceOffset offset);
-
-  void close();
 }

@@ -14,22 +14,13 @@
  * limitations under the License.
  */
 
-package com.google.cloud.pubsublite.spark;
+package com.google.cloud.pubsublite.spark.internal;
 
-import static org.junit.Assert.assertThrows;
+import java.io.Closeable;
 
-import com.google.common.collect.ImmutableMap;
-import org.apache.spark.sql.sources.v2.DataSourceOptions;
-import org.junit.Test;
+public interface PartitionCountReader extends Closeable {
+  int getPartitionCount();
 
-public class PslDataSourceOptionsTest {
-
-  @Test
-  public void testInvalidSubPath() {
-    DataSourceOptions options =
-        new DataSourceOptions(ImmutableMap.of(Constants.SUBSCRIPTION_CONFIG_KEY, "invalid/path"));
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> PslDataSourceOptions.fromSparkDataSourceOptions(options));
-  }
+  @Override
+  void close();
 }

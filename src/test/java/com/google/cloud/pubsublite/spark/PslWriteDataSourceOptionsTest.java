@@ -16,11 +16,20 @@
 
 package com.google.cloud.pubsublite.spark;
 
-import java.io.Closeable;
+import static org.junit.Assert.assertThrows;
 
-public interface PartitionCountReader extends Closeable {
-  int getPartitionCount();
+import com.google.common.collect.ImmutableMap;
+import org.apache.spark.sql.sources.v2.DataSourceOptions;
+import org.junit.Test;
 
-  @Override
-  void close();
+public class PslWriteDataSourceOptionsTest {
+
+  @Test
+  public void testInvalidTopicPath() {
+    DataSourceOptions options =
+        new DataSourceOptions(ImmutableMap.of(Constants.TOPIC_CONFIG_KEY, "invalid/path"));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> PslWriteDataSourceOptions.fromSparkDataSourceOptions(options));
+  }
 }

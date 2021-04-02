@@ -16,13 +16,20 @@
 
 package com.google.cloud.pubsublite.spark;
 
-import java.io.Closeable;
+import static org.junit.Assert.assertThrows;
 
-public interface PerTopicHeadOffsetReader extends Closeable {
+import com.google.common.collect.ImmutableMap;
+import org.apache.spark.sql.sources.v2.DataSourceOptions;
+import org.junit.Test;
 
-  // Gets the head offsets for all partitions in the topic. Blocks.
-  PslSourceOffset getHeadOffset();
+public class PslReadDataSourceOptionsTest {
 
-  @Override
-  void close();
+  @Test
+  public void testInvalidSubPath() {
+    DataSourceOptions options =
+        new DataSourceOptions(ImmutableMap.of(Constants.SUBSCRIPTION_CONFIG_KEY, "invalid/path"));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> PslReadDataSourceOptions.fromSparkDataSourceOptions(options));
+  }
 }

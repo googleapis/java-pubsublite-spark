@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.cloud.pubsublite.spark;
+package com.google.cloud.pubsublite.spark.internal;
 
 import static com.google.cloud.pubsublite.spark.TestingUtils.createPslSourceOffset;
 import static org.mockito.ArgumentMatchers.eq;
@@ -23,6 +23,7 @@ import static org.mockito.Mockito.*;
 import com.google.api.core.SettableApiFuture;
 import com.google.cloud.pubsublite.*;
 import com.google.cloud.pubsublite.internal.wire.Committer;
+import com.google.cloud.pubsublite.spark.PslSourceOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;

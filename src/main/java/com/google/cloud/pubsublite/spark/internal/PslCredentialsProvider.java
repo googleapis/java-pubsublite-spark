@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.cloud.pubsublite.spark;
+package com.google.cloud.pubsublite.spark.internal;
 
 import com.google.api.client.util.Base64;
 import com.google.api.gax.core.CredentialsProvider;
@@ -23,17 +23,17 @@ import com.google.auth.oauth2.GoogleCredentials;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import javax.annotation.Nullable;
 
 public class PslCredentialsProvider implements CredentialsProvider {
 
   private final Credentials credentials;
 
-  public PslCredentialsProvider(PslDataSourceOptions options) {
-    if (options.credentialsKey() != null) {
-      this.credentials = createCredentialsFromKey(options.credentialsKey());
-    } else {
-      this.credentials = createDefaultCredentials();
-    }
+  public PslCredentialsProvider(@Nullable String credentialsKey) {
+    this.credentials =
+        credentialsKey != null
+            ? createCredentialsFromKey(credentialsKey)
+            : createDefaultCredentials();
   }
 
   private static Credentials createCredentialsFromKey(String key) {

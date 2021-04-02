@@ -33,6 +33,10 @@ import com.google.cloud.pubsublite.internal.wire.PubsubContext;
 import com.google.cloud.pubsublite.internal.wire.RoutingMetadata;
 import com.google.cloud.pubsublite.internal.wire.ServiceClients;
 import com.google.cloud.pubsublite.internal.wire.SubscriberBuilder;
+import com.google.cloud.pubsublite.spark.internal.MultiPartitionCommitter;
+import com.google.cloud.pubsublite.spark.internal.MultiPartitionCommitterImpl;
+import com.google.cloud.pubsublite.spark.internal.PartitionSubscriberFactory;
+import com.google.cloud.pubsublite.spark.internal.PslCredentialsProvider;
 import com.google.cloud.pubsublite.v1.AdminServiceClient;
 import com.google.cloud.pubsublite.v1.AdminServiceSettings;
 import com.google.cloud.pubsublite.v1.CursorServiceClient;
@@ -47,7 +51,7 @@ import javax.annotation.Nullable;
 import org.apache.spark.sql.sources.v2.DataSourceOptions;
 
 @AutoValue
-public abstract class PslDataSourceOptions implements Serializable {
+public abstract class PslReadDataSourceOptions implements Serializable {
   private static final long serialVersionUID = 2680059304693561607L;
 
   @Nullable
@@ -60,7 +64,7 @@ public abstract class PslDataSourceOptions implements Serializable {
   public abstract long maxMessagesPerBatch();
 
   public static Builder builder() {
-    return new AutoValue_PslDataSourceOptions.Builder()
+    return new AutoValue_PslReadDataSourceOptions.Builder()
         .setCredentialsKey(null)
         .setMaxMessagesPerBatch(Constants.DEFAULT_MAX_MESSAGES_PER_BATCH)
         .setFlowControlSettings(
@@ -70,7 +74,7 @@ public abstract class PslDataSourceOptions implements Serializable {
                 .build());
   }
 
-  public static PslDataSourceOptions fromSparkDataSourceOptions(DataSourceOptions options) {
+  public static PslReadDataSourceOptions fromSparkDataSourceOptions(DataSourceOptions options) {
     if (!options.get(Constants.SUBSCRIPTION_CONFIG_KEY).isPresent()) {
       throw new IllegalArgumentException(Constants.SUBSCRIPTION_CONFIG_KEY + " is required.");
     }
@@ -115,7 +119,7 @@ public abstract class PslDataSourceOptions implements Serializable {
 
     public abstract Builder setFlowControlSettings(FlowControlSettings flowControlSettings);
 
-    public abstract PslDataSourceOptions build();
+    public abstract PslReadDataSourceOptions build();
   }
 
   MultiPartitionCommitter newMultiPartitionCommitter(long topicPartitionCount) {
@@ -135,7 +139,7 @@ public abstract class PslDataSourceOptions implements Serializable {
       PubsubContext context = PubsubContext.of(Constants.FRAMEWORK);
       SubscriberServiceSettings.Builder settingsBuilder =
           SubscriberServiceSettings.newBuilder()
-              .setCredentialsProvider(new PslCredentialsProvider(this));
+              .setCredentialsProvider(new PslCredentialsProvider(credentialsKey()));
       ServiceClients.addDefaultMetadata(
           context, RoutingMetadata.of(this.subscriptionPath(), partition), settingsBuilder);
       try {
@@ -161,7 +165,7 @@ public abstract class PslDataSourceOptions implements Serializable {
           addDefaultSettings(
               this.subscriptionPath().location().region(),
               CursorServiceSettings.newBuilder()
-                  .setCredentialsProvider(new PslCredentialsProvider(this))));
+                  .setCredentialsProvider(new PslCredentialsProvider(credentialsKey()))));
     } catch (IOException e) {
       throw new IllegalStateException("Unable to create CursorServiceClient.");
     }
@@ -181,7 +185,7 @@ public abstract class PslDataSourceOptions implements Serializable {
           addDefaultSettings(
               this.subscriptionPath().location().region(),
               AdminServiceSettings.newBuilder()
-                  .setCredentialsProvider(new PslCredentialsProvider(this))));
+                  .setCredentialsProvider(new PslCredentialsProvider(credentialsKey()))));
     } catch (IOException e) {
       throw new IllegalStateException("Unable to create AdminServiceClient.");
     }
@@ -201,7 +205,7 @@ public abstract class PslDataSourceOptions implements Serializable {
           addDefaultSettings(
               this.subscriptionPath().location().region(),
               TopicStatsServiceSettings.newBuilder()
-                  .setCredentialsProvider(new PslCredentialsProvider(this))));
+                  .setCredentialsProvider(new PslCredentialsProvider(credentialsKey()))));
     } catch (IOException e) {
       throw new IllegalStateException("Unable to create TopicStatsServiceClient.");
     }
