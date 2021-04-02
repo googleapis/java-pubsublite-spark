@@ -127,7 +127,7 @@ public class PslMicroBatchReader implements MicroBatchReader {
 
   @Override
   public StructType readSchema() {
-    return Constants.DEFAULT_SCHEMA;
+    return SparkStucts.DEFAULT_SCHEMA;
   }
 
   @Override

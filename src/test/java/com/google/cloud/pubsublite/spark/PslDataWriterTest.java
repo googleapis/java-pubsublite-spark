@@ -51,7 +51,7 @@ public class PslDataWriterTest {
       new StructType(
           new StructField[] {
             new StructField(
-                "key", Constants.PUBLISH_FIELD_TYPES.get("key"), false, Metadata.empty()),
+                "key", SparkStucts.PUBLISH_FIELD_TYPES.get("key"), false, Metadata.empty()),
           });
 
   private final PslDataWriter writer = new PslDataWriter(1L, 2L, 3L, keyOnly, publisherFactory);
