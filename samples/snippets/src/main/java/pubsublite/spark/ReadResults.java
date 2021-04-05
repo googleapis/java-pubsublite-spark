@@ -45,7 +45,7 @@ public class ReadResults {
     String subscriptionIdResult = env.get(DESTINATION_SUBSCRIPTION_ID);
     long projectNumber = Long.parseLong(env.get(PROJECT_NUMBER));
 
-    System.out.println("Word count results:");
+    System.out.println("Results from Pub/Sub Lite:");
     subscriberExample(cloudRegion, zoneId, projectNumber, subscriptionIdResult)
         .forEach((m) -> System.out.println(m.getData().toStringUtf8().replace("_", ": ")));
 

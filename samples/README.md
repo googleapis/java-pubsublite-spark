@@ -37,25 +37,13 @@ export CONNECTOR_VERSION= # latest pubsublite-spark-sql-streaming release versio
 
 To run the word count sample in Dataproc cluster:
 ```sh
-word_count_sample.sh
+word_count_sample.sh run
 ```
 
 ### Cleaning up
-1. Delete Pub/Sub Lite topic and subscription.
-   ```sh
-   gcloud pubsub lite-subscriptions delete $SOURCE_SUBSCRIPTION_ID --zone=$REGION-$ZONE_ID
-   gcloud pubsub lite-topics delete $SOURCE_TOPIC_ID --zone=$REGION-$ZONE_ID
-   gcloud pubsub lite-subscriptions delete $DESTINATION_SUBSCRIPTION_ID --zone=$REGION-$ZONE_ID
-   gcloud pubsub lite-topics delete $DESTINATION_TOPIC_ID --zone=$REGION-$ZONE_ID
-   ```
-2. Delete GCS bucket.
-   ```sh
-   gsutil -m rm -rf $BUCKET
-   ```
-3. Delete Dataproc cluster.
-   ```sh
-   gcloud dataproc clusters delete $CLUSTER_NAME --region=$REGION
-   ```
+```sh
+word_count_sample.sh clean
+```
 
 ### Common issues
 1. Permission not granted. <br>
@@ -69,9 +57,54 @@ word_count_sample.sh
 
 ## Simple Read Sample
 
+### Environment Variables
+Set the following environment variables. <br>
+```
+export PROJECT_NUMBER=12345 # or your project number
+export REGION=us-central1 # or your region
+export ZONE_ID=b # or your zone id
+export SOURCE_TOPIC_ID=test-topic # or your topic id to create
+export SOURCE_SUBSCRIPTION_ID=test-subscription # or your subscription to create
+export CLUSTER_NAME=waprin-spark7 # or your Dataproc cluster name to create
+export BUCKET=gs://your-gcs-bucket
+export CONNECTOR_VERSION= # latest pubsublite-spark-sql-streaming release version
+```
 
+### Running simple read sample
 
+To run the simple read sample in Dataproc cluster:
+```sh
+simple_read_sample.sh run
+```
 
-
+### Cleaning up
+```sh
+simple_read_sample.sh clean
+```
 
 ## Simple Write Sample
+
+### Environment Variables
+Set the following environment variables. <br>
+```
+export PROJECT_NUMBER=12345 # or your project number
+export REGION=us-central1 # or your region
+export ZONE_ID=b # or your zone id
+export DESTINATION_TOPIC_ID=test-topic # or your topic id to create
+export DESTINATION_SUBSCRIPTION_ID=test-subscription # or your subscription to create
+export CLUSTER_NAME=waprin-spark7 # or your Dataproc cluster name to create
+export BUCKET=gs://your-gcs-bucket
+export CONNECTOR_VERSION= # latest pubsublite-spark-sql-streaming release version
+```
+
+### Running simple write sample
+
+To run the simple write sample in Dataproc cluster:
+```sh
+simple_write_sample.sh run
+```
+
+### Cleaning up
+```sh
+simple_write_sample.sh clean
+```
