@@ -38,7 +38,7 @@ public class WordCount {
 
     SparkSession spark = SparkSession.builder().appName("Word count").master("yarn").getOrCreate();
 
-    // Reads messages from Pub/Sub Lite
+    // Read messages from Pub/Sub Lite
     Dataset<Row> df =
         spark
             .readStream()
@@ -54,7 +54,7 @@ public class WordCount {
     df = df.groupBy("word").sum("word_count");
     df = df.orderBy(df.col("sum(word_count)").desc(), df.col("word").asc());
 
-    // Adds Pub/Sub Lite message data field
+    // Add Pub/Sub Lite message data field
     df = df.withColumn("data", concat(df.col("word"), lit("_"), df.col("sum(word_count)")));
 
     // Write word count results to Pub/Sub Lite

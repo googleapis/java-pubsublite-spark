@@ -12,17 +12,17 @@ The recommended approach is to use Application Default Credentials by setting `G
 
 ## Environment Variables
 Set the following environment variables. <br>
-Note `TOPIC_ID_RAW` and `SUBSCRIPTION_ID_RAW` are used to read _raw_ single word count messages; 
-while `TOPIC_ID_RESULT` and `SUBSCRIPTION_ID_RESULT` are used for final word counts results. They must 
-be different, otherwise it will be a cycle.
+Note `SOURCE_TOPIC_ID` and `SOURCE_SUBSCRIPTION_ID` are used to read _raw_ single word count messages; 
+while `DESTINATION_TOPIC_ID` and `DESTINATION_SUBSCRIPTION_ID` are used for the final word counts results. They must 
+be different.
 ```
 PROJECT_NUMBER=12345 # or your project number
 REGION=us-central1 # or your region
 ZONE_ID=b # or your zone id
-TOPIC_ID_RAW=test-topic # or your topic id to create
-SUBSCRIPTION_ID_RAW=test-subscription # or your subscription to create
-TOPIC_ID_RESULT=test-topic-2 # or your topic id to create, this is different from TOPIC_ID_RAW!
-SUBSCRIPTION_ID_RESULT=test-subscription-2 # or your subscription to create, this is different from SUBSCRIPTION_ID_RAW!
+SOURCE_TOPIC_ID=test-topic # or your topic id to create
+SOURCE_SUBSCRIPTION_ID=test-subscription # or your subscription to create
+DESTINATION_TOPIC_ID=test-topic-2 # or your topic id to create, this is different from SOURCE_TOPIC_ID!
+DESTINATION_SUBSCRIPTION_ID=test-subscription-2 # or your subscription to create, this is different from SOURCE_SUBSCRIPTION_ID!
 CLUSTER_NAME=waprin-spark7 # or your Dataproc cluster name to create
 BUCKET=gs://your-gcs-bucket
 CONNECTOR_VERSION= # latest pubsublite-spark-sql-streaming release version
@@ -42,15 +42,16 @@ To run the word count sample in Dataproc cluster, follow the steps:
     --non-recursive \
     exec:exec)
    ```
-3. Create all the needed topics and subscriptions, and publish word count messages to the _raw_ topic.
+3. Create both the source and destination topics and subscriptions, and publish word count messages to the _source_ 
+      topic.
    ```sh
    PROJECT_NUMBER=$PROJECT_NUMBER \
    REGION=$REGION \
    ZONE_ID=$ZONE_ID \
-   TOPIC_ID_RAW=$TOPIC_ID_RAW \
-   SUBSCRIPTION_ID_RAW=$SUBSCRIPTION_ID_RAW \
-   TOPIC_ID_RESULT=$TOPIC_ID_RESULT \
-   SUBSCRIPTION_ID_RESULT=$SUBSCRIPTION_ID_RESULT \
+   SOURCE_TOPIC_ID=$SOURCE_TOPIC_ID \
+   SOURCE_SUBSCRIPTION_ID=$SOURCE_SUBSCRIPTION_ID \
+   DESTINATION_TOPIC_ID=$DESTINATION_TOPIC_ID \
+   DESTINATION_SUBSCRIPTION_ID=$DESTINATION_SUBSCRIPTION_ID \
    mvn compile exec:java -Dexec.mainClass=pubsublite.spark.PublishWords
    ```
 4. Create a Dataproc cluster
@@ -77,25 +78,25 @@ To run the word count sample in Dataproc cluster, follow the steps:
    gcloud dataproc jobs submit spark --cluster=$CLUSTER_NAME \
       --jars=$BUCKET/pubsublite-spark-snippets-$SAMPLE_VERSION.jar,$BUCKET/pubsublite-spark-sql-streaming-$CONNECTOR_VERSION-with-dependencies.jar \
       --class=pubsublite.spark.WordCount -- \
-      projects/$PROJECT_NUMBER/locations/$REGION-$ZONE_ID/subscriptions/$SUBSCRIPTION_ID_RAW \
-      projects/$PROJECT_NUMBER/locations/$REGION-$ZONE_ID/topics/$TOPIC_ID_RESULT
+      projects/$PROJECT_NUMBER/locations/$REGION-$ZONE_ID/subscriptions/$SOURCE_SUBSCRIPTION_ID \
+      projects/$PROJECT_NUMBER/locations/$REGION-$ZONE_ID/topics/$DESTINATION_TOPIC_ID
    ```
 10. Read word count results from Pub/Sub Lite, you should see the result in console output.
     ```sh
     PROJECT_NUMBER=$PROJECT_NUMBER \
     REGION=$REGION \
     ZONE_ID=$ZONE_ID \
-    SUBSCRIPTION_ID_RESULT=$SUBSCRIPTION_ID_RESULT \
+    DESTINATION_SUBSCRIPTION_ID=$DESTINATION_SUBSCRIPTION_ID \
     mvn compile exec:java -Dexec.mainClass=pubsublite.spark.ReadResults
     ```
 
 ## Cleaning up
 1. Delete Pub/Sub Lite topic and subscription.
    ```sh
-   gcloud pubsub lite-subscriptions delete $SUBSCRIPTION_ID_RAW --zone=$REGION-$ZONE_ID
-   gcloud pubsub lite-topics delete $TOPIC_ID_RAW --zone=$REGION-$ZONE_ID
-   gcloud pubsub lite-subscriptions delete $SUBSCRIPTION_ID_RESULT --zone=$REGION-$ZONE_ID
-   gcloud pubsub lite-topics delete $TOPIC_ID_RESULT --zone=$REGION-$ZONE_ID
+   gcloud pubsub lite-subscriptions delete $SOURCE_SUBSCRIPTION_ID --zone=$REGION-$ZONE_ID
+   gcloud pubsub lite-topics delete $SOURCE_TOPIC_ID --zone=$REGION-$ZONE_ID
+   gcloud pubsub lite-subscriptions delete $DESTINATION_SUBSCRIPTION_ID --zone=$REGION-$ZONE_ID
+   gcloud pubsub lite-topics delete $DESTINATION_TOPIC_ID --zone=$REGION-$ZONE_ID
    ```
 2. Delete GCS bucket.
    ```sh

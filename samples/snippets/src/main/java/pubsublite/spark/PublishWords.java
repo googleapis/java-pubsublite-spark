@@ -34,10 +34,10 @@ public class PublishWords {
 
   private static final String REGION = "REGION";
   private static final String ZONE_ID = "ZONE_ID";
-  private static final String TOPIC_ID_RAW = "TOPIC_ID_RAW";
-  private static final String SUBSCRIPTION_ID_RAW = "SUBSCRIPTION_ID_RAW";
-  private static final String TOPIC_ID_RESULT = "TOPIC_ID_RESULT";
-  private static final String SUBSCRIPTION_ID_RESULT = "SUBSCRIPTION_ID_RESULT";
+  private static final String SOURCE_TOPIC_ID = "SOURCE_TOPIC_ID";
+  private static final String SOURCE_SUBSCRIPTION_ID = "SOURCE_SUBSCRIPTION_ID";
+  private static final String DESTINATION_TOPIC_ID = "DESTINATION_TOPIC_ID";
+  private static final String DESTINATION_SUBSCRIPTION_ID = "DESTINATION_SUBSCRIPTION_ID";
   private static final String PROJECT_NUMBER = "PROJECT_NUMBER";
 
   public static void main(String[] args) throws Exception {
@@ -48,10 +48,10 @@ public class PublishWords {
             ImmutableSet.of(
                 REGION,
                 ZONE_ID,
-                TOPIC_ID_RAW,
-                SUBSCRIPTION_ID_RAW,
-                TOPIC_ID_RESULT,
-                SUBSCRIPTION_ID_RESULT,
+                SOURCE_TOPIC_ID,
+                SOURCE_SUBSCRIPTION_ID,
+                DESTINATION_TOPIC_ID,
+                DESTINATION_SUBSCRIPTION_ID,
                 PROJECT_NUMBER),
             env.keySet());
     Preconditions.checkState(
@@ -59,10 +59,10 @@ public class PublishWords {
 
     final String cloudRegion = env.get(REGION);
     char zoneId = env.get(ZONE_ID).charAt(0);
-    final String topicIdRaw = env.get(TOPIC_ID_RAW);
-    final String subscriptionIdRaw = env.get(SUBSCRIPTION_ID_RAW);
-    final String topicIdResult = env.get(TOPIC_ID_RESULT);
-    final String subscriptionIdResult = env.get(SUBSCRIPTION_ID_RESULT);
+    final String sourceTopicId = env.get(SOURCE_TOPIC_ID);
+    final String sourceSubscriptionId = env.get(SOURCE_SUBSCRIPTION_ID);
+    final String destinationTopicId = env.get(DESTINATION_TOPIC_ID);
+    final String destinationSubscriptionId = env.get(DESTINATION_SUBSCRIPTION_ID);
     long projectNumber = Long.parseLong(env.get(PROJECT_NUMBER));
     int partitions = 1;
 
@@ -76,13 +76,13 @@ public class PublishWords {
             .toLowerCase();
     final List<String> words = Arrays.asList(snippets.split(" "));
 
-    createTopicExample(cloudRegion, zoneId, projectNumber, topicIdRaw, partitions);
-    createSubscriptionExample(cloudRegion, zoneId, projectNumber, topicIdRaw, subscriptionIdRaw);
-    createTopicExample(cloudRegion, zoneId, projectNumber, topicIdResult, partitions);
+    createTopicExample(cloudRegion, zoneId, projectNumber, sourceTopicId, partitions);
+    createSubscriptionExample(cloudRegion, zoneId, projectNumber, sourceTopicId, sourceSubscriptionId);
+    createTopicExample(cloudRegion, zoneId, projectNumber, destinationTopicId, partitions);
     createSubscriptionExample(
-        cloudRegion, zoneId, projectNumber, topicIdResult, subscriptionIdResult);
+        cloudRegion, zoneId, projectNumber, destinationTopicId, destinationSubscriptionId);
 
-    publisherExample(cloudRegion, zoneId, projectNumber, topicIdRaw, words);
+    publisherExample(cloudRegion, zoneId, projectNumber, sourceTopicId, words);
 
     System.exit(0);
   }
