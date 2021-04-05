@@ -33,8 +33,8 @@ import org.apache.spark.sql.types.DataTypes;
 public class WordCount {
 
   public static void main(String[] args) throws Exception {
-    final String subscriptionPathRaw = args[0];
-    final String topicPathResult = args[1];
+    final String sourceSubscriptionPath = args[0];
+    final String destinationTopicPath = args[1];
 
     SparkSession spark = SparkSession.builder().appName("Word count").master("yarn").getOrCreate();
 
@@ -43,7 +43,7 @@ public class WordCount {
         spark
             .readStream()
             .format("pubsublite")
-            .option("pubsublite.subscription", subscriptionPathRaw)
+            .option("pubsublite.subscription", sourceSubscriptionPath)
             .load();
 
     // Aggregate word counts
@@ -61,7 +61,7 @@ public class WordCount {
     StreamingQuery query =
         df.writeStream()
             .format("pubsublite")
-            .option("pubsublite.topic", topicPathResult)
+            .option("pubsublite.topic", destinationTopicPath)
             .option("checkpointLocation", "/tmp/checkpoint")
             .outputMode(OutputMode.Complete())
             .trigger(Trigger.ProcessingTime(1, TimeUnit.SECONDS))

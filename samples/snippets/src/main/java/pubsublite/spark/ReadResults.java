@@ -42,11 +42,11 @@ public class ReadResults {
 
     String cloudRegion = env.get(REGION);
     char zoneId = env.get(ZONE_ID).charAt(0);
-    String subscriptionIdResult = env.get(DESTINATION_SUBSCRIPTION_ID);
+    String destinationSubscriptionId = env.get(DESTINATION_SUBSCRIPTION_ID);
     long projectNumber = Long.parseLong(env.get(PROJECT_NUMBER));
 
     System.out.println("Word count results:");
-    subscriberExample(cloudRegion, zoneId, projectNumber, subscriptionIdResult)
+    subscriberExample(cloudRegion, zoneId, projectNumber, destinationSubscriptionId)
         .forEach((m) -> System.out.println(m.getData().toStringUtf8().replace("_", ": ")));
 
     System.exit(0);
