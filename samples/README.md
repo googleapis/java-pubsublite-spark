@@ -45,16 +45,6 @@ word_count_sample.sh run
 word_count_sample.sh clean
 ```
 
-### Common issues
-1. Permission not granted. <br>
-   This could happen when creating a topic and a subscription, or submitting a job to your Dataproc cluster.
-   Make sure your service account has at least `Editor` permissions for Pub/Sub Lite and Dataproc. 
-   Your Dataproc cluster needs `scope=cloud-platform` to access other services and resources within the same project.
-   Your `gcloud` and `GOOGLE_APPLICATION_CREDENTIALS` should access the same project. Check out which project your `gcloud` and `gstuil` commands use with `gcloud config get-value project`.
-
-2. Your Dataproc job fails with `ClassNotFound` or similar exceptions. <br>
-   Make sure your Dataproc cluster uses images of [supported Spark versions](https://github.com/googleapis/java-pubsublite-spark#compatibility). 
-
 ## Simple Read Sample
 
 ### Environment Variables
@@ -108,3 +98,13 @@ simple_write_sample.sh run
 ```sh
 simple_write_sample.sh clean
 ```
+
+## Common issues
+1. Permission not granted. <br>
+   This could happen when creating a topic and a subscription, or submitting a job to your Dataproc cluster.
+   Make sure your service account has at least `Editor` permissions for Pub/Sub Lite and Dataproc.
+   Your Dataproc cluster needs `scope=cloud-platform` to access other services and resources within the same project.
+   Your `gcloud` and `GOOGLE_APPLICATION_CREDENTIALS` should access the same project. Check out which project your `gcloud` and `gstuil` commands use with `gcloud config get-value project`.
+
+2. Your Dataproc job fails with `ClassNotFound` or similar exceptions. <br>
+   Make sure your Dataproc cluster uses images of [supported Spark versions](https://github.com/googleapis/java-pubsublite-spark#compatibility). 
