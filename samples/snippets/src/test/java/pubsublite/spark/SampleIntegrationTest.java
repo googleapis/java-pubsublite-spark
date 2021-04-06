@@ -43,6 +43,7 @@ import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.pubsub.v1.PubsubMessage;
@@ -67,7 +68,6 @@ import org.apache.maven.shared.utils.cli.CommandLineException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.spark_project.guava.collect.ImmutableList;
 
 public class SampleIntegrationTest {
 
@@ -169,31 +169,27 @@ public class SampleIntegrationTest {
             cloudZone.zoneId(),
             projectNumber.value(),
             destinationSubscriptionName.value());
-    Map<String, Integer> expected =
-        new HashMap<String, Integer>() {
-          {
-            put("the", 24);
-            put("of", 16);
-            put("and", 14);
-            put("i", 13);
-            put("my", 10);
-            put("a", 6);
-            put("in", 5);
-            put("that", 5);
-            put("soul", 4);
-            put("with", 4);
-            put("as", 3);
-            put("feel", 3);
-            put("like", 3);
-            put("me", 3);
-            put("so", 3);
-            put("then", 3);
-            put("us", 3);
-            put("when", 3);
-            put("which", 3);
-            put("am", 2);
-          }
-        };
+    Map<String, Integer> expected = new HashMap<>();
+    expected.put("the", 24);
+    expected.put("of", 16);
+    expected.put("and", 14);
+    expected.put("i", 13);
+    expected.put("my", 10);
+    expected.put("a", 6);
+    expected.put("in", 5);
+    expected.put("that", 5);
+    expected.put("soul", 4);
+    expected.put("with", 4);
+    expected.put("as", 3);
+    expected.put("feel", 3);
+    expected.put("like", 3);
+    expected.put("me", 3);
+    expected.put("so", 3);
+    expected.put("then", 3);
+    expected.put("us", 3);
+    expected.put("when", 3);
+    expected.put("which", 3);
+    expected.put("am", 2);
     Map<String, Integer> actual = new HashMap<>();
     for (PubsubMessage m : results) {
       String[] pair = m.getData().toStringUtf8().split("_");
