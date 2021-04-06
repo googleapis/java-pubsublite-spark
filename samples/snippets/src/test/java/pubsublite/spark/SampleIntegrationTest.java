@@ -43,6 +43,7 @@ import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.pubsub.v1.PubsubMessage;
@@ -67,7 +68,6 @@ import org.apache.maven.shared.utils.cli.CommandLineException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.spark_project.guava.collect.ImmutableList;
 
 public class SampleIntegrationTest {
 
@@ -86,12 +86,13 @@ public class SampleIntegrationTest {
   private CloudZone cloudZone;
   private ProjectNumber projectNumber;
   private ProjectId projectId;
-  private TopicName topicIdRaw;
-  private SubscriptionName subscriptionNameRaw;
-  private SubscriptionPath subscriptionPathRaw;
-  private TopicName topicIdResult;
-  private SubscriptionName subscriptionNameResult;
-  private SubscriptionPath subscriptionPathResult;
+  private TopicName sourceTopicId;
+  private SubscriptionName sourceSubscriptionName;
+  private SubscriptionPath sourceSubscriptionPath;
+  private TopicName destinationTopicId;
+  private TopicPath destinationTopicPath;
+  private SubscriptionName destinationSubscriptionName;
+  private SubscriptionPath destinationSubscriptionPath;
   private String clusterName;
   private String bucketName;
   private String workingDir;
@@ -150,7 +151,8 @@ public class SampleIntegrationTest {
               .addJarFileUris(String.format("gs://%s/%s", bucketName, sampleJarNameInGCS))
               .addJarFileUris(String.format("gs://%s/%s", bucketName, connectorJarNameInGCS))
               .setMainClass("pubsublite.spark.WordCount")
-              .addArgs(subscriptionPathRaw.toString())
+              .addArgs(sourceSubscriptionPath.toString())
+              .addArgs(destinationTopicPath.toString())
               .build();
       Job job = Job.newBuilder().setPlacement(jobPlacement).setSparkJob(sparkJob).build();
       OperationFuture<Job, JobMetadata> submitJobAsOperationAsyncRequest =
@@ -161,38 +163,34 @@ public class SampleIntegrationTest {
   }
 
   private void verifyWordCountResult() {
+    Map<String, Integer> expected = new HashMap<>();
+    expected.put("the", 24);
+    expected.put("of", 16);
+    expected.put("and", 14);
+    expected.put("i", 13);
+    expected.put("my", 10);
+    expected.put("a", 6);
+    expected.put("in", 5);
+    expected.put("that", 5);
+    expected.put("soul", 4);
+    expected.put("with", 4);
+    expected.put("as", 3);
+    expected.put("feel", 3);
+    expected.put("like", 3);
+    expected.put("me", 3);
+    expected.put("so", 3);
+    expected.put("then", 3);
+    expected.put("us", 3);
+    expected.put("when", 3);
+    expected.put("which", 3);
+    expected.put("am", 2);
+    Map<String, Integer> actual = new HashMap<>();
     Queue<PubsubMessage> results =
         subscriberExample(
             cloudRegion.value(),
             cloudZone.zoneId(),
             projectNumber.value(),
-            subscriptionNameResult.value());
-    Map<String, Integer> expected =
-        new HashMap<String, Integer>() {
-          {
-            put("the", 24);
-            put("of", 16);
-            put("and", 14);
-            put("i", 13);
-            put("my", 10);
-            put("a", 6);
-            put("in", 5);
-            put("that", 5);
-            put("soul", 4);
-            put("with", 4);
-            put("as", 3);
-            put("feel", 3);
-            put("like", 3);
-            put("me", 3);
-            put("so", 3);
-            put("then", 3);
-            put("us", 3);
-            put("when", 3);
-            put("which", 3);
-            put("am", 2);
-          }
-        };
-    Map<String, Integer> actual = new HashMap<>();
+            destinationSubscriptionName.value());
     for (PubsubMessage m : results) {
       String[] pair = m.getData().toStringUtf8().split("_");
       actual.put(pair[0], Integer.parseInt(pair[1]));
@@ -220,21 +218,28 @@ public class SampleIntegrationTest {
     cloudZone = CloudZone.of(cloudRegion, env.get(CLOUD_ZONE).charAt(0));
     projectId = ProjectId.of(env.get(PROJECT_ID));
     projectNumber = ProjectNumber.of(Long.parseLong(env.get(PROJECT_NUMBER)));
-    topicIdRaw = TopicName.of(env.get(TOPIC_ID));
-    subscriptionNameRaw = SubscriptionName.of("sample-integration-sub-raw-" + runId);
-    subscriptionPathRaw =
+    sourceTopicId = TopicName.of(env.get(TOPIC_ID));
+    sourceSubscriptionName = SubscriptionName.of("sample-integration-sub-source-" + runId);
+    sourceSubscriptionPath =
         SubscriptionPath.newBuilder()
             .setProject(projectId)
             .setLocation(cloudZone)
-            .setName(subscriptionNameRaw)
+            .setName(sourceSubscriptionName)
             .build();
-    topicIdResult = TopicName.of("sample-integration-topic-result-" + runId);
-    subscriptionNameResult = SubscriptionName.of("sample-integration-sub-result-" + runId);
-    subscriptionPathResult =
+    destinationTopicId = TopicName.of("sample-integration-topic-destination-" + runId);
+    destinationTopicPath =
+        TopicPath.newBuilder()
+            .setProject(projectId)
+            .setLocation(cloudZone)
+            .setName(destinationTopicId)
+            .build();
+    destinationSubscriptionName =
+        SubscriptionName.of("sample-integration-sub-destination-" + runId);
+    destinationSubscriptionPath =
         SubscriptionPath.newBuilder()
             .setProject(projectId)
             .setLocation(cloudZone)
-            .setName(subscriptionNameResult)
+            .setName(destinationSubscriptionName)
             .build();
     clusterName = env.get(CLUSTER_NAME);
     bucketName = env.get(BUCKET_NAME);
@@ -260,44 +265,38 @@ public class SampleIntegrationTest {
     setUpVariables();
     findMavenHome();
 
-    // Create a subscription to read raw word messages
+    // Create a subscription to read source word messages
     createSubscriptionExample(
         cloudRegion.value(),
         cloudZone.zoneId(),
         projectNumber.value(),
-        topicIdRaw.value(),
-        subscriptionNameRaw.value());
+        sourceTopicId.value(),
+        sourceSubscriptionName.value());
 
     // Create a topic and subscription for word count final results
     createTopicExample(
         cloudRegion.value(),
         cloudZone.zoneId(),
         projectNumber.value(),
-        topicIdResult.value(),
+        destinationTopicId.value(),
         /*partitions=*/ 1);
     createSubscriptionExample(
         cloudRegion.value(),
         cloudZone.zoneId(),
         projectNumber.value(),
-        topicIdResult.value(),
-        subscriptionNameResult.value());
+        destinationTopicId.value(),
+        destinationSubscriptionName.value());
   }
 
   @After
   public void tearDown() throws Exception {
     // Cleanup the topics and subscriptions
-    deleteSubscriptionExample(cloudRegion.value(), subscriptionPathRaw);
-    deleteSubscriptionExample(cloudRegion.value(), subscriptionPathResult);
-    deleteTopicExample(
-        cloudRegion.value(),
-        TopicPath.newBuilder()
-            .setLocation(cloudZone)
-            .setProject(projectNumber)
-            .setName(topicIdResult)
-            .build());
+    deleteSubscriptionExample(cloudRegion.value(), sourceSubscriptionPath);
+    deleteSubscriptionExample(cloudRegion.value(), destinationSubscriptionPath);
+    deleteTopicExample(cloudRegion.value(), destinationTopicPath);
   }
 
-  /** Note that raw single word messages have been published to a permanent topic. */
+  /** Note that source single word messages have been published to a permanent topic. */
   @Test
   public void test() throws Exception {
     // Maven package into jars
@@ -313,7 +312,7 @@ public class SampleIntegrationTest {
     // Run Dataproc job, block until it finishes
     runDataprocJob();
 
-    // Verify final result messages in Pub/Sub Lite
+    // Verify final destination messages in Pub/Sub Lite
     verifyWordCountResult();
   }
 }
