@@ -36,8 +36,8 @@ custom_content: |
 
     ```python
     df = spark.readStream \
-      .option("pubsublite.subscription", "projects/$PROJECT_NUMBER/locations/$LOCATION/subscriptions/$SUBSCRIPTION_ID")
       .format("pubsublite") \
+      .option("pubsublite.subscription", "projects/$PROJECT_NUMBER/locations/$LOCATION/subscriptions/$SUBSCRIPTION_ID") \
       .load
     ```
 
@@ -46,12 +46,18 @@ custom_content: |
   ### Writing data to Pub/Sub Lite
 
     ```python
-    df.writeStream
+    df.writeStream \
+      .format("pubsublite") \
+      .option("pubsublite.topic", "projects/$PROJECT_NUMBER/locations/$LOCATION/topics/$TOPIC_ID") \
+      .option("checkpointLocation", "path/to/HDFS/dir")
+      .outputMode("complete") \
+      .trigger(processingTime="2 seconds") \
+      .start()
     ```
 
   ### Properties
 
-  The connector supports a number of options to configure the read:
+  When reading from Pub/Sub Lite, the connector supports a number of configuration options:
 
     | Option | Type | Required | Default Value | Meaning |
     | ------ | ---- | -------- | ------------- | ------- |
@@ -61,9 +67,16 @@ custom_content: |
     | pubsublite.flowcontrol.maxmessagesperbatch | Long | N | Long.MAX | Max number of messages in micro batch. |
     | gcp.credentials.key | String | N | [Application Default Credentials](https://cloud.google.com/docs/authentication/production#automatically) | Service account JSON in base64. |
 
+  When writing to Pub/Sub Lite, the connector supports a number of configuration options:
+
+    | Option | Type | Required | Default Value | Meaning |
+    | ------ | ---- | -------- | ------------- | ------- |
+    | pubsublite.topic | String | Y | | Full topic path that the connector will write to. |
+    | gcp.credentials.key | String | N | [Application Default Credentials](https://cloud.google.com/docs/authentication/production#automatically) | Service account JSON in base64. |
+
   ### Data Schema
 
-  The connector has fixed data schema as follows:
+  When reading from Pub/Sub Lite, the connector has a fixed data schema as follows:
 
     | Data Field | Spark Data Type | Notes |
     | ---------- | --------------- | ----- |
@@ -75,6 +88,17 @@ custom_content: |
     | attributes | MapType\[StringType, ArrayType\[BinaryType\]\] | |
     | publish_timestamp | TimestampType | |
     | event_timestamp | TimestampType | Nullable |
+
+  When writing to Pub/Sub Lite, the connetor matches the following data field and data types as follows:
+
+    | Data Field | Spark Data Type | Required |
+    | ---------- | --------------- | ----- |
+    | key | BinaryType | N |
+    | data | BinaryType | N |
+    | attributes | MapType\[StringType, ArrayType\[BinaryType\]\] | N |
+    | event_timestamp | TimestampType | N |
+
+  Note that when a data field is present in the table but the data type mismatches, the connector will throw IllegalArgumentException that terminates the query.
 
   ## Building the Connector
 
