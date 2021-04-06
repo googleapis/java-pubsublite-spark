@@ -163,12 +163,6 @@ public class SampleIntegrationTest {
   }
 
   private void verifyWordCountResult() {
-    Queue<PubsubMessage> results =
-        subscriberExample(
-            cloudRegion.value(),
-            cloudZone.zoneId(),
-            projectNumber.value(),
-            destinationSubscriptionName.value());
     Map<String, Integer> expected = new HashMap<>();
     expected.put("the", 24);
     expected.put("of", 16);
@@ -191,6 +185,12 @@ public class SampleIntegrationTest {
     expected.put("which", 3);
     expected.put("am", 2);
     Map<String, Integer> actual = new HashMap<>();
+    Queue<PubsubMessage> results =
+            subscriberExample(
+                    cloudRegion.value(),
+                    cloudZone.zoneId(),
+                    projectNumber.value(),
+                    destinationSubscriptionName.value());
     for (PubsubMessage m : results) {
       String[] pair = m.getData().toStringUtf8().split("_");
       actual.put(pair[0], Integer.parseInt(pair[1]));
@@ -292,8 +292,8 @@ public class SampleIntegrationTest {
   public void tearDown() throws Exception {
     // Cleanup the topics and subscriptions
     deleteSubscriptionExample(cloudRegion.value(), sourceSubscriptionPath);
-    deleteSubscriptionExample(cloudRegion.value(), destinationSubscriptionPath);
-    deleteTopicExample(cloudRegion.value(), destinationTopicPath);
+//    deleteSubscriptionExample(cloudRegion.value(), destinationSubscriptionPath);
+//    deleteTopicExample(cloudRegion.value(), destinationTopicPath);
   }
 
   /** Note that source single word messages have been published to a permanent topic. */
