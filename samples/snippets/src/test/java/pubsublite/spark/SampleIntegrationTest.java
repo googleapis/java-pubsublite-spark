@@ -232,12 +232,13 @@ public class SampleIntegrationTest {
             .build();
     destinationTopicId = TopicName.of("sample-integration-topic-destination-" + runId);
     destinationTopicPath =
-            TopicPath.newBuilder()
-                    .setProject(projectId)
-                    .setLocation(cloudZone)
-                    .setName(destinationTopicId)
-                    .build();
-    destinationSubscriptionName = SubscriptionName.of("sample-integration-sub-destination-" + runId);
+        TopicPath.newBuilder()
+            .setProject(projectId)
+            .setLocation(cloudZone)
+            .setName(destinationTopicId)
+            .build();
+    destinationSubscriptionName =
+        SubscriptionName.of("sample-integration-sub-destination-" + runId);
     destinationSubscriptionPath =
         SubscriptionPath.newBuilder()
             .setProject(projectId)
