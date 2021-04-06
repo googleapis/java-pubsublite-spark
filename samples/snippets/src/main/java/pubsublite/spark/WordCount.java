@@ -55,7 +55,10 @@ public class WordCount {
     df = df.orderBy(df.col("sum(word_count)").desc(), df.col("word").asc());
 
     // Add Pub/Sub Lite message data field
-    df = df.withColumn("data", concat(df.col("word"), lit("_"), df.col("sum(word_count)")));
+    df =
+        df.withColumn(
+            "data",
+            concat(df.col("word"), lit("_"), df.col("sum(word_count)")).cast(DataTypes.BinaryType));
 
     // Write word count results to Pub/Sub Lite
     StreamingQuery query =
