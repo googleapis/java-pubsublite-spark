@@ -1,5 +1,6 @@
 package pubsublite.spark;
 
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -12,9 +13,14 @@ public class SimpleRead {
 
   public static void main(String[] args) throws Exception {
 
+    final String appId = UUID.randomUUID().toString();
     final String sourceSubscriptionPath = args[0];
 
-    SparkSession spark = SparkSession.builder().appName("Simple read").master("yarn").getOrCreate();
+    SparkSession spark =
+        SparkSession.builder()
+            .appName(String.format("Simple read (ID: %s)", appId))
+            .master("yarn")
+            .getOrCreate();
 
     // Read messages from Pub/Sub Lite
     Dataset<Row> df =

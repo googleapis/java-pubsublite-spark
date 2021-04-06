@@ -2,6 +2,7 @@ package pubsublite.spark;
 
 import com.google.common.collect.ImmutableList;
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -18,18 +19,22 @@ import org.apache.spark.unsafe.types.ByteArray;
 
 public class SimpleWrite {
   private static final StructType TABLE_SCHEMA =
-          new StructType(
-                  new StructField[] {
-                          new StructField("key", DataTypes.BinaryType, false, Metadata.empty()),
-                          new StructField("data", DataTypes.BinaryType, false, Metadata.empty())
-                  });
+      new StructType(
+          new StructField[] {
+            new StructField("key", DataTypes.BinaryType, false, Metadata.empty()),
+            new StructField("data", DataTypes.BinaryType, false, Metadata.empty())
+          });
 
   public static void main(String[] args) throws Exception {
 
     final String destinationTopicPath = args[1];
 
+    final String appId = UUID.randomUUID().toString();
     SparkSession spark =
-        SparkSession.builder().appName("Simple write").master("yarn").getOrCreate();
+        SparkSession.builder()
+            .appName(String.format("Simple write (ID: %s)", appId))
+            .master("yarn")
+            .getOrCreate();
 
     // Read messages from Pub/Sub Lite
     Dataset<Row> df =
@@ -43,7 +48,7 @@ public class SimpleWrite {
         df.writeStream()
             .format("pubsublite")
             .option("pubsublite.topic", destinationTopicPath)
-            .option("checkpointLocation", "/tmp/checkpoint")
+            .option("checkpointLocation", String.format("/tmp/checkpoint-%s", appId))
             .outputMode(OutputMode.Complete())
             .trigger(Trigger.ProcessingTime(1, TimeUnit.SECONDS))
             .start();
