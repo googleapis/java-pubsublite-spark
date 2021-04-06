@@ -1,6 +1,9 @@
 # Pub/Sub Lite Spark Connector Word Count Samples
 
-This directory contains a word count sample for Pub/Sub Lite Spark Connector.
+This directory contains a word count sample for Pub/Sub Lite Spark Connector. The sample will read 
+single word count messages from Pub/Sub Lite, do the aggregation (count words) in Spark, and finally
+write back to Pub/Sub Lite. Note the topic/subscription to read is different from the topic/subscription
+to write and verify the final word count results.
 
 ## Authentication
 
@@ -8,17 +11,20 @@ Please see the [Google cloud authentication guide](https://cloud.google.com/docs
 The recommended approach is to use Application Default Credentials by setting `GOOGLE_APPLICATION_CREDENTIALS`.
 
 ## Environment Variables
-Set the following environment variables:
+Set the following environment variables. <br>
+Note `SOURCE_TOPIC_ID` and `SOURCE_SUBSCRIPTION_ID` are used to read _raw_ single word count messages; 
+while `DESTINATION_TOPIC_ID` and `DESTINATION_SUBSCRIPTION_ID` are used for the final word counts results. They must 
+be different.
 ```
 PROJECT_NUMBER=12345 # or your project number
 REGION=us-central1 # or your region
 ZONE_ID=b # or your zone id
-TOPIC_ID=test-topic # or your topic id to create
-SUBSCRIPTION_ID=test-subscrciption # or your subscription to create
-PARTITIONS=1 # or your number of partitions to create
+SOURCE_TOPIC_ID=test-topic # or your topic id to create
+SOURCE_SUBSCRIPTION_ID=test-subscription # or your subscription to create
+DESTINATION_TOPIC_ID=test-topic-2 # or your topic id to create, this is different from SOURCE_TOPIC_ID!
+DESTINATION_SUBSCRIPTION_ID=test-subscription-2 # or your subscription to create, this is different from SOURCE_SUBSCRIPTION_ID!
 CLUSTER_NAME=waprin-spark7 # or your Dataproc cluster name to create
 BUCKET=gs://your-gcs-bucket
-SUBSCRIPTION_PATH=projects/$PROJECT_NUMBER/locations/$REGION-$ZONE_ID/subscriptions/$SUBSCRIPTION_ID
 CONNECTOR_VERSION= # latest pubsublite-spark-sql-streaming release version
 PUBSUBLITE_SPARK_SQL_STREAMING_JAR_LOCATION= # downloaded pubsublite-spark-sql-streaming-$CONNECTOR_VERSION-with-dependencies jar location
 ```
@@ -36,14 +42,16 @@ To run the word count sample in Dataproc cluster, follow the steps:
     --non-recursive \
     exec:exec)
    ```
-3. Create the topic and subscription, and publish word count messages to the topic.
+3. Create both the source and destination topics and subscriptions, and publish word count messages to the _source_ 
+      topic.
    ```sh
    PROJECT_NUMBER=$PROJECT_NUMBER \
    REGION=$REGION \
    ZONE_ID=$ZONE_ID \
-   TOPIC_ID=$TOPIC_ID \
-   SUBSCRIPTION_ID=$SUBSCRIPTION_ID \
-   PARTITIONS=$PARTITIONS \
+   SOURCE_TOPIC_ID=$SOURCE_TOPIC_ID \
+   SOURCE_SUBSCRIPTION_ID=$SOURCE_SUBSCRIPTION_ID \
+   DESTINATION_TOPIC_ID=$DESTINATION_TOPIC_ID \
+   DESTINATION_SUBSCRIPTION_ID=$DESTINATION_SUBSCRIPTION_ID \
    mvn compile exec:java -Dexec.mainClass=pubsublite.spark.PublishWords
    ```
 4. Create a Dataproc cluster
@@ -54,8 +62,7 @@ To run the word count sample in Dataproc cluster, follow the steps:
    ```sh
    mvn clean package -Dmaven.test.skip=true
    ```
-<!-- TODO: provide link to maven central --> 
-6. Download `pubsublite-spark-sql-streaming-$CONNECTOR_VERSION-with-dependencies.jar` from Maven Central and set `PUBSUBLITE_SPARK_SQL_STREAMING_JAR_LOCATION` environment variable.
+6. Download `pubsublite-spark-sql-streaming-$CONNECTOR_VERSION-with-dependencies.jar` from [Maven Central](https://search.maven.org/artifact/com.google.cloud/pubsublite-spark-sql-streaming) and set `PUBSUBLITE_SPARK_SQL_STREAMING_JAR_LOCATION` environment variable.
 7. Create GCS bucket and upload both `pubsublite-spark-sql-streaming-$CONNECTOR_VERSION-with-dependencies.jar` and the sample jar onto GCS
    ```sh
    gsutil mb $BUCKET
@@ -66,19 +73,30 @@ To run the word count sample in Dataproc cluster, follow the steps:
    ```sh
    gcloud config set dataproc/region $REGION
    ```
-<!-- TODO: set up bots to update jar version -->
-9. Run the sample in Dataproc. You would see the word count result show up in the console output.
+9. Run the sample in Dataproc. This will perform word count aggregation and publish word count results to Pub/Sub Lite.
    ```sh
    gcloud dataproc jobs submit spark --cluster=$CLUSTER_NAME \
       --jars=$BUCKET/pubsublite-spark-snippets-$SAMPLE_VERSION.jar,$BUCKET/pubsublite-spark-sql-streaming-$CONNECTOR_VERSION-with-dependencies.jar \
-      --class=pubsublite.spark.WordCount -- $SUBSCRIPTION_PATH
+      --class=pubsublite.spark.WordCount -- \
+      projects/$PROJECT_NUMBER/locations/$REGION-$ZONE_ID/subscriptions/$SOURCE_SUBSCRIPTION_ID \
+      projects/$PROJECT_NUMBER/locations/$REGION-$ZONE_ID/topics/$DESTINATION_TOPIC_ID
    ```
+10. Read word count results from Pub/Sub Lite, you should see the result in console output.
+    ```sh
+    PROJECT_NUMBER=$PROJECT_NUMBER \
+    REGION=$REGION \
+    ZONE_ID=$ZONE_ID \
+    DESTINATION_SUBSCRIPTION_ID=$DESTINATION_SUBSCRIPTION_ID \
+    mvn compile exec:java -Dexec.mainClass=pubsublite.spark.ReadResults
+    ```
 
 ## Cleaning up
 1. Delete Pub/Sub Lite topic and subscription.
    ```sh
-   gcloud pubsub lite-subscriptions delete $SUBSCRIPTION_ID --zone=$REGION-$ZONE_ID
-   gcloud pubsub lite-topics delete $TOPIC_ID --zone=$REGION-$ZONE_ID
+   gcloud pubsub lite-subscriptions delete $SOURCE_SUBSCRIPTION_ID --zone=$REGION-$ZONE_ID
+   gcloud pubsub lite-topics delete $SOURCE_TOPIC_ID --zone=$REGION-$ZONE_ID
+   gcloud pubsub lite-subscriptions delete $DESTINATION_SUBSCRIPTION_ID --zone=$REGION-$ZONE_ID
+   gcloud pubsub lite-topics delete $DESTINATION_TOPIC_ID --zone=$REGION-$ZONE_ID
    ```
 2. Delete GCS bucket.
    ```sh

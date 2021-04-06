@@ -27,6 +27,7 @@ import com.google.cloud.pubsublite.AdminClientSettings;
 import com.google.cloud.pubsublite.MessageMetadata;
 import com.google.cloud.pubsublite.Partition;
 import com.google.cloud.pubsublite.TopicPath;
+import com.google.cloud.pubsublite.cloudpubsub.PublisherSettings;
 import com.google.cloud.pubsublite.internal.Publisher;
 import com.google.cloud.pubsublite.internal.wire.PartitionCountWatchingPublisherSettings;
 import com.google.cloud.pubsublite.internal.wire.PubsubContext;
@@ -92,6 +93,7 @@ public abstract class PslWriteDataSourceOptions implements Serializable {
                     .setTopic(topicPath())
                     .setPartition(partition)
                     .setServiceClient(newServiceClient(partition))
+                    .setBatchingSettings(PublisherSettings.DEFAULT_BATCHING_SETTINGS)
                     .build())
         .setAdminClient(getAdminClient())
         .build()

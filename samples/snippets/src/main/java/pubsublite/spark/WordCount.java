@@ -16,8 +16,11 @@
 
 package pubsublite.spark;
 
+import static org.apache.spark.sql.functions.concat;
+import static org.apache.spark.sql.functions.lit;
 import static org.apache.spark.sql.functions.split;
 
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import org.apache.spark.sql.Column;
 import org.apache.spark.sql.Dataset;
@@ -31,12 +34,25 @@ import org.apache.spark.sql.types.DataTypes;
 public class WordCount {
 
   public static void main(String[] args) throws Exception {
+    final String appId = UUID.randomUUID().toString();
+    final String sourceSubscriptionPath = args[0];
+    final String destinationTopicPath = args[1];
 
-    SparkSession spark = SparkSession.builder().appName("Word count").master("yarn").getOrCreate();
+    SparkSession spark =
+        SparkSession.builder()
+            .appName(String.format("Word count (ID: %s)", appId))
+            .master("yarn")
+            .getOrCreate();
 
+    // Read messages from Pub/Sub Lite
     Dataset<Row> df =
-        spark.readStream().format("pubsublite").option("pubsublite.subscription", args[0]).load();
+        spark
+            .readStream()
+            .format("pubsublite")
+            .option("pubsublite.subscription", sourceSubscriptionPath)
+            .load();
 
+    // Aggregate word counts
     Column splitCol = split(df.col("data"), "_");
     df =
         df.withColumn("word", splitCol.getItem(0))
@@ -44,9 +60,18 @@ public class WordCount {
     df = df.groupBy("word").sum("word_count");
     df = df.orderBy(df.col("sum(word_count)").desc(), df.col("word").asc());
 
+    // Add Pub/Sub Lite message data field
+    df =
+        df.withColumn(
+            "data",
+            concat(df.col("word"), lit("_"), df.col("sum(word_count)")).cast(DataTypes.BinaryType));
+
+    // Write word count results to Pub/Sub Lite
     StreamingQuery query =
         df.writeStream()
-            .format("console")
+            .format("pubsublite")
+            .option("pubsublite.topic", destinationTopicPath)
+            .option("checkpointLocation", String.format("/tmp/checkpoint-%s", appId))
             .outputMode(OutputMode.Complete())
             .trigger(Trigger.ProcessingTime(1, TimeUnit.SECONDS))
             .start();
