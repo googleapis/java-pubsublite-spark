@@ -36,7 +36,8 @@ public class ReadResults {
     Map<String, String> env = System.getenv();
     Set<String> missingVars =
         Sets.difference(
-            ImmutableSet.of(REGION, ZONE_ID, DESTINATION_SUBSCRIPTION_ID, PROJECT_NUMBER), env.keySet());
+            ImmutableSet.of(REGION, ZONE_ID, DESTINATION_SUBSCRIPTION_ID, PROJECT_NUMBER),
+            env.keySet());
     Preconditions.checkState(
         missingVars.isEmpty(), "Missing required environment variables: " + missingVars);
 

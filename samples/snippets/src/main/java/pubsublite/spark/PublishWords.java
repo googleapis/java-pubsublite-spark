@@ -77,7 +77,8 @@ public class PublishWords {
     final List<String> words = Arrays.asList(snippets.split(" "));
 
     createTopicExample(cloudRegion, zoneId, projectNumber, sourceTopicId, partitions);
-    createSubscriptionExample(cloudRegion, zoneId, projectNumber, sourceTopicId, sourceSubscriptionId);
+    createSubscriptionExample(
+        cloudRegion, zoneId, projectNumber, sourceTopicId, sourceSubscriptionId);
     createTopicExample(cloudRegion, zoneId, projectNumber, destinationTopicId, partitions);
     createSubscriptionExample(
         cloudRegion, zoneId, projectNumber, destinationTopicId, destinationSubscriptionId);
