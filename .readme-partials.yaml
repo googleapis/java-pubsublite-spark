@@ -28,6 +28,10 @@ custom_content: |
 
   ## Usage
 
+  ### Samples
+
+    There are 3 samples (word count, simple write, simple read) under [samples](https://github.com/googleapis/java-pubsublite-spark/tree/master/samples) that shows using the connector inside Dataproc.
+
   ### Reading data from Pub/Sub Lite
 
     ```python
@@ -38,6 +42,12 @@ custom_content: |
     ```
 
     Note that the connector supports both MicroBatch Processing and [Continuous Processing](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#continuous-processing).
+
+  ### Writing data to Pub/Sub Lite
+
+    ```python
+    df.writeStream
+    ```
 
   ### Properties
 
