@@ -18,11 +18,7 @@ package pubsublite.spark;
 
 import static pubsublite.spark.AdminUtils.subscriberExample;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import java.util.Map;
-import java.util.Set;
 
 public class ReadResults {
 
@@ -32,14 +28,9 @@ public class ReadResults {
   private static final String PROJECT_NUMBER = "PROJECT_NUMBER";
 
   public static void main(String[] args) {
-
-    Map<String, String> env = System.getenv();
-    Set<String> missingVars =
-        Sets.difference(
-            ImmutableSet.of(REGION, ZONE_ID, DESTINATION_SUBSCRIPTION_ID, PROJECT_NUMBER),
-            env.keySet());
-    Preconditions.checkState(
-        missingVars.isEmpty(), "Missing required environment variables: " + missingVars);
+    Map<String, String> env =
+        CommonUtils.getAndValidateEnvVars(
+            REGION, ZONE_ID, DESTINATION_SUBSCRIPTION_ID, PROJECT_NUMBER);
 
     String cloudRegion = env.get(REGION);
     char zoneId = env.get(ZONE_ID).charAt(0);

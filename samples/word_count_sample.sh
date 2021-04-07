@@ -14,6 +14,10 @@ if [ "$1" == "run" ]; then
     --non-recursive \
     exec:exec)
 
+  # Set extra environment variables.
+  export SOURCE_SUBSCRIPTION_PATH=projects/$PROJECT_NUMBER/locations/$REGION-$ZONE_ID/subscriptions/$SOURCE_SUBSCRIPTION_ID
+  export DESTINATION_TOPIC_PATH=projects/$PROJECT_NUMBER/locations/$REGION-$ZONE_ID/topics/$DESTINATION_TOPIC_ID
+
   # Create both the source and destination topics and subscriptions,
   # and publish word count messages to the _source_ topic.
   mvn compile exec:java -Dexec.mainClass=pubsublite.spark.PublishWords
@@ -39,9 +43,8 @@ if [ "$1" == "run" ]; then
   # and publish word count results to Pub/Sub Lite.
   gcloud dataproc jobs submit spark --cluster=$CLUSTER_NAME \
     --jars=$BUCKET/pubsublite-spark-snippets-$SAMPLE_VERSION.jar,gs://spark-lib/pubsublite/pubsublite-spark-sql-streaming-$CONNECTOR_VERSION-with-dependencies.jar \
-    --class=pubsublite.spark.WordCount -- \
-    projects/$PROJECT_NUMBER/locations/$REGION-$ZONE_ID/subscriptions/$SOURCE_SUBSCRIPTION_ID \
-    projects/$PROJECT_NUMBER/locations/$REGION-$ZONE_ID/topics/$DESTINATION_TOPIC_ID
+    --class=pubsublite.spark.WordCount \
+    --properties=spark.yarn.appMasterEnv.SOURCE_SUBSCRIPTION_PATH=$SOURCE_SUBSCRIPTION_PATH,spark.yarn.appMasterEnv.DESTINATION_TOPIC_PATH=$DESTINATION_TOPIC_PATH
 
   # Read word count results from Pub/Sub Lite, you should see the result in console output.
   mvn compile exec:java -Dexec.mainClass=pubsublite.spark.ReadResults

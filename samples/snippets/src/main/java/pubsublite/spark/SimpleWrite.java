@@ -18,6 +18,8 @@ package pubsublite.spark;
 
 import com.google.common.collect.ImmutableList;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import org.apache.spark.sql.Dataset;
@@ -40,11 +42,11 @@ public class SimpleWrite {
             new StructField("key", DataTypes.BinaryType, false, Metadata.empty()),
             new StructField("data", DataTypes.BinaryType, false, Metadata.empty())
           });
+  private static final String DESTINATION_TOPIC_PATH = "DESTINATION_TOPIC_PATH";
 
   public static void main(String[] args) throws Exception {
 
-    final String destinationTopicPath = args[1];
-
+    Map<String, String> env = CommonUtils.getAndValidateEnvVars(DESTINATION_TOPIC_PATH);
     final String appId = UUID.randomUUID().toString();
     SparkSession spark =
         SparkSession.builder()
@@ -63,11 +65,13 @@ public class SimpleWrite {
     StreamingQuery query =
         df.writeStream()
             .format("pubsublite")
-            .option("pubsublite.topic", destinationTopicPath)
+            .option("pubsublite.topic", Objects.requireNonNull(env.get(DESTINATION_TOPIC_PATH)))
             .option("checkpointLocation", String.format("/tmp/checkpoint-%s", appId))
             .outputMode(OutputMode.Complete())
             .trigger(Trigger.ProcessingTime(1, TimeUnit.SECONDS))
             .start();
+
+    // Wait enough time to execute query
     query.awaitTermination(60 * 1000); // 60s
     query.stop();
   }

@@ -20,6 +20,8 @@ import static org.apache.spark.sql.functions.concat;
 import static org.apache.spark.sql.functions.lit;
 import static org.apache.spark.sql.functions.split;
 
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import org.apache.spark.sql.Column;
@@ -33,10 +35,14 @@ import org.apache.spark.sql.types.DataTypes;
 
 public class WordCount {
 
+  private static final String SOURCE_SUBSCRIPTION_PATH = "SOURCE_SUBSCRIPTION_PATH";
+  private static final String DESTINATION_TOPIC_PATH = "DESTINATION_TOPIC_PATH";
+
   public static void main(String[] args) throws Exception {
+
+    Map<String, String> env =
+        CommonUtils.getAndValidateEnvVars(SOURCE_SUBSCRIPTION_PATH, DESTINATION_TOPIC_PATH);
     final String appId = UUID.randomUUID().toString();
-    final String sourceSubscriptionPath = args[0];
-    final String destinationTopicPath = args[1];
 
     SparkSession spark =
         SparkSession.builder()
@@ -49,7 +55,9 @@ public class WordCount {
         spark
             .readStream()
             .format("pubsublite")
-            .option("pubsublite.subscription", sourceSubscriptionPath)
+            .option(
+                "pubsublite.subscription",
+                Objects.requireNonNull(env.get(SOURCE_SUBSCRIPTION_PATH)))
             .load();
 
     // Aggregate word counts
@@ -70,11 +78,13 @@ public class WordCount {
     StreamingQuery query =
         df.writeStream()
             .format("pubsublite")
-            .option("pubsublite.topic", destinationTopicPath)
+            .option("pubsublite.topic", Objects.requireNonNull(env.get(DESTINATION_TOPIC_PATH)))
             .option("checkpointLocation", String.format("/tmp/checkpoint-%s", appId))
             .outputMode(OutputMode.Complete())
             .trigger(Trigger.ProcessingTime(1, TimeUnit.SECONDS))
             .start();
+
+    // Wait enough time to execute query
     query.awaitTermination(60 * 1000); // 60s
     query.stop();
   }

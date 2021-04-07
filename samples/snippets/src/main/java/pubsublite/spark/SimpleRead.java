@@ -16,6 +16,8 @@
 
 package pubsublite.spark;
 
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import org.apache.spark.sql.Dataset;
@@ -27,10 +29,11 @@ import org.apache.spark.sql.streaming.Trigger;
 
 public class SimpleRead {
 
-  public static void main(String[] args) throws Exception {
+  private static final String SOURCE_SUBSCRIPTION_PATH = "SOURCE_SUBSCRIPTION_PATH";
 
+  public static void main(String[] args) throws Exception {
+    Map<String, String> env = CommonUtils.getAndValidateEnvVars(SOURCE_SUBSCRIPTION_PATH);
     final String appId = UUID.randomUUID().toString();
-    final String sourceSubscriptionPath = args[0];
 
     SparkSession spark =
         SparkSession.builder()
@@ -43,7 +46,9 @@ public class SimpleRead {
         spark
             .readStream()
             .format("pubsublite")
-            .option("pubsublite.subscription", sourceSubscriptionPath)
+            .option(
+                "pubsublite.subscription",
+                Objects.requireNonNull(env.get(SOURCE_SUBSCRIPTION_PATH)))
             .load();
 
     // Write messages to Console Output
@@ -53,6 +58,8 @@ public class SimpleRead {
             .outputMode(OutputMode.Append())
             .trigger(Trigger.ProcessingTime(1, TimeUnit.SECONDS))
             .start();
+
+    // Wait enough time to execute query
     query.awaitTermination(60 * 1000); // 60s
     query.stop();
   }

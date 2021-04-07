@@ -151,8 +151,11 @@ public class SampleIntegrationTest {
               .addJarFileUris(String.format("gs://%s/%s", bucketName, sampleJarNameInGCS))
               .addJarFileUris(String.format("gs://%s/%s", bucketName, connectorJarNameInGCS))
               .setMainClass("pubsublite.spark.WordCount")
-              .addArgs(sourceSubscriptionPath.toString())
-              .addArgs(destinationTopicPath.toString())
+              .putProperties(
+                  "spark.yarn.appMasterEnv.SOURCE_SUBSCRIPTION_PATH",
+                  sourceSubscriptionName.toString())
+              .putProperties(
+                  "spark.yarn.appMasterEnv.DESTINATION_TOPIC_PATH", destinationTopicPath.toString())
               .build();
       Job job = Job.newBuilder().setPlacement(jobPlacement).setSparkJob(sparkJob).build();
       OperationFuture<Job, JobMetadata> submitJobAsOperationAsyncRequest =

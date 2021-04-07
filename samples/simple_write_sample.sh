@@ -14,6 +14,9 @@ if [ "$1" == "run" ]; then
     --non-recursive \
     exec:exec)
 
+  # Set extra environment variables.
+  export DESTINATION_TOPIC_PATH=projects/$PROJECT_NUMBER/locations/$REGION-$ZONE_ID/topics/$DESTINATION_TOPIC_ID
+
   # Create a Dataproc cluster
   gcloud dataproc clusters create $CLUSTER_NAME \
     --region=$REGION \
@@ -34,8 +37,8 @@ if [ "$1" == "run" ]; then
   # Run the sample in Dataproc. This would publish messages from Spark into Pub/Sub Lite.
   gcloud dataproc jobs submit spark --cluster=$CLUSTER_NAME \
     --jars=$BUCKET/pubsublite-spark-snippets-$SAMPLE_VERSION.jar,gs://spark-lib/pubsublite/pubsublite-spark-sql-streaming-$CONNECTOR_VERSION-with-dependencies.jar \
-    --class=pubsublite.spark.SimpleWrite -- \
-    projects/$PROJECT_NUMBER/locations/$REGION-$ZONE_ID/subscriptions/$DESTINATION_SUBSCRIPTION_ID \
+    --class=pubsublite.spark.SimpleWrite \
+    --properties=spark.yarn.appMasterEnv.DESTINATION_TOPIC_PATH=$DESTINATION_TOPIC_PATH
 
   # Read results from Pub/Sub Lite, you should see the result in console output.
   mvn compile exec:java -Dexec.mainClass=pubsublite.spark.ReadResults
