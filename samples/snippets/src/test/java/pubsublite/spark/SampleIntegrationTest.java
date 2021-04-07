@@ -42,10 +42,7 @@ import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import com.google.pubsub.v1.PubsubMessage;
 import java.io.BufferedReader;
 import java.io.File;
@@ -55,7 +52,6 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
-import java.util.Set;
 import java.util.UUID;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.shared.invoker.DefaultInvocationRequest;
@@ -202,21 +198,18 @@ public class SampleIntegrationTest {
   }
 
   private void setUpVariables() {
-    Map<String, String> env = System.getenv();
-    Set<String> missingVars =
-        Sets.difference(
-            ImmutableSet.of(
-                CLOUD_REGION,
-                CLOUD_ZONE,
-                PROJECT_NUMBER,
-                TOPIC_ID,
-                CLUSTER_NAME,
-                BUCKET_NAME,
-                SAMPLE_VERSION,
-                CONNECTOR_VERSION),
-            env.keySet());
-    Preconditions.checkState(
-        missingVars.isEmpty(), "Missing required environment variables: " + missingVars);
+    Map<String, String> env =
+        CommonUtils.getAndValidateEnvVars(
+            CLOUD_REGION,
+            CLOUD_REGION,
+            CLOUD_ZONE,
+            PROJECT_ID,
+            PROJECT_NUMBER,
+            TOPIC_ID,
+            CLUSTER_NAME,
+            BUCKET_NAME,
+            SAMPLE_VERSION,
+            CONNECTOR_VERSION);
     cloudRegion = CloudRegion.of(env.get(CLOUD_REGION));
     cloudZone = CloudZone.of(cloudRegion, env.get(CLOUD_ZONE).charAt(0));
     projectId = ProjectId.of(env.get(PROJECT_ID));
