@@ -237,7 +237,7 @@ public class WordCountIntegrationTest extends SampleTestBase {
     assertThat(results.size()).isGreaterThan(10);
     for (PubsubMessage m : results) {
       assertThat(m.getOrderingKey()).isEqualTo("testkey");
-      assertThat(m.getData().toString()).startsWith("data_");
+      assertThat(m.getData().toStringUtf8()).startsWith("data_");
     }
   }
 
