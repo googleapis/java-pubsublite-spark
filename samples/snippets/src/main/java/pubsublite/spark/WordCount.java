@@ -39,9 +39,15 @@ public class WordCount {
   private static final String DESTINATION_TOPIC_PATH = "DESTINATION_TOPIC_PATH";
 
   public static void main(String[] args) throws Exception {
-
     Map<String, String> env =
         CommonUtils.getAndValidateEnvVars(SOURCE_SUBSCRIPTION_PATH, DESTINATION_TOPIC_PATH);
+    wordCount(
+        Objects.requireNonNull(env.get(SOURCE_SUBSCRIPTION_PATH)),
+        Objects.requireNonNull(env.get(DESTINATION_TOPIC_PATH)));
+  }
+
+  private static void wordCount(String sourceSubscriptionPath, String destinationTopicPath)
+      throws Exception {
     final String appId = UUID.randomUUID().toString();
 
     SparkSession spark =
@@ -55,9 +61,7 @@ public class WordCount {
         spark
             .readStream()
             .format("pubsublite")
-            .option(
-                "pubsublite.subscription",
-                Objects.requireNonNull(env.get(SOURCE_SUBSCRIPTION_PATH)))
+            .option("pubsublite.subscription", sourceSubscriptionPath)
             .load();
 
     // Aggregate word counts
@@ -78,7 +82,7 @@ public class WordCount {
     StreamingQuery query =
         df.writeStream()
             .format("pubsublite")
-            .option("pubsublite.topic", Objects.requireNonNull(env.get(DESTINATION_TOPIC_PATH)))
+            .option("pubsublite.topic", destinationTopicPath)
             .option("checkpointLocation", String.format("/tmp/checkpoint-%s", appId))
             .outputMode(OutputMode.Complete())
             .trigger(Trigger.ProcessingTime(1, TimeUnit.SECONDS))

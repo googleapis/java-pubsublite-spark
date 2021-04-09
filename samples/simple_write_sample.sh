@@ -38,7 +38,7 @@ if [ "$1" == "run" ]; then
   gcloud dataproc jobs submit spark --cluster=$CLUSTER_NAME \
     --jars=$BUCKET/pubsublite-spark-snippets-$SAMPLE_VERSION.jar,gs://spark-lib/pubsublite/pubsublite-spark-sql-streaming-$CONNECTOR_VERSION-with-dependencies.jar \
     --class=pubsublite.spark.SimpleWrite \
-    --properties=spark.yarn.appMasterEnv.DESTINATION_TOPIC_PATH=$DESTINATION_TOPIC_PATH
+    --properties=spark.submit.deployMode=cluster,spark.yarn.appMasterEnv.DESTINATION_TOPIC_PATH=$DESTINATION_TOPIC_PATH
 
   # Read results from Pub/Sub Lite, you should see the result in console output.
   mvn compile exec:java -Dexec.mainClass=pubsublite.spark.ReadResults

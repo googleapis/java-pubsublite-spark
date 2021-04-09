@@ -16,8 +16,6 @@
 
 package pubsublite.spark;
 
-import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import org.apache.spark.sql.Dataset;
@@ -29,10 +27,18 @@ import org.apache.spark.sql.streaming.Trigger;
 
 public class SimpleRead {
 
-  private static final String SOURCE_SUBSCRIPTION_PATH = "SOURCE_SUBSCRIPTION_PATH";
-
   public static void main(String[] args) throws Exception {
-    Map<String, String> env = CommonUtils.getAndValidateEnvVars(SOURCE_SUBSCRIPTION_PATH);
+    // Takes command line arguments instead of environment variables here. The reason
+    // is that we want to use client deployment mode so that user could see the console
+    // output, otherwise using cluster deployment mode would mean the console output is
+    // in one of the worker node and not easily accessible. Unfortunately the driver's
+    // environment variables can not be set dynamically, instead they could only be set
+    // up at cluster startup time via spark-env.sh.
+    String sourceSubscriptionPath = args[0];
+    simpleRead(sourceSubscriptionPath);
+  }
+
+  private static void simpleRead(String sourceSubscriptionPath) throws Exception {
     final String appId = UUID.randomUUID().toString();
 
     SparkSession spark =
@@ -46,9 +52,7 @@ public class SimpleRead {
         spark
             .readStream()
             .format("pubsublite")
-            .option(
-                "pubsublite.subscription",
-                Objects.requireNonNull(env.get(SOURCE_SUBSCRIPTION_PATH)))
+            .option("pubsublite.subscription", sourceSubscriptionPath)
             .load();
 
     // Write messages to Console Output

@@ -41,8 +41,7 @@ if [ "$1" == "run" ]; then
   # Run the sample in Dataproc. You would see the messages show up in the console output.
   gcloud dataproc jobs submit spark --cluster=$CLUSTER_NAME \
     --jars=$BUCKET/pubsublite-spark-snippets-$SAMPLE_VERSION.jar,gs://spark-lib/pubsublite/pubsublite-spark-sql-streaming-$CONNECTOR_VERSION-with-dependencies.jar \
-    --class=pubsublite.spark.SimpleRead \
-    --properties=spark.yarn.appMasterEnv.SOURCE_SUBSCRIPTION_PATH=$SOURCE_SUBSCRIPTION_PATH
+    --class=pubsublite.spark.SimpleRead -- $SOURCE_SUBSCRIPTION_PATH
 
   echo "Simple read sample finished."
 elif [ "$1" == "clean" ]; then
