@@ -8,11 +8,8 @@ Java idiomatic client for [Pub/Sub Lite Spark Connector][product-docs].
 - [Product Documentation][product-docs]
 - [Client Library Documentation][javadocs]
 
-
 > Note: This client is a work-in-progress, and may occasionally
 > make backwards-incompatible changes.
-
-
 
 ## Quickstart
 
@@ -100,20 +97,56 @@ and manual Spark installations.
 
 ## Usage
 
+### Samples
+
+  There are 3 java samples (word count, simple write, simple read) under [samples](https://github.com/googleapis/java-pubsublite-spark/tree/master/samples) that shows using the connector inside Dataproc.
+
 ### Reading data from Pub/Sub Lite
 
+  Here is an example in Python:
   ```python
   df = spark.readStream \
-    .option("pubsublite.subscription", "projects/$PROJECT_NUMBER/locations/$LOCATION/subscriptions/$SUBSCRIPTION_ID")
     .format("pubsublite") \
+    .option("pubsublite.subscription", "projects/$PROJECT_NUMBER/locations/$LOCATION/subscriptions/$SUBSCRIPTION_ID") \
     .load
+  ```
+  Here is an example in Java:
+  ```java
+  Dataset<Row> df = spark
+    .readStream()
+    .format("pubsublite")
+    .option("pubsublite.subscription", "projects/$PROJECT_NUMBER/locations/$LOCATION/subscriptions/$SUBSCRIPTION_ID"t )
+    .load();
   ```
 
   Note that the connector supports both MicroBatch Processing and [Continuous Processing](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#continuous-processing).
 
+### Writing data to Pub/Sub Lite
+
+  Here is an example in Python:
+  ```python
+  df.writeStream \
+    .format("pubsublite") \
+    .option("pubsublite.topic", "projects/$PROJECT_NUMBER/locations/$LOCATION/topics/$TOPIC_ID") \
+    .option("checkpointLocation", "path/to/HDFS/dir")
+    .outputMode("complete") \
+    .trigger(processingTime="2 seconds") \
+    .start()
+  ```
+  Here is an example in Java:
+  ```java
+  df.writeStream()
+    .format("pubsublite")
+    .option("pubsublite.topic", "projects/$PROJECT_NUMBER/locations/$LOCATION/topics/$TOPIC_ID")
+    .option("checkpointLocation", "path/to/HDFS/dir")
+    .outputMode(OutputMode.Complete())
+    .trigger(Trigger.ProcessingTime(2, TimeUnit.SECONDS))
+    .start();
+  ```
+
 ### Properties
 
-The connector supports a number of options to configure the read:
+When reading from Pub/Sub Lite, the connector supports a number of configuration options:
 
   | Option | Type | Required | Default Value | Meaning |
   | ------ | ---- | -------- | ------------- | ------- |
@@ -123,9 +156,16 @@ The connector supports a number of options to configure the read:
   | pubsublite.flowcontrol.maxmessagesperbatch | Long | N | Long.MAX | Max number of messages in micro batch. |
   | gcp.credentials.key | String | N | [Application Default Credentials](https://cloud.google.com/docs/authentication/production#automatically) | Service account JSON in base64. |
 
+When writing to Pub/Sub Lite, the connector supports a number of configuration options:
+
+  | Option | Type | Required | Default Value | Meaning |
+  | ------ | ---- | -------- | ------------- | ------- |
+  | pubsublite.topic | String | Y | | Full topic path that the connector will write to. |
+  | gcp.credentials.key | String | N | [Application Default Credentials](https://cloud.google.com/docs/authentication/production#automatically) | Service account JSON in base64. |
+
 ### Data Schema
 
-The connector has fixed data schema as follows:
+When reading from Pub/Sub Lite, the connector has a fixed data schema as follows:
 
   | Data Field | Spark Data Type | Notes |
   | ---------- | --------------- | ----- |
@@ -137,6 +177,17 @@ The connector has fixed data schema as follows:
   | attributes | MapType\[StringType, ArrayType\[BinaryType\]\] | |
   | publish_timestamp | TimestampType | |
   | event_timestamp | TimestampType | Nullable |
+
+When writing to Pub/Sub Lite, the connetor matches the following data field and data types as follows:
+
+  | Data Field | Spark Data Type | Required |
+  | ---------- | --------------- | ----- |
+  | key | BinaryType | N |
+  | data | BinaryType | N |
+  | attributes | MapType\[StringType, ArrayType\[BinaryType\]\] | N |
+  | event_timestamp | TimestampType | N |
+
+Note that when a data field is present in the table but the data type mismatches, the connector will throw IllegalArgumentException that terminates the query.
 
 ## Building the Connector
 
