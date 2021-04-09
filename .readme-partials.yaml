@@ -34,13 +34,14 @@ custom_content: |
 
   ### Reading data from Pub/Sub Lite
 
+    Here is an example in Python:
     ```python
     df = spark.readStream \
       .format("pubsublite") \
       .option("pubsublite.subscription", "projects/$PROJECT_NUMBER/locations/$LOCATION/subscriptions/$SUBSCRIPTION_ID") \
       .load
     ```
-
+    Here is an example in Java:
     ```java
     Dataset<Row> df = spark
       .readStream()
@@ -53,6 +54,7 @@ custom_content: |
 
   ### Writing data to Pub/Sub Lite
 
+    Here is an example in Python:
     ```python
     df.writeStream \
       .format("pubsublite") \
@@ -62,7 +64,7 @@ custom_content: |
       .trigger(processingTime="2 seconds") \
       .start()
     ```
-
+    Here is an example in Java:
     ```java
     df.writeStream()
       .format("pubsublite")
