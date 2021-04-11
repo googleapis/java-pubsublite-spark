@@ -115,7 +115,7 @@ and manual Spark installations.
   Dataset<Row> df = spark
     .readStream()
     .format("pubsublite")
-    .option("pubsublite.subscription", "projects/$PROJECT_NUMBER/locations/$LOCATION/subscriptions/$SUBSCRIPTION_ID"t )
+    .option("pubsublite.subscription", "projects/$PROJECT_NUMBER/locations/$LOCATION/subscriptions/$SUBSCRIPTION_ID")
     .load();
   ```
 
