@@ -64,6 +64,12 @@ public class SamplesIntegrationTest extends SampleTestBase {
     setupEnvVars();
     findMavenHome();
 
+    // Get connector and sample version
+    getVersion(workingDir, (l) -> connectorVersion = l);
+    log.atInfo().log("Connector version is: %s", connectorVersion);
+    getVersion(workingDir + "/samples", (l) -> sampleVersion = l);
+    log.atInfo().log("Sample version is: %s", sampleVersion);
+
     // Maven package into jars
     mavenPackage(workingDir);
     mavenPackage(workingDir + "/samples");
