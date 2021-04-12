@@ -23,6 +23,7 @@ import com.google.api.gax.rpc.ApiException;
 import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsublite.AdminClient;
+import com.google.cloud.pubsublite.AdminClient.BacklogLocation;
 import com.google.cloud.pubsublite.AdminClientSettings;
 import com.google.cloud.pubsublite.CloudRegion;
 import com.google.cloud.pubsublite.CloudZone;
@@ -30,7 +31,6 @@ import com.google.cloud.pubsublite.MessageMetadata;
 import com.google.cloud.pubsublite.ProjectNumber;
 import com.google.cloud.pubsublite.SubscriptionName;
 import com.google.cloud.pubsublite.SubscriptionPath;
-import com.google.cloud.pubsublite.AdminClient.BacklogLocation;
 import com.google.cloud.pubsublite.TopicName;
 import com.google.cloud.pubsublite.TopicPath;
 import com.google.cloud.pubsublite.cloudpubsub.FlowControlSettings;
@@ -142,7 +142,8 @@ public class AdminUtils {
         AdminClientSettings.newBuilder().setRegion(CloudRegion.of(cloudRegion)).build();
 
     try (AdminClient adminClient = AdminClient.create(adminClientSettings)) {
-      Subscription response = adminClient.createSubscription(subscription, BacklogLocation.BEGINNING).get();
+      Subscription response =
+          adminClient.createSubscription(subscription, BacklogLocation.BEGINNING).get();
       System.out.println(response.getAllFields() + "created successfully.");
     } catch (ExecutionException e) {
       if (e.getCause() instanceof AlreadyExistsException) {
