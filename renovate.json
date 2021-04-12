@@ -69,5 +69,9 @@
     }
   ],
   "semanticCommits": true,
-  "masterIssue": true
+  "masterIssue": true,
+  "ignoreDeps": [
+    "scala-library",
+    "caffeine"
+  ]
 }
