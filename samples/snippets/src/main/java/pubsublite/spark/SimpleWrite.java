@@ -18,13 +18,11 @@ package pubsublite.spark;
 
 import static org.apache.spark.sql.functions.concat;
 import static org.apache.spark.sql.functions.lit;
-import static org.apache.spark.sql.functions.split;
 
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import org.apache.spark.sql.Column;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
@@ -33,50 +31,27 @@ import org.apache.spark.sql.streaming.StreamingQuery;
 import org.apache.spark.sql.streaming.Trigger;
 import org.apache.spark.sql.types.DataTypes;
 
-public class WordCount {
-
-  private static final String SOURCE_SUBSCRIPTION_PATH = "SOURCE_SUBSCRIPTION_PATH";
+public class SimpleWrite {
   private static final String DESTINATION_TOPIC_PATH = "DESTINATION_TOPIC_PATH";
 
   public static void main(String[] args) throws Exception {
-    Map<String, String> env =
-        CommonUtils.getAndValidateEnvVars(SOURCE_SUBSCRIPTION_PATH, DESTINATION_TOPIC_PATH);
-    wordCount(
-        Objects.requireNonNull(env.get(SOURCE_SUBSCRIPTION_PATH)),
-        Objects.requireNonNull(env.get(DESTINATION_TOPIC_PATH)));
+    Map<String, String> env = CommonUtils.getAndValidateEnvVars(DESTINATION_TOPIC_PATH);
+    simpleWrite(Objects.requireNonNull(env.get(DESTINATION_TOPIC_PATH)));
   }
 
-  private static void wordCount(String sourceSubscriptionPath, String destinationTopicPath)
-      throws Exception {
+  private static void simpleWrite(String destinationTopicPath) throws Exception {
     final String appId = UUID.randomUUID().toString();
-
     SparkSession spark =
         SparkSession.builder()
-            .appName(String.format("Word count (ID: %s)", appId))
+            .appName(String.format("Simple write (ID: %s)", appId))
             .master("yarn")
             .getOrCreate();
 
-    // Read messages from Pub/Sub Lite
-    Dataset<Row> df =
-        spark
-            .readStream()
-            .format("pubsublite")
-            .option("pubsublite.subscription", sourceSubscriptionPath)
-            .load();
-
-    // Aggregate word counts
-    Column splitCol = split(df.col("data"), "_");
+    // Generate rate source, 1 row per second
+    Dataset<Row> df = spark.readStream().format("rate").load();
     df =
-        df.withColumn("word", splitCol.getItem(0))
-            .withColumn("word_count", splitCol.getItem(1).cast(DataTypes.LongType));
-    df = df.groupBy("word").sum("word_count");
-    df = df.orderBy(df.col("sum(word_count)").desc(), df.col("word").asc());
-
-    // Add Pub/Sub Lite message data field
-    df =
-        df.withColumn(
-            "data",
-            concat(df.col("word"), lit("_"), df.col("sum(word_count)")).cast(DataTypes.BinaryType));
+        df.withColumn("key", lit("testkey").cast(DataTypes.BinaryType))
+            .withColumn("data", concat(lit("data_"), df.col("value")).cast(DataTypes.BinaryType));
 
     // Write word count results to Pub/Sub Lite
     StreamingQuery query =
@@ -84,7 +59,7 @@ public class WordCount {
             .format("pubsublite")
             .option("pubsublite.topic", destinationTopicPath)
             .option("checkpointLocation", String.format("/tmp/checkpoint-%s", appId))
-            .outputMode(OutputMode.Complete())
+            .outputMode(OutputMode.Append())
             .trigger(Trigger.ProcessingTime(1, TimeUnit.SECONDS))
             .start();
 
