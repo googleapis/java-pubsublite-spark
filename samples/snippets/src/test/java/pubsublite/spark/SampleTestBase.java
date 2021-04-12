@@ -33,17 +33,20 @@ import com.google.cloud.pubsublite.TopicName;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
-import com.google.common.collect.ImmutableList;
+import com.google.common.flogger.GoogleLogger;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.shared.invoker.DefaultInvocationRequest;
 import org.apache.maven.shared.invoker.DefaultInvoker;
+import org.apache.maven.shared.invoker.InvocationOutputHandler;
 import org.apache.maven.shared.invoker.InvocationRequest;
 import org.apache.maven.shared.invoker.InvocationResult;
 import org.apache.maven.shared.invoker.Invoker;
@@ -52,6 +55,8 @@ import org.apache.maven.shared.utils.cli.CommandLineException;
 
 public abstract class SampleTestBase {
 
+  private static final GoogleLogger log = GoogleLogger.forEnclosingClass();
+
   private static final String CLOUD_REGION = "CLOUD_REGION";
   private static final String CLOUD_ZONE = "CLOUD_ZONE";
   private static final String PROJECT_NUMBER = "GOOGLE_CLOUD_PROJECT_NUMBER";
@@ -59,8 +64,6 @@ public abstract class SampleTestBase {
   private static final String TOPIC_ID = "TOPIC_ID";
   private static final String CLUSTER_NAME = "CLUSTER_NAME";
   private static final String BUCKET_NAME = "BUCKET_NAME";
-  private static final String SAMPLE_VERSION = "SAMPLE_VERSION";
-  private static final String CONNECTOR_VERSION = "CONNECTOR_VERSION";
 
   protected final String runId = UUID.randomUUID().toString();
   protected CloudRegion cloudRegion;
@@ -91,32 +94,14 @@ public abstract class SampleTestBase {
             PROJECT_NUMBER,
             TOPIC_ID,
             CLUSTER_NAME,
-            BUCKET_NAME,
-            SAMPLE_VERSION,
-            CONNECTOR_VERSION);
+            BUCKET_NAME);
     cloudRegion = CloudRegion.of(env.get(CLOUD_REGION));
     cloudZone = CloudZone.of(cloudRegion, env.get(CLOUD_ZONE).charAt(0));
     projectId = ProjectId.of(env.get(PROJECT_ID));
     projectNumber = ProjectNumber.of(Long.parseLong(env.get(PROJECT_NUMBER)));
     sourceTopicId = TopicName.of(env.get(TOPIC_ID));
-
     clusterName = env.get(CLUSTER_NAME);
     bucketName = env.get(BUCKET_NAME);
-    workingDir =
-        System.getProperty("user.dir")
-            .replace("/samples/snapshot", "")
-            .replace("/samples/snippets", "");
-    sampleVersion = env.get(SAMPLE_VERSION);
-    connectorVersion = env.get(CONNECTOR_VERSION);
-    sampleJarName = String.format("pubsublite-spark-snippets-%s.jar", sampleVersion);
-    connectorJarName =
-        String.format("pubsublite-spark-sql-streaming-%s-with-dependencies.jar", connectorVersion);
-    sampleJarNameInGCS = String.format("pubsublite-spark-snippets-%s-%s.jar", sampleVersion, runId);
-    connectorJarNameInGCS =
-        String.format(
-            "pubsublite-spark-sql-streaming-%s-with-dependencies-%s.jar", connectorVersion, runId);
-    sampleJarLoc = String.format("%s/samples/snippets/target/%s", workingDir, sampleJarName);
-    connectorJarLoc = String.format("%s/target/%s", workingDir, connectorJarName);
   }
 
   protected void findMavenHome() throws Exception {
@@ -131,18 +116,57 @@ public abstract class SampleTestBase {
     }
   }
 
-  protected void mavenPackage(String workingDir)
+  private void runMavenCommand(
+      String workingDir, Optional<InvocationOutputHandler> outputHandler, String... goals)
       throws MavenInvocationException, CommandLineException {
     InvocationRequest request = new DefaultInvocationRequest();
     request.setPomFile(new File(workingDir + "/pom.xml"));
-    request.setGoals(ImmutableList.of("clean", "package", "-Dmaven.test.skip=true"));
+    request.setGoals(Arrays.asList(goals.clone()));
     Invoker invoker = new DefaultInvoker();
+    outputHandler.ifPresent(invoker::setOutputHandler);
     invoker.setMavenHome(new File(mavenHome));
     InvocationResult result = invoker.execute(request);
     if (result.getExecutionException() != null) {
       throw result.getExecutionException();
     }
     assertThat(result.getExitCode()).isEqualTo(0);
+  }
+
+  protected void mavenPackage(String workingDir)
+      throws MavenInvocationException, CommandLineException {
+    runMavenCommand(workingDir, Optional.empty(), "clean", "package", "-Dmaven.test.skip=true");
+  }
+
+  private void getVersion(String workingDir, InvocationOutputHandler outputHandler)
+      throws MavenInvocationException, CommandLineException {
+    runMavenCommand(
+        workingDir,
+        Optional.of(outputHandler),
+        "-q",
+        "-Dexec.executable=echo",
+        "-Dexec.args='${project.version}'",
+        "--non-recursive",
+        "exec:exec");
+  }
+
+  protected void setupVersions() throws MavenInvocationException, CommandLineException {
+    workingDir =
+        System.getProperty("user.dir")
+            .replace("/samples/snapshot", "")
+            .replace("/samples/snippets", "");
+    getVersion(workingDir, (l) -> connectorVersion = l);
+    log.atInfo().log("Connector version is: %s", connectorVersion);
+    getVersion(workingDir + "/samples", (l) -> sampleVersion = l);
+    log.atInfo().log("Sample version is: %s", sampleVersion);
+    sampleJarName = String.format("pubsublite-spark-snippets-%s.jar", sampleVersion);
+    connectorJarName =
+        String.format("pubsublite-spark-sql-streaming-%s-with-dependencies.jar", connectorVersion);
+    sampleJarNameInGCS = String.format("pubsublite-spark-snippets-%s-%s.jar", sampleVersion, runId);
+    connectorJarNameInGCS =
+        String.format(
+            "pubsublite-spark-sql-streaming-%s-with-dependencies-%s.jar", connectorVersion, runId);
+    sampleJarLoc = String.format("%s/samples/snippets/target/%s", workingDir, sampleJarName);
+    connectorJarLoc = String.format("%s/target/%s", workingDir, connectorJarName);
   }
 
   protected void uploadGCS(Storage storage, String fileNameInGCS, String fileLoc) throws Exception {
