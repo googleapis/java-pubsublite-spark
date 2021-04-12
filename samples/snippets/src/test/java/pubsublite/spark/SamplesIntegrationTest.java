@@ -61,7 +61,6 @@ public class SamplesIntegrationTest extends SampleTestBase {
       return;
     }
     log.atInfo().log("RunId is: %s", runId);
-    setupEnvVars();
     findMavenHome();
 
     // Get connector and sample version
@@ -69,6 +68,8 @@ public class SamplesIntegrationTest extends SampleTestBase {
     log.atInfo().log("Connector version is: %s", connectorVersion);
     getVersion(workingDir + "/samples", (l) -> sampleVersion = l);
     log.atInfo().log("Sample version is: %s", sampleVersion);
+
+    setupEnvVars();
 
     // Maven package into jars
     mavenPackage(workingDir);
