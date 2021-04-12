@@ -30,6 +30,7 @@ import com.google.cloud.pubsublite.MessageMetadata;
 import com.google.cloud.pubsublite.ProjectNumber;
 import com.google.cloud.pubsublite.SubscriptionName;
 import com.google.cloud.pubsublite.SubscriptionPath;
+import com.google.cloud.pubsublite.AdminClient.BacklogLocation;
 import com.google.cloud.pubsublite.TopicName;
 import com.google.cloud.pubsublite.TopicPath;
 import com.google.cloud.pubsublite.cloudpubsub.FlowControlSettings;
@@ -141,7 +142,7 @@ public class AdminUtils {
         AdminClientSettings.newBuilder().setRegion(CloudRegion.of(cloudRegion)).build();
 
     try (AdminClient adminClient = AdminClient.create(adminClientSettings)) {
-      Subscription response = adminClient.createSubscription(subscription).get();
+      Subscription response = adminClient.createSubscription(subscription, BacklogLocation.BEGINNING).get();
       System.out.println(response.getAllFields() + "created successfully.");
     } catch (ExecutionException e) {
       if (e.getCause() instanceof AlreadyExistsException) {
