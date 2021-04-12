@@ -63,6 +63,7 @@ public class SamplesIntegrationTest extends SampleTestBase {
     log.atInfo().log("RunId is: %s", runId);
     setupEnvVars();
     findMavenHome();
+    setupVersions();
 
     // Maven package into jars
     mavenPackage(workingDir);
