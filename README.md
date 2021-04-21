@@ -84,15 +84,19 @@ and manual Spark installations.
   ```
 
 ## Downloading and Using the Connector
-  The latest version of the connector is publicly available in the following link:
+  The latest version of the connector is publicly available in the following link: 
+
   | Connector version | Link |
   | --- | --- |
+  | 0.2.0 | `gs://spark-lib/pubsublite/pubsublite-spark-sql-streaming-0.2.0-with-dependencies.jar`([HTTP link](https://storage.googleapis.com/spark-lib/pubsublite/pubsublite-spark-sql-streaming-0.2.0-with-dependencies.jar)) |
   | 0.1.0 | `gs://spark-lib/pubsublite/pubsublite-spark-sql-streaming-0.1.0-with-dependencies.jar`([HTTP link](https://storage.googleapis.com/spark-lib/pubsublite/pubsublite-spark-sql-streaming-0.1.0-with-dependencies.jar)) |
+
   The connector is also available from the [Maven Central repository](https://search.maven.org/artifact/com.google.cloud/pubsublite-spark-sql-streaming). You can download and pass it in the `--jars` option when using the `spark-submit` command.
 
 ## Compatibility
 | Connector version | Spark version |
 | --- | --- |
+| 0.2.0 | 2.4.X |
 | 0.1.0 | 2.4.X |
 
 ## Usage
