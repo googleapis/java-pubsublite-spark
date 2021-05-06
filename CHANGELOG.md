@@ -1,5 +1,23 @@
 # Changelog
 
+### [0.2.1](https://www.github.com/googleapis/java-pubsublite-spark/compare/v0.2.0...v0.2.1) (2021-05-06)
+
+
+### Bug Fixes
+
+* release scripts from issuing overlapping phases ([#152](https://www.github.com/googleapis/java-pubsublite-spark/issues/152)) ([72e8fdb](https://www.github.com/googleapis/java-pubsublite-spark/commit/72e8fdbb8cdd142d25dfa510fc9b404654a84dd2))
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-pubsublite to v0.13.2 ([#146](https://www.github.com/googleapis/java-pubsublite-spark/issues/146)) ([f5d49d6](https://www.github.com/googleapis/java-pubsublite-spark/commit/f5d49d678559f25761b04b9680a7f8252b41439f))
+* update dependency com.google.cloud:google-cloud-pubsublite-parent to v0.13.2 ([#147](https://www.github.com/googleapis/java-pubsublite-spark/issues/147)) ([dd6e900](https://www.github.com/googleapis/java-pubsublite-spark/commit/dd6e9004f0669620b5ba635faea858ed3b76b32d))
+
+
+### Documentation
+
+* Update doc links for 0.2.0 ([#154](https://www.github.com/googleapis/java-pubsublite-spark/issues/154)) ([3cb2611](https://www.github.com/googleapis/java-pubsublite-spark/commit/3cb261199f38fe02b01fa9f5c6c3ca6d339ed21c))
+
 ## [0.2.0](https://www.github.com/googleapis/java-pubsublite-spark/compare/v0.1.0...v0.2.0) (2021-04-12)
 
 
