@@ -46,5 +46,5 @@ permissionRules:
   permission: admin
 - team: yoshi-java
   permission: push
-- team: api-pubsub
+- team: api-pubsublite
   permission: admin
