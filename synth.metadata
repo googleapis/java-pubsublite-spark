@@ -4,7 +4,7 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/java-pubsublite-spark.git",
-        "sha": "39050962843db79ccdd1ab8f298eaa01288464bd"
+        "sha": "200602df8782720a80fd38590df0fe0648d26c5b"
       }
     },
     {
