@@ -155,7 +155,7 @@ public abstract class PslReadDataSourceOptions implements Serializable {
             .setMessageConsumer(consumer)
             .setInitialLocation(
                 SeekRequest.newBuilder()
-                    .setCursor(Cursor.newBuilder().setOffset(offset.value()).build())
+                    .setCursor(Cursor.newBuilder().setOffset(offset.value()))
                     .build())
             .build();
       } catch (IOException e) {
