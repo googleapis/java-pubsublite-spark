@@ -1,5 +1,41 @@
 # Changelog
 
+## [0.3.0](https://www.github.com/googleapis/java-pubsublite-spark/compare/v0.2.0...v0.3.0) (2021-06-10)
+
+
+### Features
+
+* add `gcf-owl-bot[bot]` to `ignoreAuthors` ([#180](https://www.github.com/googleapis/java-pubsublite-spark/issues/180)) ([ff35157](https://www.github.com/googleapis/java-pubsublite-spark/commit/ff35157fb13ef9eae0d3244d9533fb8c6fc1655b))
+
+
+### Bug Fixes
+
+* release scripts from issuing overlapping phases ([#152](https://www.github.com/googleapis/java-pubsublite-spark/issues/152)) ([72e8fdb](https://www.github.com/googleapis/java-pubsublite-spark/commit/72e8fdbb8cdd142d25dfa510fc9b404654a84dd2))
+
+
+### Documentation
+
+* Update doc links for 0.2.0 ([#154](https://www.github.com/googleapis/java-pubsublite-spark/issues/154)) ([3cb2611](https://www.github.com/googleapis/java-pubsublite-spark/commit/3cb261199f38fe02b01fa9f5c6c3ca6d339ed21c))
+
+
+### Dependencies
+
+* update dependency com.github.ben-manes.caffeine:caffeine to v2.9.1 ([#165](https://www.github.com/googleapis/java-pubsublite-spark/issues/165)) ([f1ec795](https://www.github.com/googleapis/java-pubsublite-spark/commit/f1ec7955ec1852b048572f518615ce1c9e27eac2))
+* update dependency com.google.api.grpc:proto-google-cloud-pubsublite-v1 to v0.14.1 ([#145](https://www.github.com/googleapis/java-pubsublite-spark/issues/145)) ([914809d](https://www.github.com/googleapis/java-pubsublite-spark/commit/914809dd1c04e8b512c9ef0f43eb15091920d834))
+* update dependency com.google.api.grpc:proto-google-cloud-pubsublite-v1 to v0.14.2 ([#172](https://www.github.com/googleapis/java-pubsublite-spark/issues/172)) ([0e2ab3a](https://www.github.com/googleapis/java-pubsublite-spark/commit/0e2ab3a537131dcd1d6f39ee3be17d0f5631007e))
+* update dependency com.google.api.grpc:proto-google-cloud-pubsublite-v1 to v0.15.0 ([#189](https://www.github.com/googleapis/java-pubsublite-spark/issues/189)) ([7d1ac2f](https://www.github.com/googleapis/java-pubsublite-spark/commit/7d1ac2f8bfa3e8bf616980606d51ecce488eddea))
+* update dependency com.google.cloud:google-cloud-pubsublite to v0.13.2 ([#146](https://www.github.com/googleapis/java-pubsublite-spark/issues/146)) ([f5d49d6](https://www.github.com/googleapis/java-pubsublite-spark/commit/f5d49d678559f25761b04b9680a7f8252b41439f))
+* update dependency com.google.cloud:google-cloud-pubsublite to v0.14.1 ([#163](https://www.github.com/googleapis/java-pubsublite-spark/issues/163)) ([1f21f18](https://www.github.com/googleapis/java-pubsublite-spark/commit/1f21f18d0c497049d697b34d87bf55e5c4bde314))
+* update dependency com.google.cloud:google-cloud-pubsublite to v0.14.2 ([#173](https://www.github.com/googleapis/java-pubsublite-spark/issues/173)) ([0277bf6](https://www.github.com/googleapis/java-pubsublite-spark/commit/0277bf6dcd45a7df35a90cb1d5a558ab839378f0))
+* update dependency com.google.cloud:google-cloud-pubsublite-parent to v0.13.2 ([#147](https://www.github.com/googleapis/java-pubsublite-spark/issues/147)) ([dd6e900](https://www.github.com/googleapis/java-pubsublite-spark/commit/dd6e9004f0669620b5ba635faea858ed3b76b32d))
+* update dependency com.google.cloud:google-cloud-pubsublite-parent to v0.14.1 ([#164](https://www.github.com/googleapis/java-pubsublite-spark/issues/164)) ([bce6d3f](https://www.github.com/googleapis/java-pubsublite-spark/commit/bce6d3fd3731c968181a1857c9dd1ebb0e3be2db))
+* update dependency com.google.cloud:google-cloud-pubsublite-parent to v0.14.2 ([#174](https://www.github.com/googleapis/java-pubsublite-spark/issues/174)) ([b4cae22](https://www.github.com/googleapis/java-pubsublite-spark/commit/b4cae22d916d1fc748c1c89d143924a4e2a3a1cc))
+* update dependency com.google.cloud:google-cloud-pubsublite-parent to v0.15.0 ([#191](https://www.github.com/googleapis/java-pubsublite-spark/issues/191)) ([6206177](https://www.github.com/googleapis/java-pubsublite-spark/commit/620617711f2e3099c49d17517e2287d6f6785d26))
+* update dependency org.apache.spark:spark-sql_2.11 to v2.4.8 ([#176](https://www.github.com/googleapis/java-pubsublite-spark/issues/176)) ([45997fc](https://www.github.com/googleapis/java-pubsublite-spark/commit/45997fcd74fd15c4d80de76742fedf24d8ca57a5))
+* update dependency org.scala-lang.modules:scala-java8-compat_2.11 to v1 ([#171](https://www.github.com/googleapis/java-pubsublite-spark/issues/171)) ([7d8684b](https://www.github.com/googleapis/java-pubsublite-spark/commit/7d8684beb1df032d558e2ceda87c48ede80eb1f3))
+* update spark.version to v2.4.8 ([#177](https://www.github.com/googleapis/java-pubsublite-spark/issues/177)) ([0eb6a42](https://www.github.com/googleapis/java-pubsublite-spark/commit/0eb6a42e7970902dee25ec9bd3e000886482a4de))
+* update to google-cloud-pubsublite to v0.15.0 ([#192](https://www.github.com/googleapis/java-pubsublite-spark/issues/192)) ([002191f](https://www.github.com/googleapis/java-pubsublite-spark/commit/002191febb8506ebab01159d4a4246ca6972b120))
+
 ## [0.2.0](https://www.github.com/googleapis/java-pubsublite-spark/compare/v0.1.0...v0.2.0) (2021-04-12)
 
 
