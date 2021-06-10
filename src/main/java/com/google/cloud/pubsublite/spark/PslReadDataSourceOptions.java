@@ -33,6 +33,8 @@ import com.google.cloud.pubsublite.internal.wire.PubsubContext;
 import com.google.cloud.pubsublite.internal.wire.RoutingMetadata;
 import com.google.cloud.pubsublite.internal.wire.ServiceClients;
 import com.google.cloud.pubsublite.internal.wire.SubscriberBuilder;
+import com.google.cloud.pubsublite.proto.Cursor;
+import com.google.cloud.pubsublite.proto.SeekRequest;
 import com.google.cloud.pubsublite.spark.internal.MultiPartitionCommitter;
 import com.google.cloud.pubsublite.spark.internal.MultiPartitionCommitterImpl;
 import com.google.cloud.pubsublite.spark.internal.PartitionSubscriberFactory;
@@ -135,7 +137,7 @@ public abstract class PslReadDataSourceOptions implements Serializable {
   }
 
   PartitionSubscriberFactory getSubscriberFactory() {
-    return (partition, consumer) -> {
+    return (partition, offset, consumer) -> {
       PubsubContext context = PubsubContext.of(Constants.FRAMEWORK);
       SubscriberServiceSettings.Builder settingsBuilder =
           SubscriberServiceSettings.newBuilder()
@@ -151,6 +153,10 @@ public abstract class PslReadDataSourceOptions implements Serializable {
             .setPartition(partition)
             .setServiceClient(serviceClient)
             .setMessageConsumer(consumer)
+            .setInitialLocation(
+                SeekRequest.newBuilder()
+                    .setCursor(Cursor.newBuilder().setOffset(offset.value()))
+                    .build())
             .build();
       } catch (IOException e) {
         throw new IllegalStateException("Failed to create subscriber service.", e);

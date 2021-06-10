@@ -21,16 +21,14 @@ import com.google.cloud.pubsublite.cloudpubsub.FlowControlSettings;
 import com.google.cloud.pubsublite.internal.BlockingPullSubscriber;
 import com.google.cloud.pubsublite.internal.BlockingPullSubscriberImpl;
 import com.google.cloud.pubsublite.internal.CheckedApiException;
-import com.google.cloud.pubsublite.internal.wire.SubscriberFactory;
-import com.google.cloud.pubsublite.proto.Cursor;
-import com.google.cloud.pubsublite.proto.SeekRequest;
+import com.google.cloud.pubsublite.spark.internal.PartitionSubscriberFactory;
 import org.apache.spark.sql.catalyst.InternalRow;
 import org.apache.spark.sql.sources.v2.reader.InputPartition;
 import org.apache.spark.sql.sources.v2.reader.InputPartitionReader;
 
 public class PslMicroBatchInputPartition implements InputPartition<InternalRow> {
 
-  private final SubscriberFactory subscriberFactory;
+  private final PartitionSubscriberFactory subscriberFactory;
   private final SparkPartitionOffset startOffset;
   private final SparkPartitionOffset endOffset;
   private final SubscriptionPath subscriptionPath;
@@ -41,7 +39,7 @@ public class PslMicroBatchInputPartition implements InputPartition<InternalRow> 
       FlowControlSettings flowControlSettings,
       SparkPartitionOffset startOffset,
       SparkPartitionOffset endOffset,
-      SubscriberFactory subscriberFactory) {
+      PartitionSubscriberFactory subscriberFactory) {
     this.startOffset = startOffset;
     this.endOffset = endOffset;
     this.subscriptionPath = subscriptionPath;
@@ -53,17 +51,13 @@ public class PslMicroBatchInputPartition implements InputPartition<InternalRow> 
   public InputPartitionReader<InternalRow> createPartitionReader() {
     BlockingPullSubscriber subscriber;
     try {
+      PslPartitionOffset pslStartOffset = PslSparkUtils.toPslPartitionOffset(startOffset);
       subscriber =
           new BlockingPullSubscriberImpl(
-              subscriberFactory,
-              flowControlSettings,
-              SeekRequest.newBuilder()
-                  .setCursor(
-                      Cursor.newBuilder()
-                          .setOffset(
-                              PslSparkUtils.toPslPartitionOffset(startOffset).offset().value())
-                          .build())
-                  .build());
+              (consumer) ->
+                  subscriberFactory.newSubscriber(
+                      pslStartOffset.partition(), pslStartOffset.offset(), consumer),
+              flowControlSettings);
     } catch (CheckedApiException e) {
       throw new IllegalStateException(
           "Unable to create PSL subscriber for " + endOffset.partition(), e);
