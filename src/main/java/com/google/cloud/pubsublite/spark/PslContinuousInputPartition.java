@@ -22,9 +22,7 @@ import com.google.cloud.pubsublite.SubscriptionPath;
 import com.google.cloud.pubsublite.cloudpubsub.FlowControlSettings;
 import com.google.cloud.pubsublite.internal.BlockingPullSubscriberImpl;
 import com.google.cloud.pubsublite.internal.CheckedApiException;
-import com.google.cloud.pubsublite.internal.wire.SubscriberFactory;
-import com.google.cloud.pubsublite.proto.Cursor;
-import com.google.cloud.pubsublite.proto.SeekRequest;
+import com.google.cloud.pubsublite.spark.internal.PartitionSubscriberFactory;
 import java.io.Serializable;
 import org.apache.spark.sql.catalyst.InternalRow;
 import org.apache.spark.sql.sources.v2.reader.ContinuousInputPartition;
@@ -34,13 +32,13 @@ import org.apache.spark.sql.sources.v2.reader.streaming.PartitionOffset;
 public class PslContinuousInputPartition
     implements ContinuousInputPartition<InternalRow>, Serializable {
 
-  private final SubscriberFactory subscriberFactory;
+  private final PartitionSubscriberFactory subscriberFactory;
   private final SparkPartitionOffset startOffset;
   private final SubscriptionPath subscriptionPath;
   private final FlowControlSettings flowControlSettings;
 
   public PslContinuousInputPartition(
-      SubscriberFactory subscriberFactory,
+      PartitionSubscriberFactory subscriberFactory,
       SparkPartitionOffset startOffset,
       SubscriptionPath subscriptionPath,
       FlowControlSettings flowControlSettings) {
@@ -63,12 +61,10 @@ public class PslContinuousInputPartition
     try {
       subscriber =
           new BlockingPullSubscriberImpl(
-              subscriberFactory,
-              flowControlSettings,
-              SeekRequest.newBuilder()
-                  .setCursor(
-                      Cursor.newBuilder().setOffset(pslPartitionOffset.offset().value()).build())
-                  .build());
+              (consumer) ->
+                  subscriberFactory.newSubscriber(
+                      pslPartitionOffset.partition(), pslPartitionOffset.offset(), consumer),
+              flowControlSettings);
     } catch (CheckedApiException e) {
       throw new IllegalStateException(
           "Unable to create PSL subscriber for " + startOffset.toString(), e);

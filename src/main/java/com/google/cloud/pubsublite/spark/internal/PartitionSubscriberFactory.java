@@ -17,6 +17,7 @@
 package com.google.cloud.pubsublite.spark.internal;
 
 import com.google.api.gax.rpc.ApiException;
+import com.google.cloud.pubsublite.Offset;
 import com.google.cloud.pubsublite.Partition;
 import com.google.cloud.pubsublite.SequencedMessage;
 import com.google.cloud.pubsublite.internal.wire.Subscriber;
@@ -26,6 +27,8 @@ import java.util.function.Consumer;
 
 public interface PartitionSubscriberFactory extends Serializable {
   Subscriber newSubscriber(
-      Partition partition, Consumer<ImmutableList<SequencedMessage>> message_consumer)
+      Partition partition,
+      Offset offset,
+      Consumer<ImmutableList<SequencedMessage>> message_consumer)
       throws ApiException;
 }

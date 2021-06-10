@@ -21,7 +21,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.google.cloud.pubsublite.SubscriptionPath;
 import com.google.cloud.pubsublite.cloudpubsub.FlowControlSettings;
 import com.google.cloud.pubsublite.internal.CursorClient;
-import com.google.cloud.pubsublite.internal.wire.SubscriberFactory;
 import com.google.cloud.pubsublite.spark.internal.MultiPartitionCommitter;
 import com.google.cloud.pubsublite.spark.internal.PartitionCountReader;
 import com.google.cloud.pubsublite.spark.internal.PartitionSubscriberFactory;
@@ -116,12 +115,9 @@ public class PslContinuousReader implements ContinuousReader {
   public List<InputPartition<InternalRow>> planInputPartitions() {
     List<InputPartition<InternalRow>> list = new ArrayList<>();
     for (SparkPartitionOffset offset : startOffset.getPartitionOffsetMap().values()) {
-      PartitionSubscriberFactory partitionSubscriberFactory = this.partitionSubscriberFactory;
-      SubscriberFactory subscriberFactory =
-          (consumer) -> partitionSubscriberFactory.newSubscriber(offset.partition(), consumer);
       list.add(
           new PslContinuousInputPartition(
-              subscriberFactory,
+              partitionSubscriberFactory,
               SparkPartitionOffset.builder()
                   .partition(offset.partition())
                   .offset(offset.offset())

@@ -23,7 +23,6 @@ import com.google.cloud.pubsublite.Partition;
 import com.google.cloud.pubsublite.SubscriptionPath;
 import com.google.cloud.pubsublite.cloudpubsub.FlowControlSettings;
 import com.google.cloud.pubsublite.internal.CursorClient;
-import com.google.cloud.pubsublite.internal.wire.SubscriberFactory;
 import com.google.cloud.pubsublite.spark.internal.MultiPartitionCommitter;
 import com.google.cloud.pubsublite.spark.internal.PartitionSubscriberFactory;
 import com.google.cloud.pubsublite.spark.internal.PerTopicHeadOffsetReader;
@@ -145,17 +144,13 @@ public class PslMicroBatchReader implements MicroBatchReader {
         // There is no message to pull for this partition.
         continue;
       }
-      PartitionSubscriberFactory partitionSubscriberFactory = this.partitionSubscriberFactory;
-      SubscriberFactory subscriberFactory =
-          (consumer) ->
-              partitionSubscriberFactory.newSubscriber(endPartitionOffset.partition(), consumer);
       list.add(
           new PslMicroBatchInputPartition(
               subscriptionPath,
               flowControlSettings,
               startPartitionOffset,
               endPartitionOffset,
-              subscriberFactory));
+              partitionSubscriberFactory));
     }
     return list;
   }
