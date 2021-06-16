@@ -4,14 +4,14 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/java-pubsublite-spark.git",
-        "sha": "39050962843db79ccdd1ab8f298eaa01288464bd"
+        "sha": "1380b99226fda5493bbb6a0312b9e1ad330eb62d"
       }
     },
     {
       "git": {
         "name": "synthtool",
         "remote": "https://github.com/googleapis/synthtool.git",
-        "sha": "7332178a11ddddc91188dc0f25bca1ccadcaa6c6"
+        "sha": "8f76a885deaaf2fe234daeba4a8cc4d1b3de8086"
       }
     }
   ],
@@ -79,6 +79,7 @@
     "CODE_OF_CONDUCT.md",
     "CONTRIBUTING.md",
     "LICENSE",
+    "SECURITY.md",
     "codecov.yaml",
     "java.header",
     "license-checks.xml",
