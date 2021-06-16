@@ -27,8 +27,6 @@ import java.util.function.Consumer;
 
 public interface PartitionSubscriberFactory extends Serializable {
   Subscriber newSubscriber(
-      Partition partition,
-      Offset offset,
-      Consumer<List<SequencedMessage>> message_consumer)
+      Partition partition, Offset offset, Consumer<List<SequencedMessage>> message_consumer)
       throws ApiException;
 }
