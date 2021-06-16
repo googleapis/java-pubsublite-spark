@@ -21,14 +21,14 @@ import com.google.cloud.pubsublite.Offset;
 import com.google.cloud.pubsublite.Partition;
 import com.google.cloud.pubsublite.SequencedMessage;
 import com.google.cloud.pubsublite.internal.wire.Subscriber;
-import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
+import java.util.List;
 import java.util.function.Consumer;
 
 public interface PartitionSubscriberFactory extends Serializable {
   Subscriber newSubscriber(
       Partition partition,
       Offset offset,
-      Consumer<ImmutableList<SequencedMessage>> message_consumer)
+      Consumer<List<SequencedMessage>> message_consumer)
       throws ApiException;
 }
