@@ -115,7 +115,7 @@
     </dependency>
     <dependency>
       <groupId>org.scala-lang.modules</groupId>
-      <artifactId>scala-java8-compat_2.11</artifactId>
+      <artifactId>scala-java8-compat_${scala.version.short}</artifactId>
       <version>1.0.0</version>
     </dependency>
 
