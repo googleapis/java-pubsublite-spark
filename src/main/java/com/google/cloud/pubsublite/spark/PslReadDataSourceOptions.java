@@ -136,6 +136,7 @@ public abstract class PslReadDataSourceOptions implements Serializable {
                 .instantiate());
   }
 
+  @SuppressWarnings("CheckReturnValue")
   PartitionSubscriberFactory getSubscriberFactory() {
     return (partition, offset, consumer) -> {
       PubsubContext context = PubsubContext.of(Constants.FRAMEWORK);

@@ -34,7 +34,7 @@ public class CachedPublishers {
   private final Executor listenerExecutor = Executors.newSingleThreadExecutor();
 
   @GuardedBy("this")
-  private static final Map<PslWriteDataSourceOptions, Publisher<MessageMetadata>> publishers =
+  private final Map<PslWriteDataSourceOptions, Publisher<MessageMetadata>> publishers =
       new HashMap<>();
 
   public synchronized Publisher<MessageMetadata> getOrCreate(
