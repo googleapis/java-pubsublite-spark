@@ -122,21 +122,23 @@ public class MultiPartitionCommitterImpl implements MultiPartitionCommitter {
       // sent to stream, or waiting for next connection to open to be sent in order.
       ApiFuture<Void> future = committerMap.get(entry.getKey()).commitOffset(entry.getValue());
       ApiFutures.addCallback(
-              future,
-              new ApiFutureCallback<Void>() {
-                @Override
-                public void onFailure(Throwable t) {
-                  if (!future.isCancelled()) {
-                    log.atWarning().withCause(t).log("Failed to commit %s,%s.", entry.getKey().value(), entry.getValue().value());
-                  }
-                }
+          future,
+          new ApiFutureCallback<Void>() {
+            @Override
+            public void onFailure(Throwable t) {
+              if (!future.isCancelled()) {
+                log.atWarning().withCause(t).log(
+                    "Failed to commit %s,%s.", entry.getKey().value(), entry.getValue().value());
+              }
+            }
 
-                @Override
-                public void onSuccess(Void result) {
-                  log.atInfo().log("Committed %s,%s.", entry.getKey().value(), entry.getValue().value());
-                }
-              },
-              MoreExecutors.directExecutor());
+            @Override
+            public void onSuccess(Void result) {
+              log.atInfo().log(
+                  "Committed %s,%s.", entry.getKey().value(), entry.getValue().value());
+            }
+          },
+          MoreExecutors.directExecutor());
     }
   }
 }
