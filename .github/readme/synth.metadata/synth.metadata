@@ -4,14 +4,14 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/java-pubsublite-spark.git",
-        "sha": "f7e3707d11096e749665019beff0cd90db829651"
+        "sha": "d39175b2d0a642186933696734ee16867cb67e76"
       }
     },
     {
       "git": {
         "name": "synthtool",
         "remote": "https://github.com/googleapis/synthtool.git",
-        "sha": "387851d0e88ca4a5b1771ad63d915bed1bd4a740"
+        "sha": "3d32990b6f4b57be77455e3ca89e6e21cd0c06b3"
       }
     }
   ]
