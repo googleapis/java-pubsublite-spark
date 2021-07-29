@@ -110,7 +110,7 @@ public abstract class PslWriteDataSourceOptions implements Serializable {
             settingsBuilder);
     try {
       return PublisherServiceClient.create(
-          addDefaultSettings(topicPath().location().region(), settingsBuilder));
+          addDefaultSettings(topicPath().location().extractRegion(), settingsBuilder));
     } catch (Throwable t) {
       throw toCanonical(t).underlying;
     }
@@ -123,10 +123,10 @@ public abstract class PslWriteDataSourceOptions implements Serializable {
               .setServiceClient(
                   AdminServiceClient.create(
                       addDefaultSettings(
-                          topicPath().location().region(),
+                          topicPath().location().extractRegion(),
                           AdminServiceSettings.newBuilder()
                               .setCredentialsProvider(getCredentialProvider()))))
-              .setRegion(topicPath().location().region())
+              .setRegion(topicPath().location().extractRegion())
               .build());
     } catch (Throwable t) {
       throw toCanonical(t).underlying;
