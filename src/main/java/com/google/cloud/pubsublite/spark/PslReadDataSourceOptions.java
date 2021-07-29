@@ -148,7 +148,8 @@ public abstract class PslReadDataSourceOptions implements Serializable {
       try {
         SubscriberServiceClient serviceClient =
             SubscriberServiceClient.create(
-                addDefaultSettings(this.subscriptionPath().location().extractRegion(), settingsBuilder));
+                addDefaultSettings(
+                    this.subscriptionPath().location().extractRegion(), settingsBuilder));
         return SubscriberBuilder.newBuilder()
             .setSubscriptionPath(this.subscriptionPath())
             .setPartition(partition)
