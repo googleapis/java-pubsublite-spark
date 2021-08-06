@@ -117,6 +117,7 @@ public class PslSparkUtils {
     }
   }
 
+  @SuppressWarnings("CheckReturnValue")
   public static Message toPubSubMessage(StructType inputSchema, InternalRow row) {
     Message.Builder builder = Message.builder();
     extractVal(

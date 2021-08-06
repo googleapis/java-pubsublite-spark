@@ -19,6 +19,7 @@ package com.google.cloud.pubsublite.spark.internal;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
+import com.google.cloud.pubsublite.Offset;
 import com.google.cloud.pubsublite.Partition;
 import com.google.cloud.pubsublite.internal.wire.Committer;
 import com.google.cloud.pubsublite.spark.PslSourceOffset;
@@ -115,30 +116,29 @@ public class MultiPartitionCommitterImpl implements MultiPartitionCommitter {
   @Override
   public synchronized void commit(PslSourceOffset offset) {
     updateCommitterMap(offset);
-    offset
-        .partitionOffsetMap()
-        .forEach(
-            (p, o) -> {
-              // Note we don't need to worry about commit offset disorder here since Committer
-              // guarantees the ordering. Once commitOffset() returns, it's either already
-              // sent to stream, or waiting for next connection to open to be sent in order.
-              ApiFuture<Void> future = committerMap.get(p).commitOffset(o);
-              ApiFutures.addCallback(
-                  future,
-                  new ApiFutureCallback<Void>() {
-                    @Override
-                    public void onFailure(Throwable t) {
-                      if (!future.isCancelled()) {
-                        log.atWarning().log("Failed to commit %s,%s.", p.value(), o.value(), t);
-                      }
-                    }
+    for (Map.Entry<Partition, Offset> entry : offset.partitionOffsetMap().entrySet()) {
+      // Note we don't need to worry about commit offset disorder here since Committer
+      // guarantees the ordering. Once commitOffset() returns, it's either already
+      // sent to stream, or waiting for next connection to open to be sent in order.
+      ApiFuture<Void> future = committerMap.get(entry.getKey()).commitOffset(entry.getValue());
+      ApiFutures.addCallback(
+          future,
+          new ApiFutureCallback<Void>() {
+            @Override
+            public void onFailure(Throwable t) {
+              if (!future.isCancelled()) {
+                log.atWarning().withCause(t).log(
+                    "Failed to commit %s,%s.", entry.getKey().value(), entry.getValue().value());
+              }
+            }
 
-                    @Override
-                    public void onSuccess(Void result) {
-                      log.atInfo().log("Committed %s,%s.", p.value(), o.value());
-                    }
-                  },
-                  MoreExecutors.directExecutor());
-            });
+            @Override
+            public void onSuccess(Void result) {
+              log.atInfo().log(
+                  "Committed %s,%s.", entry.getKey().value(), entry.getValue().value());
+            }
+          },
+          MoreExecutors.directExecutor());
+    }
   }
 }

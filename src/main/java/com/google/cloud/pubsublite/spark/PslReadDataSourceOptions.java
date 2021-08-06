@@ -136,6 +136,7 @@ public abstract class PslReadDataSourceOptions implements Serializable {
                 .instantiate());
   }
 
+  @SuppressWarnings("CheckReturnValue")
   PartitionSubscriberFactory getSubscriberFactory() {
     return (partition, offset, consumer) -> {
       PubsubContext context = PubsubContext.of(Constants.FRAMEWORK);
@@ -147,7 +148,8 @@ public abstract class PslReadDataSourceOptions implements Serializable {
       try {
         SubscriberServiceClient serviceClient =
             SubscriberServiceClient.create(
-                addDefaultSettings(this.subscriptionPath().location().region(), settingsBuilder));
+                addDefaultSettings(
+                    this.subscriptionPath().location().extractRegion(), settingsBuilder));
         return SubscriberBuilder.newBuilder()
             .setSubscriptionPath(this.subscriptionPath())
             .setPartition(partition)
@@ -169,7 +171,7 @@ public abstract class PslReadDataSourceOptions implements Serializable {
     try {
       return CursorServiceClient.create(
           addDefaultSettings(
-              this.subscriptionPath().location().region(),
+              this.subscriptionPath().location().extractRegion(),
               CursorServiceSettings.newBuilder()
                   .setCredentialsProvider(new PslCredentialsProvider(credentialsKey()))));
     } catch (IOException e) {
@@ -180,7 +182,7 @@ public abstract class PslReadDataSourceOptions implements Serializable {
   CursorClient newCursorClient() {
     return CursorClient.create(
         CursorClientSettings.newBuilder()
-            .setRegion(this.subscriptionPath().location().region())
+            .setRegion(this.subscriptionPath().location().extractRegion())
             .setServiceClient(newCursorServiceClient())
             .build());
   }
@@ -189,7 +191,7 @@ public abstract class PslReadDataSourceOptions implements Serializable {
     try {
       return AdminServiceClient.create(
           addDefaultSettings(
-              this.subscriptionPath().location().region(),
+              this.subscriptionPath().location().extractRegion(),
               AdminServiceSettings.newBuilder()
                   .setCredentialsProvider(new PslCredentialsProvider(credentialsKey()))));
     } catch (IOException e) {
@@ -200,7 +202,7 @@ public abstract class PslReadDataSourceOptions implements Serializable {
   AdminClient newAdminClient() {
     return AdminClient.create(
         AdminClientSettings.newBuilder()
-            .setRegion(this.subscriptionPath().location().region())
+            .setRegion(this.subscriptionPath().location().extractRegion())
             .setServiceClient(newAdminServiceClient())
             .build());
   }
@@ -209,7 +211,7 @@ public abstract class PslReadDataSourceOptions implements Serializable {
     try {
       return TopicStatsServiceClient.create(
           addDefaultSettings(
-              this.subscriptionPath().location().region(),
+              this.subscriptionPath().location().extractRegion(),
               TopicStatsServiceSettings.newBuilder()
                   .setCredentialsProvider(new PslCredentialsProvider(credentialsKey()))));
     } catch (IOException e) {
@@ -220,7 +222,7 @@ public abstract class PslReadDataSourceOptions implements Serializable {
   TopicStatsClient newTopicStatsClient() {
     return TopicStatsClient.create(
         TopicStatsClientSettings.newBuilder()
-            .setRegion(this.subscriptionPath().location().region())
+            .setRegion(this.subscriptionPath().location().extractRegion())
             .setServiceClient(newTopicStatsServiceClient())
             .build());
   }

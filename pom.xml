@@ -3,12 +3,12 @@
   <parent>
     <groupId>com.google.cloud</groupId>
     <artifactId>google-cloud-pubsublite-parent</artifactId>
-    <version>0.15.0</version>
+    <version>1.0.0</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.google.cloud</groupId>
   <artifactId>pubsublite-spark-sql-streaming</artifactId>
-  <version>0.3.0</version><!-- {x-version-update:pubsublite-spark-sql-streaming:current} -->
+  <version>0.3.1-SNAPSHOT</version><!-- {x-version-update:pubsublite-spark-sql-streaming:current} -->
   <packaging>jar</packaging>
   <name>Pub/Sub Lite Spark SQL Streaming</name>
   <url>https://github.com/googleapis/java-pubsublite-spark</url>
@@ -43,12 +43,12 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-pubsublite</artifactId>
-      <version>0.15.0</version>
+      <version>0.18.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.api.grpc</groupId>
       <artifactId>proto-google-cloud-pubsublite-v1</artifactId>
-      <version>0.15.0</version>
+      <version>0.18.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
@@ -105,7 +105,7 @@
     <dependency>
       <groupId>com.github.ben-manes.caffeine</groupId>
       <artifactId>caffeine</artifactId>
-      <version>2.9.1</version>
+      <version>2.9.2</version>
     </dependency>
     <dependency>
       <groupId>org.scala-lang</groupId>
@@ -115,7 +115,7 @@
     </dependency>
     <dependency>
       <groupId>org.scala-lang.modules</groupId>
-      <artifactId>scala-java8-compat_2.11</artifactId>
+      <artifactId>scala-java8-compat_${scala.version.short}</artifactId>
       <version>1.0.0</version>
     </dependency>
 
@@ -136,7 +136,7 @@
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
       <scope>test</scope>
-      <version>3.11.0</version>
+      <version>3.11.2</version>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
