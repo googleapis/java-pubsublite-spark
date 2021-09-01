@@ -29,7 +29,7 @@ If you are using Maven, add this to your pom.xml file:
 If you are using Gradle without BOM, add this to your dependencies
 
 ```Groovy
-compile 'com.google.cloud:pubsublite-spark-sql-streaming:0.3.1'
+implementation 'com.google.cloud:pubsublite-spark-sql-streaming:0.3.1'
 ```
 
 If you are using SBT, add this to your dependencies
