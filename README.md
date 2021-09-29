@@ -107,7 +107,7 @@ and manual Spark installations.
 
 ### Samples
 
-  There are 3 java samples (word count, simple write, simple read) under [samples](https://github.com/googleapis/java-pubsublite-spark/tree/main/samples) that shows using the connector inside Dataproc.
+  There are 3 java samples (word count, simple write, simple read) under [samples](https://github.com/googleapis/java-pubsublite-spark/tree/master/samples) that shows using the connector inside Dataproc.
 
 ### Reading data from Pub/Sub Lite
 
@@ -231,17 +231,17 @@ Example:
 
 ## Samples
 
-Samples are in the [`samples/`](https://github.com/googleapis/java-pubsublite-spark/tree/main/samples) directory.
+Samples are in the [`samples/`](https://github.com/googleapis/java-pubsublite-spark/tree/master/samples) directory.
 
 | Sample                      | Source Code                       | Try it |
 | --------------------------- | --------------------------------- | ------ |
-| Admin Utils | [source code](https://github.com/googleapis/java-pubsublite-spark/blob/main/samples/snippets/src/main/java/pubsublite/spark/AdminUtils.java) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-pubsublite-spark&page=editor&open_in_editor=samples/snippets/src/main/java/pubsublite/spark/AdminUtils.java) |
-| Common Utils | [source code](https://github.com/googleapis/java-pubsublite-spark/blob/main/samples/snippets/src/main/java/pubsublite/spark/CommonUtils.java) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-pubsublite-spark&page=editor&open_in_editor=samples/snippets/src/main/java/pubsublite/spark/CommonUtils.java) |
-| Publish Words | [source code](https://github.com/googleapis/java-pubsublite-spark/blob/main/samples/snippets/src/main/java/pubsublite/spark/PublishWords.java) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-pubsublite-spark&page=editor&open_in_editor=samples/snippets/src/main/java/pubsublite/spark/PublishWords.java) |
-| Read Results | [source code](https://github.com/googleapis/java-pubsublite-spark/blob/main/samples/snippets/src/main/java/pubsublite/spark/ReadResults.java) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-pubsublite-spark&page=editor&open_in_editor=samples/snippets/src/main/java/pubsublite/spark/ReadResults.java) |
-| Simple Read | [source code](https://github.com/googleapis/java-pubsublite-spark/blob/main/samples/snippets/src/main/java/pubsublite/spark/SimpleRead.java) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-pubsublite-spark&page=editor&open_in_editor=samples/snippets/src/main/java/pubsublite/spark/SimpleRead.java) |
-| Simple Write | [source code](https://github.com/googleapis/java-pubsublite-spark/blob/main/samples/snippets/src/main/java/pubsublite/spark/SimpleWrite.java) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-pubsublite-spark&page=editor&open_in_editor=samples/snippets/src/main/java/pubsublite/spark/SimpleWrite.java) |
-| Word Count | [source code](https://github.com/googleapis/java-pubsublite-spark/blob/main/samples/snippets/src/main/java/pubsublite/spark/WordCount.java) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-pubsublite-spark&page=editor&open_in_editor=samples/snippets/src/main/java/pubsublite/spark/WordCount.java) |
+| Admin Utils | [source code](https://github.com/googleapis/java-pubsublite-spark/blob/master/samples/snippets/src/main/java/pubsublite/spark/AdminUtils.java) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-pubsublite-spark&page=editor&open_in_editor=samples/snippets/src/main/java/pubsublite/spark/AdminUtils.java) |
+| Common Utils | [source code](https://github.com/googleapis/java-pubsublite-spark/blob/master/samples/snippets/src/main/java/pubsublite/spark/CommonUtils.java) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-pubsublite-spark&page=editor&open_in_editor=samples/snippets/src/main/java/pubsublite/spark/CommonUtils.java) |
+| Publish Words | [source code](https://github.com/googleapis/java-pubsublite-spark/blob/master/samples/snippets/src/main/java/pubsublite/spark/PublishWords.java) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-pubsublite-spark&page=editor&open_in_editor=samples/snippets/src/main/java/pubsublite/spark/PublishWords.java) |
+| Read Results | [source code](https://github.com/googleapis/java-pubsublite-spark/blob/master/samples/snippets/src/main/java/pubsublite/spark/ReadResults.java) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-pubsublite-spark&page=editor&open_in_editor=samples/snippets/src/main/java/pubsublite/spark/ReadResults.java) |
+| Simple Read | [source code](https://github.com/googleapis/java-pubsublite-spark/blob/master/samples/snippets/src/main/java/pubsublite/spark/SimpleRead.java) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-pubsublite-spark&page=editor&open_in_editor=samples/snippets/src/main/java/pubsublite/spark/SimpleRead.java) |
+| Simple Write | [source code](https://github.com/googleapis/java-pubsublite-spark/blob/master/samples/snippets/src/main/java/pubsublite/spark/SimpleWrite.java) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-pubsublite-spark&page=editor&open_in_editor=samples/snippets/src/main/java/pubsublite/spark/SimpleWrite.java) |
+| Word Count | [source code](https://github.com/googleapis/java-pubsublite-spark/blob/master/samples/snippets/src/main/java/pubsublite/spark/WordCount.java) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/java-pubsublite-spark&page=editor&open_in_editor=samples/snippets/src/main/java/pubsublite/spark/WordCount.java) |
 
 
 
@@ -356,10 +356,10 @@ Java is a registered trademark of Oracle and/or its affiliates.
 [developer-console]: https://console.developers.google.com/
 [create-project]: https://cloud.google.com/resource-manager/docs/creating-managing-projects
 [cloud-sdk]: https://cloud.google.com/sdk/
-[troubleshooting]: https://github.com/googleapis/google-cloud-common/blob/main/troubleshooting/readme.md#troubleshooting
-[contributing]: https://github.com/googleapis/java-pubsublite-spark/blob/main/CONTRIBUTING.md
-[code-of-conduct]: https://github.com/googleapis/java-pubsublite-spark/blob/main/CODE_OF_CONDUCT.md#contributor-code-of-conduct
-[license]: https://github.com/googleapis/java-pubsublite-spark/blob/main/LICENSE
+[troubleshooting]: https://github.com/googleapis/google-cloud-common/blob/master/troubleshooting/readme.md#troubleshooting
+[contributing]: https://github.com/googleapis/java-pubsublite-spark/blob/master/CONTRIBUTING.md
+[code-of-conduct]: https://github.com/googleapis/java-pubsublite-spark/blob/master/CODE_OF_CONDUCT.md#contributor-code-of-conduct
+[license]: https://github.com/googleapis/java-pubsublite-spark/blob/master/LICENSE
 [enable-billing]: https://cloud.google.com/apis/docs/getting-started#enabling_billing
 [enable-api]: https://console.cloud.google.com/flows/enableapi?apiid=pubsublite.googleapis.com
 [libraries-bom]: https://github.com/GoogleCloudPlatform/cloud-opensource-java/wiki/The-Google-Cloud-Platform-Libraries-BOM
