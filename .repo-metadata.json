@@ -3,7 +3,7 @@
   "name_pretty": "Pub/Sub Lite Spark Connector",
   "product_documentation": "https://cloud.google.com/pubsub/lite/docs",
   "api_description": "Pub/Sub Lite is a zonal, real-time messaging service that lets you send and receive messages between independent applications. You can manually configure the throughput and storage capacity for Pub/Sub Lite systems.",
-  "client_documentation": "https://cloud.google.com/java/docs/reference/pubsublite-spark-sql-streaming/latest/history"
+  "client_documentation": "https://cloud.google.com/java/docs/reference/pubsublite-spark-sql-streaming/latest/history",
   "release_level": "alpha",
   "transport": "grpc",
   "requires_billing": true,
