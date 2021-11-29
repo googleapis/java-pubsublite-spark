@@ -66,7 +66,8 @@ public class PslMicroBatchInputPartitionReader implements InputPartitionReader<I
       } catch (TimeoutException e) {
         log.atWarning().log(
             String.format(
-                "Unable to get any messages in last %s. Partition: %d; Current message offset: %s; End message offset: %d.",
+                "Unable to get any messages in last %s. Partition: %d; Current message offset: %s;"
+                    + " End message offset: %d.",
                 SUBSCRIBER_PULL_TIMEOUT.toString(),
                 endOffset.partition().value(),
                 currentMsg == null ? "null" : currentMsg.offset().value(),
