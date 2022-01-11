@@ -17,7 +17,9 @@
 package com.google.cloud.pubsublite.spark;
 
 import static com.google.cloud.pubsublite.internal.wire.ServiceClients.addDefaultSettings;
+import static com.google.cloud.pubsublite.internal.wire.ServiceClients.getCallContext;
 
+import com.google.api.gax.rpc.ApiCallContext;
 import com.google.api.gax.rpc.ApiException;
 import com.google.auto.value.AutoValue;
 import com.google.cloud.pubsublite.AdminClient;
@@ -31,7 +33,6 @@ import com.google.cloud.pubsublite.internal.TopicStatsClientSettings;
 import com.google.cloud.pubsublite.internal.wire.CommitterSettings;
 import com.google.cloud.pubsublite.internal.wire.PubsubContext;
 import com.google.cloud.pubsublite.internal.wire.RoutingMetadata;
-import com.google.cloud.pubsublite.internal.wire.ServiceClients;
 import com.google.cloud.pubsublite.internal.wire.SubscriberBuilder;
 import com.google.cloud.pubsublite.proto.Cursor;
 import com.google.cloud.pubsublite.proto.SeekRequest;
@@ -125,13 +126,16 @@ public abstract class PslReadDataSourceOptions implements Serializable {
   }
 
   MultiPartitionCommitter newMultiPartitionCommitter(long topicPartitionCount) {
+    CursorServiceClient serviceClient = newCursorServiceClient();
     return new MultiPartitionCommitterImpl(
         topicPartitionCount,
         (partition) ->
             CommitterSettings.newBuilder()
                 .setSubscriptionPath(this.subscriptionPath())
                 .setPartition(partition)
-                .setServiceClient(newCursorServiceClient())
+                .setStreamFactory(
+                    responseStream ->
+                        serviceClient.streamingCommitCursorCallable().splitCall(responseStream))
                 .build()
                 .instantiate());
   }
@@ -139,12 +143,9 @@ public abstract class PslReadDataSourceOptions implements Serializable {
   @SuppressWarnings("CheckReturnValue")
   PartitionSubscriberFactory getSubscriberFactory() {
     return (partition, offset, consumer) -> {
-      PubsubContext context = PubsubContext.of(Constants.FRAMEWORK);
       SubscriberServiceSettings.Builder settingsBuilder =
           SubscriberServiceSettings.newBuilder()
               .setCredentialsProvider(new PslCredentialsProvider(credentialsKey()));
-      ServiceClients.addDefaultMetadata(
-          context, RoutingMetadata.of(this.subscriptionPath(), partition), settingsBuilder);
       try {
         SubscriberServiceClient serviceClient =
             SubscriberServiceClient.create(
@@ -153,8 +154,15 @@ public abstract class PslReadDataSourceOptions implements Serializable {
         return SubscriberBuilder.newBuilder()
             .setSubscriptionPath(this.subscriptionPath())
             .setPartition(partition)
-            .setServiceClient(serviceClient)
             .setMessageConsumer(consumer)
+            .setStreamFactory(
+                responseStream -> {
+                  ApiCallContext context =
+                      getCallContext(
+                          PubsubContext.of(Constants.FRAMEWORK),
+                          RoutingMetadata.of(subscriptionPath(), partition));
+                  return serviceClient.subscribeCallable().splitCall(responseStream, context);
+                })
             .setInitialLocation(
                 SeekRequest.newBuilder()
                     .setCursor(Cursor.newBuilder().setOffset(offset.value()))
