@@ -17,9 +17,10 @@
 package com.google.cloud.pubsublite.spark;
 
 import static com.google.cloud.pubsublite.internal.ExtractStatus.toCanonical;
-import static com.google.cloud.pubsublite.internal.wire.ServiceClients.addDefaultMetadata;
 import static com.google.cloud.pubsublite.internal.wire.ServiceClients.addDefaultSettings;
+import static com.google.cloud.pubsublite.internal.wire.ServiceClients.getCallContext;
 
+import com.google.api.gax.rpc.ApiCallContext;
 import com.google.api.gax.rpc.ApiException;
 import com.google.auto.value.AutoValue;
 import com.google.cloud.pubsublite.AdminClient;
@@ -30,6 +31,7 @@ import com.google.cloud.pubsublite.TopicPath;
 import com.google.cloud.pubsublite.cloudpubsub.PublisherSettings;
 import com.google.cloud.pubsublite.internal.Publisher;
 import com.google.cloud.pubsublite.internal.wire.PartitionCountWatchingPublisherSettings;
+import com.google.cloud.pubsublite.internal.wire.PartitionPublisherFactory;
 import com.google.cloud.pubsublite.internal.wire.PubsubContext;
 import com.google.cloud.pubsublite.internal.wire.RoutingMetadata;
 import com.google.cloud.pubsublite.internal.wire.SinglePartitionPublisherBuilder;
@@ -84,30 +86,46 @@ public abstract class PslWriteDataSourceOptions implements Serializable {
     return new PslCredentialsProvider(credentialsKey());
   }
 
+  private PartitionPublisherFactory getPartitionPublisherFactory() {
+    PublisherServiceClient client = newServiceClient();
+    return new PartitionPublisherFactory() {
+      @Override
+      public Publisher<MessageMetadata> newPublisher(Partition partition) throws ApiException {
+        SinglePartitionPublisherBuilder.Builder singlePartitionBuilder =
+            SinglePartitionPublisherBuilder.newBuilder()
+                .setTopic(topicPath())
+                .setPartition(partition)
+                .setBatchingSettings(PublisherSettings.DEFAULT_BATCHING_SETTINGS)
+                .setStreamFactory(
+                    responseStream -> {
+                      ApiCallContext context =
+                          getCallContext(
+                              PubsubContext.of(Constants.FRAMEWORK),
+                              RoutingMetadata.of(topicPath(), partition));
+                      return client.publishCallable().splitCall(responseStream, context);
+                    });
+        return singlePartitionBuilder.build();
+      }
+
+      @Override
+      public void close() {
+        client.close();
+      }
+    };
+  }
+
   public Publisher<MessageMetadata> createNewPublisher() {
     return PartitionCountWatchingPublisherSettings.newBuilder()
         .setTopic(topicPath())
-        .setPublisherFactory(
-            partition ->
-                SinglePartitionPublisherBuilder.newBuilder()
-                    .setTopic(topicPath())
-                    .setPartition(partition)
-                    .setServiceClient(newServiceClient(partition))
-                    .setBatchingSettings(PublisherSettings.DEFAULT_BATCHING_SETTINGS)
-                    .build())
+        .setPublisherFactory(getPartitionPublisherFactory())
         .setAdminClient(getAdminClient())
         .build()
         .instantiate();
   }
 
-  private PublisherServiceClient newServiceClient(Partition partition) throws ApiException {
+  private PublisherServiceClient newServiceClient() throws ApiException {
     PublisherServiceSettings.Builder settingsBuilder = PublisherServiceSettings.newBuilder();
     settingsBuilder = settingsBuilder.setCredentialsProvider(getCredentialProvider());
-    settingsBuilder =
-        addDefaultMetadata(
-            PubsubContext.of(Constants.FRAMEWORK),
-            RoutingMetadata.of(topicPath(), partition),
-            settingsBuilder);
     try {
       return PublisherServiceClient.create(
           addDefaultSettings(topicPath().location().extractRegion(), settingsBuilder));
