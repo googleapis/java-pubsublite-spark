@@ -176,7 +176,7 @@ public class PslSparkUtils {
           Option<Object> idxOr = inputSchema.getFieldIndex(k);
           if (!idxOr.isEmpty()) {
             StructField f = inputSchema.apply((int) idxOr.get());
-            if (f.dataType() != v) {
+            if (StructType.equalsStructurally(f.dataType(), v, /*ignoreNullability=*/false)) {
               throw new IllegalArgumentException(
                   String.format(
                       "Column %s in input schema to write to "
