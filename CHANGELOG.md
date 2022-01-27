@@ -1,5 +1,17 @@
 # Changelog
 
+### [0.3.4](https://github.com/googleapis/java-pubsublite-spark/compare/v0.3.3...v0.3.4) (2022-01-27)
+
+
+### Bug Fixes
+
+* Fixes types comparison ([#353](https://github.com/googleapis/java-pubsublite-spark/issues/353)) ([451901a](https://github.com/googleapis/java-pubsublite-spark/commit/451901ab7a217c6118241532ce3f0cf6696b6fb9))
+
+
+### Dependencies
+
+* **java:** update actions/github-script action to v5 ([#1339](https://github.com/googleapis/java-pubsublite-spark/issues/1339)) ([#350](https://github.com/googleapis/java-pubsublite-spark/issues/350)) ([e6f038f](https://github.com/googleapis/java-pubsublite-spark/commit/e6f038f2706ebb65c80976b8ff3d474407a04ab8))
+
 ### [0.3.3](https://github.com/googleapis/java-pubsublite-spark/compare/v0.3.2...v0.3.3) (2022-01-12)
 
 
