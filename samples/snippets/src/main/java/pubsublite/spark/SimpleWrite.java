@@ -16,8 +16,10 @@
 
 package pubsublite.spark;
 
+import static org.apache.spark.sql.functions.array;
 import static org.apache.spark.sql.functions.concat;
 import static org.apache.spark.sql.functions.lit;
+import static org.apache.spark.sql.functions.map;
 
 import java.util.Map;
 import java.util.Objects;
@@ -51,7 +53,14 @@ public class SimpleWrite {
     Dataset<Row> df = spark.readStream().format("rate").load();
     df =
         df.withColumn("key", lit("testkey").cast(DataTypes.BinaryType))
-            .withColumn("data", concat(lit("data_"), df.col("value")).cast(DataTypes.BinaryType));
+            .withColumn("data", concat(lit("data_"), df.col("value")).cast(DataTypes.BinaryType))
+            .withColumn(
+                "attributes",
+                map(lit("attribute_1"), array(lit("attribute_val_1").cast(DataTypes.BinaryType)))
+                    .cast(
+                        DataTypes.createMapType(
+                            DataTypes.StringType,
+                            DataTypes.createArrayType(DataTypes.BinaryType))));
 
     // Write word count results to Pub/Sub Lite
     StreamingQuery query =
