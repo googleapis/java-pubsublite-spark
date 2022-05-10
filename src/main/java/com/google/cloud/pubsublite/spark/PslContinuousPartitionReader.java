@@ -24,11 +24,11 @@ import com.google.cloud.pubsublite.internal.BlockingPullSubscriberImpl;
 import com.google.common.flogger.GoogleLogger;
 import java.util.Optional;
 import org.apache.spark.sql.catalyst.InternalRow;
-import org.apache.spark.sql.sources.v2.reader.streaming.ContinuousInputPartitionReader;
-import org.apache.spark.sql.sources.v2.reader.streaming.PartitionOffset;
+import org.apache.spark.sql.connector.read.streaming.ContinuousPartitionReader;
+import org.apache.spark.sql.connector.read.streaming.PartitionOffset;
 
-public class PslContinuousInputPartitionReader
-    implements ContinuousInputPartitionReader<InternalRow> {
+public class PslContinuousPartitionReader
+    implements ContinuousPartitionReader<InternalRow> {
   private static final GoogleLogger log = GoogleLogger.forEnclosingClass();
 
   private final SubscriptionPath subscriptionPath;
@@ -36,7 +36,7 @@ public class PslContinuousInputPartitionReader
   private SparkPartitionOffset currentOffset;
   private SequencedMessage currentMsg;
 
-  PslContinuousInputPartitionReader(
+  PslContinuousPartitionReader(
       SubscriptionPath subscriptionPath,
       SparkPartitionOffset startOffset,
       BlockingPullSubscriberImpl subscriber) {

@@ -18,13 +18,15 @@ package com.google.cloud.pubsublite.spark;
 
 import static com.google.cloud.pubsublite.internal.wire.ServiceClients.addDefaultSettings;
 import static com.google.cloud.pubsublite.internal.wire.ServiceClients.getCallContext;
+import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.github.benmanes.caffeine.cache.Ticker;
 import com.google.api.gax.rpc.ApiCallContext;
-import com.google.api.gax.rpc.ApiException;
 import com.google.auto.value.AutoValue;
 import com.google.cloud.pubsublite.AdminClient;
 import com.google.cloud.pubsublite.AdminClientSettings;
 import com.google.cloud.pubsublite.SubscriptionPath;
+import com.google.cloud.pubsublite.TopicPath;
 import com.google.cloud.pubsublite.cloudpubsub.FlowControlSettings;
 import com.google.cloud.pubsublite.internal.CursorClient;
 import com.google.cloud.pubsublite.internal.CursorClientSettings;
@@ -36,9 +38,13 @@ import com.google.cloud.pubsublite.internal.wire.RoutingMetadata;
 import com.google.cloud.pubsublite.internal.wire.SubscriberBuilder;
 import com.google.cloud.pubsublite.proto.Cursor;
 import com.google.cloud.pubsublite.proto.SeekRequest;
+import com.google.cloud.pubsublite.spark.internal.CachedPartitionCountReader;
+import com.google.cloud.pubsublite.spark.internal.LimitingHeadOffsetReader;
 import com.google.cloud.pubsublite.spark.internal.MultiPartitionCommitter;
 import com.google.cloud.pubsublite.spark.internal.MultiPartitionCommitterImpl;
+import com.google.cloud.pubsublite.spark.internal.PartitionCountReader;
 import com.google.cloud.pubsublite.spark.internal.PartitionSubscriberFactory;
+import com.google.cloud.pubsublite.spark.internal.PerTopicHeadOffsetReader;
 import com.google.cloud.pubsublite.spark.internal.PslCredentialsProvider;
 import com.google.cloud.pubsublite.v1.AdminServiceClient;
 import com.google.cloud.pubsublite.v1.AdminServiceSettings;
@@ -50,8 +56,9 @@ import com.google.cloud.pubsublite.v1.TopicStatsServiceClient;
 import com.google.cloud.pubsublite.v1.TopicStatsServiceSettings;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Map;
+import java.util.Optional;
 import javax.annotation.Nullable;
-import org.apache.spark.sql.sources.v2.DataSourceOptions;
 
 @AutoValue
 public abstract class PslReadDataSourceOptions implements Serializable {
@@ -77,38 +84,17 @@ public abstract class PslReadDataSourceOptions implements Serializable {
                 .build());
   }
 
-  public static PslReadDataSourceOptions fromSparkDataSourceOptions(DataSourceOptions options) {
-    if (!options.get(Constants.SUBSCRIPTION_CONFIG_KEY).isPresent()) {
-      throw new IllegalArgumentException(Constants.SUBSCRIPTION_CONFIG_KEY + " is required.");
-    }
-
+  public static PslReadDataSourceOptions fromProperties(Map<String, String> properties) {
     Builder builder = builder();
-    options.get(Constants.CREDENTIALS_KEY_CONFIG_KEY).ifPresent(builder::setCredentialsKey);
-    options
-        .get(Constants.MAX_MESSAGE_PER_BATCH_CONFIG_KEY)
-        .ifPresent(mmpb -> builder.setMaxMessagesPerBatch(Long.parseLong(mmpb)));
-    String subscriptionPathVal = options.get(Constants.SUBSCRIPTION_CONFIG_KEY).get();
-    SubscriptionPath subscriptionPath;
-    try {
-      subscriptionPath = SubscriptionPath.parse(subscriptionPathVal);
-    } catch (ApiException e) {
-      throw new IllegalArgumentException(
-          "Unable to parse subscription path " + subscriptionPathVal);
-    }
-    return builder
-        .setSubscriptionPath(subscriptionPath)
-        .setFlowControlSettings(
-            FlowControlSettings.builder()
-                .setMessagesOutstanding(
-                    options.getLong(
-                        Constants.MESSAGES_OUTSTANDING_CONFIG_KEY,
-                        Constants.DEFAULT_MESSAGES_OUTSTANDING))
-                .setBytesOutstanding(
-                    options.getLong(
-                        Constants.BYTES_OUTSTANDING_CONFIG_KEY,
-                        Constants.DEFAULT_BYTES_OUTSTANDING))
-                .build())
-        .build();
+    String pathVal = checkNotNull(properties.get(Constants.SUBSCRIPTION_CONFIG_KEY), Constants.SUBSCRIPTION_CONFIG_KEY + " is required.");
+    builder.setSubscriptionPath(SubscriptionPath.parse(pathVal));
+    Optional.ofNullable(properties.get(Constants.CREDENTIALS_KEY_CONFIG_KEY)).ifPresent(builder::setCredentialsKey);
+    Optional.ofNullable(properties.get(Constants.MAX_MESSAGE_PER_BATCH_CONFIG_KEY)).ifPresent(mmpb -> builder.setMaxMessagesPerBatch(Long.parseLong(mmpb)));
+    FlowControlSettings.Builder flowControl = FlowControlSettings.builder();
+    flowControl.setMessagesOutstanding(Optional.ofNullable(properties.get(Constants.MESSAGES_OUTSTANDING_CONFIG_KEY)).map(Long::parseLong).orElse(Constants.DEFAULT_MESSAGES_OUTSTANDING));
+    flowControl.setBytesOutstanding(Optional.ofNullable(properties.get(Constants.BYTES_OUTSTANDING_CONFIG_KEY)).map(Long::parseLong).orElse(Constants.DEFAULT_BYTES_OUTSTANDING));
+    builder.setFlowControlSettings(flowControl.build());
+    return builder.build();
   }
 
   @AutoValue.Builder
@@ -125,19 +111,8 @@ public abstract class PslReadDataSourceOptions implements Serializable {
     public abstract PslReadDataSourceOptions build();
   }
 
-  MultiPartitionCommitter newMultiPartitionCommitter(long topicPartitionCount) {
-    CursorServiceClient serviceClient = newCursorServiceClient();
-    return new MultiPartitionCommitterImpl(
-        topicPartitionCount,
-        (partition) ->
-            CommitterSettings.newBuilder()
-                .setSubscriptionPath(this.subscriptionPath())
-                .setPartition(partition)
-                .setStreamFactory(
-                    responseStream ->
-                        serviceClient.streamingCommitCursorCallable().splitCall(responseStream))
-                .build()
-                .instantiate());
+  MultiPartitionCommitter newMultiPartitionCommitter() {
+    return new MultiPartitionCommitterImpl(subscriptionPath(), newCursorClient());
   }
 
   @SuppressWarnings("CheckReturnValue")
@@ -227,11 +202,27 @@ public abstract class PslReadDataSourceOptions implements Serializable {
     }
   }
 
+  TopicPath getTopicPath() {
+    try (AdminClient adminClient = newAdminClient()) {
+      return TopicPath.parse(adminClient.getSubscription(subscriptionPath()).get().getTopic());
+    } catch (Exception e) {
+      throw new IllegalStateException("Unable to fetch topic.", e);
+    }
+  }
+
   TopicStatsClient newTopicStatsClient() {
     return TopicStatsClient.create(
         TopicStatsClientSettings.newBuilder()
             .setRegion(this.subscriptionPath().location().extractRegion())
             .setServiceClient(newTopicStatsServiceClient())
             .build());
+  }
+
+  PartitionCountReader newPartitionCountReader() {
+    return new CachedPartitionCountReader(newAdminClient(), getTopicPath());
+  }
+
+  PerTopicHeadOffsetReader newHeadOffsetReader() {
+    return new LimitingHeadOffsetReader(newTopicStatsClient(), getTopicPath(), newPartitionCountReader(), Ticker.systemTicker());
   }
 }

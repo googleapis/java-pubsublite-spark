@@ -31,7 +31,7 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Optional;
 import org.junit.Test;
 
-public class PslContinuousReaderTest {
+public class PslContinuousStreamTest {
 
   private static final PslReadDataSourceOptions OPTIONS =
       PslReadDataSourceOptions.builder()
@@ -39,57 +39,19 @@ public class PslContinuousReaderTest {
           .build();
   private final CursorClient cursorClient = mock(CursorClient.class);
   private final MultiPartitionCommitter committer = mock(MultiPartitionCommitter.class);
-  private final PartitionSubscriberFactory partitionSubscriberFactory =
-      mock(PartitionSubscriberFactory.class);
-  private final PartitionCountReader partitionCountReader;
+  private final PartitionCountReader partitionCountReader = mock(PartitionCountReader.class);
 
   {
-    PartitionCountReader mock = mock(PartitionCountReader.class);
-    when(mock.getPartitionCount()).thenReturn(2);
-    partitionCountReader = mock;
+    when(partitionCountReader.getPartitionCount()).thenReturn(2);
   }
 
-  private final PslContinuousReader reader =
-      new PslContinuousReader(
+  private final PslContinuousStream stream =
+      new PslContinuousStream(
           cursorClient,
           committer,
-          partitionSubscriberFactory,
           UnitTestExamples.exampleSubscriptionPath(),
-          OPTIONS.flowControlSettings(),
-          partitionCountReader);
-
-  @Test
-  public void testEmptyStartOffset() {
-    when(cursorClient.listPartitionCursors(UnitTestExamples.exampleSubscriptionPath()))
-        .thenReturn(
-            ApiFutures.immediateFuture(
-                ImmutableMap.of(Partition.of(1L), UnitTestExamples.exampleOffset())));
-
-    reader.setStartOffset(Optional.empty());
-    assertThat(((SparkSourceOffset) reader.getStartOffset()).getPartitionOffsetMap())
-        .containsExactly(
-            Partition.of(0L),
-                SparkPartitionOffset.builder().partition(Partition.of(0L)).offset(-1L).build(),
-            Partition.of(1L),
-                SparkPartitionOffset.builder()
-                    .partition(Partition.of(1L))
-                    .offset(UnitTestExamples.exampleOffset().value() - 1)
-                    .build());
-  }
-
-  @Test
-  public void testValidStartOffset() {
-    SparkSourceOffset offset =
-        new SparkSourceOffset(
-            ImmutableMap.of(
-                Partition.of(1),
-                SparkPartitionOffset.builder()
-                    .partition(Partition.of(1))
-                    .offset(UnitTestExamples.exampleOffset().value())
-                    .build()));
-    reader.setStartOffset(Optional.of(offset));
-    assertThat(reader.getStartOffset()).isEqualTo(offset);
-  }
+          partitionCountReader,
+          OPTIONS);
 
   @Test
   public void testMergeOffsets() {
@@ -97,7 +59,7 @@ public class PslContinuousReaderTest {
         SparkPartitionOffset.builder().partition(Partition.of(1L)).offset(10L).build();
     SparkPartitionOffset po2 =
         SparkPartitionOffset.builder().partition(Partition.of(2L)).offset(5L).build();
-    assertThat(reader.mergeOffsets(new SparkPartitionOffset[] {po1, po2}))
+    assertThat(stream.mergeOffsets(new SparkPartitionOffset[] {po1, po2}))
         .isEqualTo(SparkSourceOffset.merge(new SparkPartitionOffset[] {po1, po2}));
   }
 
@@ -108,7 +70,7 @@ public class PslContinuousReaderTest {
             ImmutableMap.of(
                 Partition.of(1L),
                 SparkPartitionOffset.builder().partition(Partition.of(1L)).offset(10L).build()));
-    assertThat(reader.deserializeOffset(offset.json())).isEqualTo(offset);
+    assertThat(stream.deserializeOffset(offset.json())).isEqualTo(offset);
   }
 
   @Test
@@ -130,13 +92,13 @@ public class PslContinuousReaderTest {
                     Partition.of(0L), Offset.of(11L),
                     Partition.of(1L), Offset.of(51L)))
             .build();
-    reader.commit(offset);
+    stream.commit(offset);
     verify(committer, times(1)).commit(eq(expectedCommitOffset));
   }
 
   @Test
   public void testPartitionIncrease() {
     when(partitionCountReader.getPartitionCount()).thenReturn(4);
-    assertThat(reader.needsReconfiguration()).isTrue();
+    assertThat(stream.needsReconfiguration()).isTrue();
   }
 }

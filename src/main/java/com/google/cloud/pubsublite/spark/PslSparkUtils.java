@@ -225,25 +225,6 @@ public class PslSparkUtils {
         .build();
   }
 
-  public static SparkSourceOffset getSparkStartOffset(
-      CursorClient cursorClient, SubscriptionPath subscriptionPath, long topicPartitionCount) {
-    try {
-      Map<Partition, com.google.cloud.pubsublite.Offset> pslSourceOffsetMap = new HashMap<>();
-      for (int i = 0; i < topicPartitionCount; i++) {
-        pslSourceOffsetMap.put(Partition.of(i), com.google.cloud.pubsublite.Offset.of(0));
-      }
-      cursorClient
-          .listPartitionCursors(subscriptionPath)
-          .get()
-          .forEach(pslSourceOffsetMap::replace);
-      return PslSparkUtils.toSparkSourceOffset(
-          PslSourceOffset.builder().partitionOffsetMap(pslSourceOffsetMap).build());
-    } catch (InterruptedException | ExecutionException e) {
-      throw new IllegalStateException(
-          "Failed to get information from PSL and construct startOffset", e);
-    }
-  }
-
   // EndOffset = min(startOffset + batchOffsetRange, headOffset)
   public static SparkSourceOffset getSparkEndOffset(
       SparkSourceOffset headOffset,

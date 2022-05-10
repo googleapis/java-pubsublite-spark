@@ -19,6 +19,7 @@ package com.google.cloud.pubsublite.spark;
 import static com.google.cloud.pubsublite.internal.ExtractStatus.toCanonical;
 import static com.google.cloud.pubsublite.internal.wire.ServiceClients.addDefaultSettings;
 import static com.google.cloud.pubsublite.internal.wire.ServiceClients.getCallContext;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.api.gax.rpc.ApiCallContext;
 import com.google.api.gax.rpc.ApiException;
@@ -41,8 +42,9 @@ import com.google.cloud.pubsublite.v1.AdminServiceSettings;
 import com.google.cloud.pubsublite.v1.PublisherServiceClient;
 import com.google.cloud.pubsublite.v1.PublisherServiceSettings;
 import java.io.Serializable;
+import java.util.Map;
+import java.util.Optional;
 import javax.annotation.Nullable;
-import org.apache.spark.sql.sources.v2.DataSourceOptions;
 
 @AutoValue
 public abstract class PslWriteDataSourceOptions implements Serializable {
@@ -66,19 +68,11 @@ public abstract class PslWriteDataSourceOptions implements Serializable {
     public abstract PslWriteDataSourceOptions build();
   }
 
-  public static PslWriteDataSourceOptions fromSparkDataSourceOptions(DataSourceOptions options) {
-    if (!options.get(Constants.TOPIC_CONFIG_KEY).isPresent()) {
-      throw new IllegalArgumentException(Constants.TOPIC_CONFIG_KEY + " is required.");
-    }
-
+  public static PslWriteDataSourceOptions fromProperties(Map<String, String> properties) {
     Builder builder = builder();
-    String topicPathVal = options.get(Constants.TOPIC_CONFIG_KEY).get();
-    try {
-      builder.setTopicPath(TopicPath.parse(topicPathVal));
-    } catch (ApiException e) {
-      throw new IllegalArgumentException("Unable to parse topic path " + topicPathVal, e);
-    }
-    options.get(Constants.CREDENTIALS_KEY_CONFIG_KEY).ifPresent(builder::setCredentialsKey);
+    String pathVal = checkNotNull(properties.get(Constants.TOPIC_CONFIG_KEY), Constants.TOPIC_CONFIG_KEY + " is required.");
+    builder.setTopicPath(TopicPath.parse(pathVal));
+    Optional.ofNullable(properties.get(Constants.CREDENTIALS_KEY_CONFIG_KEY)).ifPresent(builder::setCredentialsKey);
     return builder.build();
   }
 

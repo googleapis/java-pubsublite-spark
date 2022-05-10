@@ -21,13 +21,18 @@ import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.pubsublite.Offset;
 import com.google.cloud.pubsublite.Partition;
+import com.google.cloud.pubsublite.SubscriptionPath;
+import com.google.cloud.pubsublite.internal.CursorClient;
+import com.google.cloud.pubsublite.internal.ExtractStatus;
 import com.google.cloud.pubsublite.internal.wire.Committer;
 import com.google.cloud.pubsublite.spark.PslSourceOffset;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.flogger.GoogleLogger;
 import com.google.common.util.concurrent.MoreExecutors;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
@@ -40,105 +45,29 @@ import javax.annotation.concurrent.GuardedBy;
  * MultiPartitionCommitter#commit(PslSourceOffset)} is called.
  */
 public class MultiPartitionCommitterImpl implements MultiPartitionCommitter {
-  private static final GoogleLogger log = GoogleLogger.forEnclosingClass();
+  private final SubscriptionPath subscription;
+  private final CursorClient client;
 
-  private final CommitterFactory committerFactory;
-
-  @GuardedBy("this")
-  private final Map<Partition, Committer> committerMap = new HashMap<>();
-
-  @GuardedBy("this")
-  private final Set<Partition> partitionsCleanUp = new HashSet<>();
-
-  public MultiPartitionCommitterImpl(long topicPartitionCount, CommitterFactory committerFactory) {
-    this(
-        topicPartitionCount,
-        committerFactory,
-        MoreExecutors.getExitingScheduledExecutorService(new ScheduledThreadPoolExecutor(1)));
-  }
-
-  @VisibleForTesting
-  MultiPartitionCommitterImpl(
-      long topicPartitionCount,
-      CommitterFactory committerFactory,
-      ScheduledExecutorService executorService) {
-    this.committerFactory = committerFactory;
-    for (int i = 0; i < topicPartitionCount; i++) {
-      Partition p = Partition.of(i);
-      committerMap.put(p, createCommitter(p));
-    }
-    executorService.scheduleWithFixedDelay(this::cleanUpCommitterMap, 10, 10, TimeUnit.MINUTES);
+  public MultiPartitionCommitterImpl(SubscriptionPath subscription, CursorClient client) {
+    this.subscription = subscription;
+    this.client = client;
   }
 
   @Override
-  public synchronized void close() {
-    committerMap.values().forEach(c -> c.stopAsync().awaitTerminated());
-  }
-
-  /** Adjust committerMap based on the partitions that needs to be committed. */
-  private synchronized void updateCommitterMap(PslSourceOffset offset) {
-    int currentPartitions = committerMap.size();
-    int newPartitions = offset.partitionOffsetMap().size();
-
-    if (currentPartitions == newPartitions) {
-      return;
-    }
-    if (currentPartitions < newPartitions) {
-      for (int i = currentPartitions; i < newPartitions; i++) {
-        Partition p = Partition.of(i);
-        if (!committerMap.containsKey(p)) {
-          committerMap.put(p, createCommitter(p));
-        }
-        partitionsCleanUp.remove(p);
-      }
-      return;
-    }
-    partitionsCleanUp.clear();
-    for (int i = newPartitions; i < currentPartitions; i++) {
-      partitionsCleanUp.add(Partition.of(i));
-    }
-  }
-
-  private synchronized Committer createCommitter(Partition p) {
-    Committer committer = committerFactory.newCommitter(p);
-    committer.startAsync().awaitRunning();
-    return committer;
-  }
-
-  private synchronized void cleanUpCommitterMap() {
-    for (Partition p : partitionsCleanUp) {
-      committerMap.get(p).stopAsync();
-      committerMap.remove(p);
-    }
-    partitionsCleanUp.clear();
+  public void close() {
+    client.close();
   }
 
   @Override
-  public synchronized void commit(PslSourceOffset offset) {
-    updateCommitterMap(offset);
+  public void commit(PslSourceOffset offset) {
+    List<ApiFuture<Void>> futures = new ArrayList<>();
     for (Map.Entry<Partition, Offset> entry : offset.partitionOffsetMap().entrySet()) {
-      // Note we don't need to worry about commit offset disorder here since Committer
-      // guarantees the ordering. Once commitOffset() returns, it's either already
-      // sent to stream, or waiting for next connection to open to be sent in order.
-      ApiFuture<Void> future = committerMap.get(entry.getKey()).commitOffset(entry.getValue());
-      ApiFutures.addCallback(
-          future,
-          new ApiFutureCallback<Void>() {
-            @Override
-            public void onFailure(Throwable t) {
-              if (!future.isCancelled()) {
-                log.atWarning().withCause(t).log(
-                    "Failed to commit %s,%s.", entry.getKey().value(), entry.getValue().value());
-              }
-            }
-
-            @Override
-            public void onSuccess(Void result) {
-              log.atInfo().log(
-                  "Committed %s,%s.", entry.getKey().value(), entry.getValue().value());
-            }
-          },
-          MoreExecutors.directExecutor());
+      futures.add(client.commitCursor(subscription, entry.getKey(), entry.getValue()));
+    }
+    try {
+      ApiFutures.allAsList(futures).get();
+    } catch (Exception e) {
+      throw ExtractStatus.toCanonical(e).underlying;
     }
   }
 }

@@ -18,18 +18,18 @@ package com.google.cloud.pubsublite.spark;
 
 import static org.junit.Assert.assertThrows;
 
+import com.google.api.gax.rpc.ApiException;
 import com.google.common.collect.ImmutableMap;
-import org.apache.spark.sql.sources.v2.DataSourceOptions;
+import java.util.Map;
 import org.junit.Test;
 
 public class PslWriteDataSourceOptionsTest {
 
   @Test
   public void testInvalidTopicPath() {
-    DataSourceOptions options =
-        new DataSourceOptions(ImmutableMap.of(Constants.TOPIC_CONFIG_KEY, "invalid/path"));
+    Map<String, String> options = ImmutableMap.of(Constants.TOPIC_CONFIG_KEY, "invalid/path");
     assertThrows(
-        IllegalArgumentException.class,
-        () -> PslWriteDataSourceOptions.fromSparkDataSourceOptions(options));
+        ApiException.class,
+        () -> PslWriteDataSourceOptions.fromProperties(options));
   }
 }

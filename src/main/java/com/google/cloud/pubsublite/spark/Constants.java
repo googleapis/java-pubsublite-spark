@@ -19,6 +19,7 @@ package com.google.cloud.pubsublite.spark;
 import com.google.cloud.pubsublite.internal.wire.PubsubContext;
 
 public class Constants {
+  public static final String NAME = "pubsublite";
   public static final PubsubContext.Framework FRAMEWORK = PubsubContext.Framework.of("SPARK");
 
   public static long DEFAULT_BYTES_OUTSTANDING = 50_000_000;

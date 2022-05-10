@@ -29,9 +29,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import javax.annotation.Nullable;
 import org.apache.spark.sql.catalyst.InternalRow;
-import org.apache.spark.sql.sources.v2.reader.InputPartitionReader;
+import org.apache.spark.sql.connector.read.PartitionReader;
 
-public class PslMicroBatchInputPartitionReader implements InputPartitionReader<InternalRow> {
+public class PslMicroBatchInputPartitionReader implements PartitionReader<InternalRow> {
   private static final GoogleLogger log = GoogleLogger.forEnclosingClass();
 
   private static final Duration SUBSCRIBER_PULL_TIMEOUT = Duration.ofSeconds(10);
@@ -64,13 +64,11 @@ public class PslMicroBatchInputPartitionReader implements InputPartitionReader<I
         msg = subscriber.messageIfAvailable();
         break;
       } catch (TimeoutException e) {
-        log.atWarning().log(
-            String.format(
-                "Unable to get any messages in last %s. Partition: %d; Current message offset: %s; End message offset: %d.",
-                SUBSCRIBER_PULL_TIMEOUT.toString(),
+        log.atWarning().log("Unable to get any messages in last %s. Partition: %d; Current message offset: %s; End message offset: %d.",
+                SUBSCRIBER_PULL_TIMEOUT,
                 endOffset.partition().value(),
                 currentMsg == null ? "null" : currentMsg.offset().value(),
-                endOffset.offset()));
+                endOffset.offset());
       } catch (Throwable t) {
         throw new IllegalStateException("Failed to retrieve messages.", t);
       }

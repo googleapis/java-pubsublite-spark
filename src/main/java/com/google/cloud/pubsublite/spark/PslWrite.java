@@ -17,20 +17,23 @@
 package com.google.cloud.pubsublite.spark;
 
 import com.google.common.flogger.GoogleLogger;
-import org.apache.spark.sql.catalyst.InternalRow;
-import org.apache.spark.sql.sources.v2.writer.DataWriterFactory;
-import org.apache.spark.sql.sources.v2.writer.WriterCommitMessage;
-import org.apache.spark.sql.sources.v2.writer.streaming.StreamWriter;
+import org.apache.spark.sql.connector.write.BatchWrite;
+import org.apache.spark.sql.connector.write.Write;
+import org.apache.spark.sql.connector.write.DataWriterFactory;
+import org.apache.spark.sql.connector.write.PhysicalWriteInfo;
+import org.apache.spark.sql.connector.write.WriteBuilder;
+import org.apache.spark.sql.connector.write.WriterCommitMessage;
+import org.apache.spark.sql.connector.write.streaming.StreamingDataWriterFactory;
+import org.apache.spark.sql.connector.write.streaming.StreamingWrite;
 import org.apache.spark.sql.types.StructType;
 
-public class PslStreamWriter implements StreamWriter {
-
+public class PslWrite implements Write, WriteBuilder, BatchWrite, StreamingWrite {
   private static final GoogleLogger log = GoogleLogger.forEnclosingClass();
 
   private final StructType inputSchema;
   private final PslWriteDataSourceOptions writeOptions;
 
-  public PslStreamWriter(StructType inputSchema, PslWriteDataSourceOptions writeOptions) {
+  public PslWrite(StructType inputSchema, PslWriteDataSourceOptions writeOptions) {
     this.inputSchema = inputSchema;
     this.writeOptions = writeOptions;
   }
@@ -41,10 +44,20 @@ public class PslStreamWriter implements StreamWriter {
   }
 
   @Override
+  public void commit(WriterCommitMessage[] messages) {
+    commit(-1, messages);
+  }
+
+  @Override
   public void abort(long epochId, WriterCommitMessage[] messages) {
     log.atWarning().log(
         "Epoch id: %d is aborted, %d messages might have been published.",
         epochId, countMessages(messages));
+  }
+
+  @Override
+  public void abort(WriterCommitMessage[] messages) {
+    abort(-1, messages);
   }
 
   private long countMessages(WriterCommitMessage[] messages) {
@@ -58,8 +71,32 @@ public class PslStreamWriter implements StreamWriter {
     return cnt;
   }
 
-  @Override
-  public DataWriterFactory<InternalRow> createWriterFactory() {
+  private PslDataWriterFactory newWriterFactory() {
     return new PslDataWriterFactory(inputSchema, writeOptions);
+  }
+
+  @Override
+  public DataWriterFactory createBatchWriterFactory(PhysicalWriteInfo info) {
+    return newWriterFactory();
+  }
+
+  @Override
+  public StreamingDataWriterFactory createStreamingWriterFactory(PhysicalWriteInfo info) {
+    return newWriterFactory();
+  }
+
+  @Override
+  public BatchWrite toBatch() {
+    return this;
+  }
+
+  @Override
+  public StreamingWrite toStreaming() {
+    return this;
+  }
+
+  @Override
+  public Write build() {
+    return this;
   }
 }

@@ -31,7 +31,7 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 public final class SparkSourceOffset
-    extends org.apache.spark.sql.sources.v2.reader.streaming.Offset {
+    extends org.apache.spark.sql.connector.read.streaming.Offset {
   private static final Gson gson = new Gson();
 
   // Using a map to ensure unique partitions.
