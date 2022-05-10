@@ -6,7 +6,6 @@
     <version>1.5.5</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.google.cloud</groupId>
   <artifactId>pubsublite-spark-sql-streaming</artifactId>
   <version>0.3.5-SNAPSHOT</version><!-- {x-version-update:pubsublite-spark-sql-streaming:current} -->
   <packaging>jar</packaging>
@@ -19,7 +18,8 @@
     <encoding>UTF-8</encoding>
     <scala.version>2.12.15</scala.version>
     <scala.version.short>2.12</scala.version.short>
-    <spark.version>3.2.1</spark.version>
+    <spark.version>3.1.2</spark.version>
+    <hadoop.version>3.2.2</hadoop.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -37,12 +37,22 @@
       <dependency>
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-client</artifactId>
-        <version>3.2.1</version>
+        <version>${hadoop.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-common</artifactId>
+        <version>${hadoop.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.curator</groupId>
         <artifactId>curator-client</artifactId>
         <version>2.13.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-compress</artifactId>
+        <version>1.19</version>
       </dependency>
       <dependency>
         <groupId>org.apache.yetus</groupId>
@@ -58,6 +68,26 @@
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-server</artifactId>
         <version>9.4.43.v20210629</version>
+      </dependency>
+      <dependency>
+        <groupId>jakarta.xml.bind</groupId>
+        <artifactId>jakarta.xml.bind-api</artifactId>
+        <version>2.3.3</version>
+      </dependency>
+      <dependency>
+        <groupId>jakarta.activation</groupId>
+        <artifactId>jakarta.activation-api</artifactId>
+        <version>1.2.2</version>
+      </dependency>
+      <dependency>
+        <groupId>commons.io</groupId>
+        <artifactId>commons.io</artifactId>
+        <version>2.5</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-net</groupId>
+        <artifactId>commons-net</artifactId>
+        <version>3.6</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -287,6 +317,8 @@
                     <ignoreClass>org.apache.hadoop.yarn.*</ignoreClass>
                     <ignoreClass>javax.ws.rs.*</ignoreClass>
                     <ignoreClass>javax.annotation.*</ignoreClass>
+                    <ignoreClass>javax.activation.*</ignoreClass>
+                    <ignoreClass>javax.xml.bind.*</ignoreClass>
                   </ignoreClasses>
                   <ignoreWhenIdentical>true</ignoreWhenIdentical>
                 </banDuplicateClasses>

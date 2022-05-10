@@ -48,7 +48,7 @@ public class PslWriteTest {
   @Test
   public void testCreateFactory() {
     PhysicalWriteInfo info = new PhysicalWriteInfoImpl(42);
-    writer.toBatch().createBatchWriterFactory(info);
-    writer.toStreaming().createStreamingWriterFactory(info);
+    writer.createBatchWriterFactory(info);
+    writer.createStreamingWriterFactory(info);
   }
 }

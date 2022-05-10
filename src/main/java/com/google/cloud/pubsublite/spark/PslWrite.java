@@ -20,14 +20,13 @@ import com.google.common.flogger.GoogleLogger;
 import org.apache.spark.sql.connector.write.BatchWrite;
 import org.apache.spark.sql.connector.write.DataWriterFactory;
 import org.apache.spark.sql.connector.write.PhysicalWriteInfo;
-import org.apache.spark.sql.connector.write.Write;
 import org.apache.spark.sql.connector.write.WriteBuilder;
 import org.apache.spark.sql.connector.write.WriterCommitMessage;
 import org.apache.spark.sql.connector.write.streaming.StreamingDataWriterFactory;
 import org.apache.spark.sql.connector.write.streaming.StreamingWrite;
 import org.apache.spark.sql.types.StructType;
 
-public class PslWrite implements Write, WriteBuilder, BatchWrite, StreamingWrite {
+public class PslWrite implements WriteBuilder, BatchWrite, StreamingWrite {
   private static final GoogleLogger log = GoogleLogger.forEnclosingClass();
 
   private final StructType inputSchema;
@@ -86,17 +85,12 @@ public class PslWrite implements Write, WriteBuilder, BatchWrite, StreamingWrite
   }
 
   @Override
-  public BatchWrite toBatch() {
+  public BatchWrite buildForBatch() {
     return this;
   }
 
   @Override
-  public StreamingWrite toStreaming() {
-    return this;
-  }
-
-  @Override
-  public Write build() {
+  public StreamingWrite buildForStreaming() {
     return this;
   }
 }
