@@ -20,15 +20,12 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.mock;
 
-import com.google.api.core.ApiFutures;
 import com.google.cloud.pubsublite.*;
 import com.google.cloud.pubsublite.internal.CursorClient;
 import com.google.cloud.pubsublite.internal.testing.UnitTestExamples;
 import com.google.cloud.pubsublite.spark.internal.MultiPartitionCommitter;
 import com.google.cloud.pubsublite.spark.internal.PartitionCountReader;
-import com.google.cloud.pubsublite.spark.internal.PartitionSubscriberFactory;
 import com.google.common.collect.ImmutableMap;
-import java.util.Optional;
 import org.junit.Test;
 
 public class PslContinuousStreamTest {

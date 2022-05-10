@@ -25,8 +25,8 @@ import org.apache.spark.sql.connector.write.DataWriterFactory;
 import org.apache.spark.sql.connector.write.streaming.StreamingDataWriterFactory;
 import org.apache.spark.sql.types.StructType;
 
-public class PslDataWriterFactory implements Serializable, DataWriterFactory,
-    StreamingDataWriterFactory {
+public class PslDataWriterFactory
+    implements Serializable, DataWriterFactory, StreamingDataWriterFactory {
   private static final long serialVersionUID = -6904546364310978844L;
 
   private static final CachedPublishers CACHED_PUBLISHERS = new CachedPublishers();

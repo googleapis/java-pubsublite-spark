@@ -49,7 +49,12 @@ public class PslContinuousStream extends BaseDataStream implements ContinuousStr
   }
 
   PslContinuousStream(PslReadDataSourceOptions options) {
-    this(options.newCursorClient(), options.newMultiPartitionCommitter(), options.subscriptionPath(), options.newPartitionCountReader(), options);
+    this(
+        options.newCursorClient(),
+        options.newMultiPartitionCommitter(),
+        options.subscriptionPath(),
+        options.newPartitionCountReader(),
+        options);
   }
 
   @Override

@@ -16,11 +16,9 @@
 
 package com.google.cloud.pubsublite.spark;
 
-import static com.google.cloud.pubsublite.internal.ExtractStatus.toCanonical;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
-import com.google.cloud.pubsublite.AdminClient;
 import com.google.cloud.pubsublite.Offset;
 import com.google.cloud.pubsublite.Partition;
 import com.google.cloud.pubsublite.TopicPath;
@@ -28,8 +26,6 @@ import com.google.cloud.pubsublite.internal.CursorClient;
 import com.google.cloud.pubsublite.internal.ExtractStatus;
 import com.google.cloud.pubsublite.internal.TopicStatsClient;
 import com.google.cloud.pubsublite.proto.ComputeMessageStatsResponse;
-import com.google.cloud.pubsublite.proto.Cursor;
-import com.google.cloud.pubsublite.spark.internal.PartitionCountReader;
 import com.google.cloud.pubsublite.spark.internal.PerTopicHeadOffsetReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +43,8 @@ import org.apache.spark.sql.types.StructType;
  * Both Scan and ScanBuilder implementation, otherwise estimateStatistics() is not called due to bug
  * in DataSourceV2Relation.
  *
- * <p>Information from https://github.com/GoogleCloudDataproc/spark-bigquery-connector/blob/b0b2a8add37bd044e5a9976ce635bb4230957f29/spark-bigquery-dsv2/spark-3.1-bigquery/src/main/java/com/google/cloud/spark/bigquery/v2/BigQueryScanBuilder.java#L30
+ * <p>Information from
+ * https://github.com/GoogleCloudDataproc/spark-bigquery-connector/blob/b0b2a8add37bd044e5a9976ce635bb4230957f29/spark-bigquery-dsv2/spark-3.1-bigquery/src/main/java/com/google/cloud/spark/bigquery/v2/BigQueryScanBuilder.java#L30
  */
 public class PslScanBuilder implements ScanBuilder, Scan, SupportsReportStatistics {
   private final PslReadDataSourceOptions options;
@@ -60,12 +57,20 @@ public class PslScanBuilder implements ScanBuilder, Scan, SupportsReportStatisti
   public Statistics estimateStatistics() {
     try (TopicStatsClient statsClient = options.newTopicStatsClient();
         CursorClient cursorClient = options.newCursorClient();
-        PerTopicHeadOffsetReader headOffsetReader = options.newHeadOffsetReader()){
-      Map<Partition, Offset> cursors = cursorClient.listPartitionCursors(options.subscriptionPath()).get();
+        PerTopicHeadOffsetReader headOffsetReader = options.newHeadOffsetReader()) {
+      Map<Partition, Offset> cursors =
+          cursorClient.listPartitionCursors(options.subscriptionPath()).get();
       PslSourceOffset headOffset = headOffsetReader.getHeadOffset();
       List<ApiFuture<ComputeMessageStatsResponse>> stats = new ArrayList<>();
       TopicPath topicPath = options.getTopicPath();
-      cursors.forEach((partition, offset) -> stats.add(statsClient.computeMessageStats(topicPath, partition, offset, headOffset.partitionOffsetMap().get(partition))));
+      cursors.forEach(
+          (partition, offset) ->
+              stats.add(
+                  statsClient.computeMessageStats(
+                      topicPath,
+                      partition,
+                      offset,
+                      headOffset.partitionOffsetMap().get(partition))));
       List<ComputeMessageStatsResponse> responses = ApiFutures.allAsList(stats).get();
       long bytes = 0;
       long messages = 0;

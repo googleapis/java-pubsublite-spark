@@ -27,8 +27,7 @@ import org.apache.spark.sql.catalyst.InternalRow;
 import org.apache.spark.sql.connector.read.streaming.ContinuousPartitionReader;
 import org.apache.spark.sql.connector.read.streaming.PartitionOffset;
 
-public class PslContinuousPartitionReader
-    implements ContinuousPartitionReader<InternalRow> {
+public class PslContinuousPartitionReader implements ContinuousPartitionReader<InternalRow> {
   private static final GoogleLogger log = GoogleLogger.forEnclosingClass();
 
   private final SubscriptionPath subscriptionPath;

@@ -22,7 +22,6 @@ import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.*;
 
 import com.google.api.core.ApiFutures;
-import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.rpc.ApiException;
 import com.google.api.gax.rpc.StatusCode.Code;
 import com.google.cloud.pubsublite.*;
@@ -34,17 +33,16 @@ import org.junit.Test;
 public class MultiPartitionCommitterImplTest {
 
   private final CursorClient client = mock(CursorClient.class);
-  private final MultiPartitionCommitter committer = new MultiPartitionCommitterImpl(
-      example(SubscriptionPath.class), client);
+  private final MultiPartitionCommitter committer =
+      new MultiPartitionCommitterImpl(example(SubscriptionPath.class), client);
 
   @Test
   public void testCommit() {
     PslSourceOffset offset = createPslSourceOffset(10L, 8L);
-    when(client.commitCursor(example(SubscriptionPath.class), Partition.of(0),
-        Offset.of(10))).thenReturn(
-        ApiFutures.immediateFuture(null));
-    when(client.commitCursor(example(SubscriptionPath.class), Partition.of(1),
-        Offset.of(8))).thenReturn(ApiFutures.immediateFuture(null));
+    when(client.commitCursor(example(SubscriptionPath.class), Partition.of(0), Offset.of(10)))
+        .thenReturn(ApiFutures.immediateFuture(null));
+    when(client.commitCursor(example(SubscriptionPath.class), Partition.of(1), Offset.of(8)))
+        .thenReturn(ApiFutures.immediateFuture(null));
     committer.commit(offset);
     verify(client).commitCursor(example(SubscriptionPath.class), Partition.of(0), Offset.of(10));
     verify(client).commitCursor(example(SubscriptionPath.class), Partition.of(1), Offset.of(8));
@@ -53,12 +51,10 @@ public class MultiPartitionCommitterImplTest {
   @Test
   public void testCommitFailure() {
     PslSourceOffset offset = createPslSourceOffset(10L, 8L);
-    when(client.commitCursor(example(SubscriptionPath.class), Partition.of(0),
-        Offset.of(10))).thenReturn(
-        ApiFutures.immediateFailedFuture(new CheckedApiException(
-            Code.INTERNAL)));
-    when(client.commitCursor(example(SubscriptionPath.class), Partition.of(1),
-        Offset.of(8))).thenReturn(ApiFutures.immediateFuture(null));
+    when(client.commitCursor(example(SubscriptionPath.class), Partition.of(0), Offset.of(10)))
+        .thenReturn(ApiFutures.immediateFailedFuture(new CheckedApiException(Code.INTERNAL)));
+    when(client.commitCursor(example(SubscriptionPath.class), Partition.of(1), Offset.of(8)))
+        .thenReturn(ApiFutures.immediateFuture(null));
     assertThrows(ApiException.class, () -> committer.commit(offset));
     verify(client).commitCursor(example(SubscriptionPath.class), Partition.of(0), Offset.of(10));
     verify(client).commitCursor(example(SubscriptionPath.class), Partition.of(1), Offset.of(8));

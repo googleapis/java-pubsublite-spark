@@ -26,9 +26,8 @@ public class BaseDataStreamTest {
   private final CursorClient cursorClient = mock(CursorClient.class);
   private final MultiPartitionCommitter committer = mock(MultiPartitionCommitter.class);
   private final PartitionCountReader countReader = mock(PartitionCountReader.class);
-  private final BaseDataStream stream = new BaseDataStream(
-      cursorClient, committer, countReader, example(SubscriptionPath.class));
-
+  private final BaseDataStream stream =
+      new BaseDataStream(cursorClient, committer, countReader, example(SubscriptionPath.class));
 
   @Test
   public void testReadCountFailure() {
@@ -39,22 +38,29 @@ public class BaseDataStreamTest {
   @Test
   public void testListOffsetsFailure() {
     when(countReader.getPartitionCount()).thenReturn(2);
-    when(cursorClient.listPartitionCursors(example(SubscriptionPath.class))).thenReturn(
-        ApiFutures.immediateFailedFuture(UNCHECKED));
+    when(cursorClient.listPartitionCursors(example(SubscriptionPath.class)))
+        .thenReturn(ApiFutures.immediateFailedFuture(UNCHECKED));
     assertThrows(ApiException.class, stream::initialOffset);
   }
 
   @Test
   public void testInitialOffsetSuccess() {
     when(countReader.getPartitionCount()).thenReturn(2);
-    when(cursorClient.listPartitionCursors(example(SubscriptionPath.class))).thenReturn(
-        ApiFutures.immediateFuture(
-            ImmutableMap.of(Partition.of(0), Offset.of(10), Partition.of(2), Offset.of(30))));
+    when(cursorClient.listPartitionCursors(example(SubscriptionPath.class)))
+        .thenReturn(
+            ApiFutures.immediateFuture(
+                ImmutableMap.of(Partition.of(0), Offset.of(10), Partition.of(2), Offset.of(30))));
     SparkSourceOffset offset = stream.initialOffset();
     // Missing offset for partition 1 set to 0.
     // Extra offset for partition 2 added even though it was not in the count.
-    assertThat(offset.getPartitionOffsetMap()).containsExactlyEntriesIn(
-        ImmutableMap.of(Partition.of(0), Offset.of(10), Partition.of(1), Offset.of(0),
-            Partition.of(2), Offset.of(30)));
+    assertThat(offset.getPartitionOffsetMap())
+        .containsExactlyEntriesIn(
+            ImmutableMap.of(
+                Partition.of(0),
+                Offset.of(10),
+                Partition.of(1),
+                Offset.of(0),
+                Partition.of(2),
+                Offset.of(30)));
   }
 }

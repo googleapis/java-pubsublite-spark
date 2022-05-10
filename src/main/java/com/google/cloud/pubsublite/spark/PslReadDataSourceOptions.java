@@ -32,7 +32,6 @@ import com.google.cloud.pubsublite.internal.CursorClient;
 import com.google.cloud.pubsublite.internal.CursorClientSettings;
 import com.google.cloud.pubsublite.internal.TopicStatsClient;
 import com.google.cloud.pubsublite.internal.TopicStatsClientSettings;
-import com.google.cloud.pubsublite.internal.wire.CommitterSettings;
 import com.google.cloud.pubsublite.internal.wire.PubsubContext;
 import com.google.cloud.pubsublite.internal.wire.RoutingMetadata;
 import com.google.cloud.pubsublite.internal.wire.SubscriberBuilder;
@@ -86,13 +85,24 @@ public abstract class PslReadDataSourceOptions implements Serializable {
 
   public static PslReadDataSourceOptions fromProperties(Map<String, String> properties) {
     Builder builder = builder();
-    String pathVal = checkNotNull(properties.get(Constants.SUBSCRIPTION_CONFIG_KEY), Constants.SUBSCRIPTION_CONFIG_KEY + " is required.");
+    String pathVal =
+        checkNotNull(
+            properties.get(Constants.SUBSCRIPTION_CONFIG_KEY),
+            Constants.SUBSCRIPTION_CONFIG_KEY + " is required.");
     builder.setSubscriptionPath(SubscriptionPath.parse(pathVal));
-    Optional.ofNullable(properties.get(Constants.CREDENTIALS_KEY_CONFIG_KEY)).ifPresent(builder::setCredentialsKey);
-    Optional.ofNullable(properties.get(Constants.MAX_MESSAGE_PER_BATCH_CONFIG_KEY)).ifPresent(mmpb -> builder.setMaxMessagesPerBatch(Long.parseLong(mmpb)));
+    Optional.ofNullable(properties.get(Constants.CREDENTIALS_KEY_CONFIG_KEY))
+        .ifPresent(builder::setCredentialsKey);
+    Optional.ofNullable(properties.get(Constants.MAX_MESSAGE_PER_BATCH_CONFIG_KEY))
+        .ifPresent(mmpb -> builder.setMaxMessagesPerBatch(Long.parseLong(mmpb)));
     FlowControlSettings.Builder flowControl = FlowControlSettings.builder();
-    flowControl.setMessagesOutstanding(Optional.ofNullable(properties.get(Constants.MESSAGES_OUTSTANDING_CONFIG_KEY)).map(Long::parseLong).orElse(Constants.DEFAULT_MESSAGES_OUTSTANDING));
-    flowControl.setBytesOutstanding(Optional.ofNullable(properties.get(Constants.BYTES_OUTSTANDING_CONFIG_KEY)).map(Long::parseLong).orElse(Constants.DEFAULT_BYTES_OUTSTANDING));
+    flowControl.setMessagesOutstanding(
+        Optional.ofNullable(properties.get(Constants.MESSAGES_OUTSTANDING_CONFIG_KEY))
+            .map(Long::parseLong)
+            .orElse(Constants.DEFAULT_MESSAGES_OUTSTANDING));
+    flowControl.setBytesOutstanding(
+        Optional.ofNullable(properties.get(Constants.BYTES_OUTSTANDING_CONFIG_KEY))
+            .map(Long::parseLong)
+            .orElse(Constants.DEFAULT_BYTES_OUTSTANDING));
     builder.setFlowControlSettings(flowControl.build());
     return builder.build();
   }
@@ -223,6 +233,7 @@ public abstract class PslReadDataSourceOptions implements Serializable {
   }
 
   PerTopicHeadOffsetReader newHeadOffsetReader() {
-    return new LimitingHeadOffsetReader(newTopicStatsClient(), getTopicPath(), newPartitionCountReader(), Ticker.systemTicker());
+    return new LimitingHeadOffsetReader(
+        newTopicStatsClient(), getTopicPath(), newPartitionCountReader(), Ticker.systemTicker());
   }
 }

@@ -23,8 +23,7 @@ public class PslContinuousInputPartition implements InputPartition {
   final PslReadDataSourceOptions options;
 
   public PslContinuousInputPartition(
-      SparkPartitionOffset startOffset,
-      PslReadDataSourceOptions options) {
+      SparkPartitionOffset startOffset, PslReadDataSourceOptions options) {
     this.startOffset = startOffset;
     this.options = options;
   }

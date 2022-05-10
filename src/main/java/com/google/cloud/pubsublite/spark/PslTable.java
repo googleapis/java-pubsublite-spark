@@ -36,7 +36,9 @@ public class PslTable implements SupportsRead, SupportsWrite {
   @Override
   public WriteBuilder newWriteBuilder(LogicalWriteInfo logicalWriteInfo) {
     PslSparkUtils.verifyWriteInputSchema(logicalWriteInfo.schema());
-    return new PslWrite(logicalWriteInfo.schema(), PslWriteDataSourceOptions.fromProperties(logicalWriteInfo.options()));
+    return new PslWrite(
+        logicalWriteInfo.schema(),
+        PslWriteDataSourceOptions.fromProperties(logicalWriteInfo.options()));
   }
 
   @Override
@@ -51,6 +53,10 @@ public class PslTable implements SupportsRead, SupportsWrite {
 
   @Override
   public Set<TableCapability> capabilities() {
-    return ImmutableSet.of(TableCapability.BATCH_WRITE, TableCapability.STREAMING_WRITE, TableCapability.MICRO_BATCH_READ, TableCapability.CONTINUOUS_READ);
+    return ImmutableSet.of(
+        TableCapability.BATCH_WRITE,
+        TableCapability.STREAMING_WRITE,
+        TableCapability.MICRO_BATCH_READ,
+        TableCapability.CONTINUOUS_READ);
   }
 }

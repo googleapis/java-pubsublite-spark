@@ -70,9 +70,13 @@ public abstract class PslWriteDataSourceOptions implements Serializable {
 
   public static PslWriteDataSourceOptions fromProperties(Map<String, String> properties) {
     Builder builder = builder();
-    String pathVal = checkNotNull(properties.get(Constants.TOPIC_CONFIG_KEY), Constants.TOPIC_CONFIG_KEY + " is required.");
+    String pathVal =
+        checkNotNull(
+            properties.get(Constants.TOPIC_CONFIG_KEY),
+            Constants.TOPIC_CONFIG_KEY + " is required.");
     builder.setTopicPath(TopicPath.parse(pathVal));
-    Optional.ofNullable(properties.get(Constants.CREDENTIALS_KEY_CONFIG_KEY)).ifPresent(builder::setCredentialsKey);
+    Optional.ofNullable(properties.get(Constants.CREDENTIALS_KEY_CONFIG_KEY))
+        .ifPresent(builder::setCredentialsKey);
     return builder.build();
   }
 

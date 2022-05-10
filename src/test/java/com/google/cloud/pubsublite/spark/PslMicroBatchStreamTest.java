@@ -19,21 +19,16 @@ package com.google.cloud.pubsublite.spark;
 import static com.google.cloud.pubsublite.spark.TestingUtils.createPslSourceOffset;
 import static com.google.cloud.pubsublite.spark.TestingUtils.createSparkSourceOffset;
 import static com.google.common.truth.Truth.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.times;
 
 import com.google.api.core.ApiFutures;
-import com.google.cloud.pubsublite.Offset;
 import com.google.cloud.pubsublite.Partition;
 import com.google.cloud.pubsublite.internal.CursorClient;
 import com.google.cloud.pubsublite.internal.testing.UnitTestExamples;
 import com.google.cloud.pubsublite.spark.internal.MultiPartitionCommitter;
 import com.google.cloud.pubsublite.spark.internal.PartitionCountReader;
-import com.google.cloud.pubsublite.spark.internal.PartitionSubscriberFactory;
 import com.google.cloud.pubsublite.spark.internal.PerTopicHeadOffsetReader;
 import com.google.common.collect.ImmutableMap;
-import java.util.Optional;
 import org.apache.spark.sql.connector.read.streaming.MicroBatchStream;
 import org.junit.Test;
 

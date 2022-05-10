@@ -38,13 +38,15 @@ public class PslMicroBatchPartitionReaderFactory implements PartitionReaderFacto
       subscriber =
           new BlockingPullSubscriberImpl(
               (consumer) ->
-                  options.getSubscriberFactory().newSubscriber(
-                      pslStartOffset.partition(), pslStartOffset.offset(), consumer),
+                  options
+                      .getSubscriberFactory()
+                      .newSubscriber(pslStartOffset.partition(), pslStartOffset.offset(), consumer),
               options.flowControlSettings());
     } catch (CheckedApiException e) {
       throw new IllegalStateException(
           "Unable to create PSL subscriber for " + partition.startOffset.partition(), e);
     }
-    return new PslMicroBatchInputPartitionReader(options.subscriptionPath(), partition.endOffset, subscriber);
+    return new PslMicroBatchInputPartitionReader(
+        options.subscriptionPath(), partition.endOffset, subscriber);
   }
 }

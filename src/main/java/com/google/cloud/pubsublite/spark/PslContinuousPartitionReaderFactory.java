@@ -31,14 +31,18 @@ public class PslContinuousPartitionReaderFactory implements ContinuousPartitionR
     checkArgument(inputPartition instanceof PslContinuousInputPartition);
     PslContinuousInputPartition partition = (PslContinuousInputPartition) inputPartition;
     PslReadDataSourceOptions options = partition.options;
-    PslPartitionOffset pslPartitionOffset = PslSparkUtils.toPslPartitionOffset(partition.startOffset);
+    PslPartitionOffset pslPartitionOffset =
+        PslSparkUtils.toPslPartitionOffset(partition.startOffset);
 
     BlockingPullSubscriberImpl subscriber;
     try {
       subscriber =
           new BlockingPullSubscriberImpl(
-              (consumer) -> options.getSubscriberFactory().newSubscriber(
-                      pslPartitionOffset.partition(), pslPartitionOffset.offset(), consumer),
+              (consumer) ->
+                  options
+                      .getSubscriberFactory()
+                      .newSubscriber(
+                          pslPartitionOffset.partition(), pslPartitionOffset.offset(), consumer),
               options.flowControlSettings());
     } catch (CheckedApiException e) {
       throw new IllegalStateException(

@@ -64,11 +64,12 @@ public class PslMicroBatchInputPartitionReader implements PartitionReader<Intern
         msg = subscriber.messageIfAvailable();
         break;
       } catch (TimeoutException e) {
-        log.atWarning().log("Unable to get any messages in last %s. Partition: %d; Current message offset: %s; End message offset: %d.",
-                SUBSCRIBER_PULL_TIMEOUT,
-                endOffset.partition().value(),
-                currentMsg == null ? "null" : currentMsg.offset().value(),
-                endOffset.offset());
+        log.atWarning().log(
+            "Unable to get any messages in last %s. Partition: %d; Current message offset: %s; End message offset: %d.",
+            SUBSCRIBER_PULL_TIMEOUT,
+            endOffset.partition().value(),
+            currentMsg == null ? "null" : currentMsg.offset().value(),
+            endOffset.offset());
       } catch (Throwable t) {
         throw new IllegalStateException("Failed to retrieve messages.", t);
       }

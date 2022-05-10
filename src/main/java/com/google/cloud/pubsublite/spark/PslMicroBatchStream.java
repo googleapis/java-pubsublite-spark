@@ -51,9 +51,13 @@ public class PslMicroBatchStream extends BaseDataStream implements MicroBatchStr
   }
 
   PslMicroBatchStream(PslReadDataSourceOptions options) {
-    this(options.newCursorClient(), options.newMultiPartitionCommitter(),
-        options.newHeadOffsetReader(), options.subscriptionPath(),
-        options.newPartitionCountReader(), options);
+    this(
+        options.newCursorClient(),
+        options.newMultiPartitionCommitter(),
+        options.newHeadOffsetReader(),
+        options.subscriptionPath(),
+        options.newPartitionCountReader(),
+        options);
   }
 
   @Override
@@ -74,11 +78,12 @@ public class PslMicroBatchStream extends BaseDataStream implements MicroBatchStr
     SparkSourceOffset endSourceOffset = (SparkSourceOffset) endOffset;
 
     List<InputPartition> list = new ArrayList<>();
-    for (SparkPartitionOffset endPartitionOffset : endSourceOffset.getPartitionOffsetMap()
-        .values()) {
+    for (SparkPartitionOffset endPartitionOffset :
+        endSourceOffset.getPartitionOffsetMap().values()) {
       Partition p = endPartitionOffset.partition();
       SparkPartitionOffset startPartitionOffset =
-          startSourceOffset.getPartitionOffsetMap()
+          startSourceOffset
+              .getPartitionOffsetMap()
               .getOrDefault(p, SparkPartitionOffset.create(p, -1L));
       if (startPartitionOffset.equals(endPartitionOffset)) {
         // There is no message to pull for this partition.

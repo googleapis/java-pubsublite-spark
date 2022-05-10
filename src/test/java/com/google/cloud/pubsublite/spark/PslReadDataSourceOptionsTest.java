@@ -27,9 +27,8 @@ public class PslReadDataSourceOptionsTest {
 
   @Test
   public void testInvalidSubPath() {
-    Map<String, String> options = ImmutableMap.of(Constants.SUBSCRIPTION_CONFIG_KEY, "invalid/path");
-    assertThrows(
-        ApiException.class,
-        () -> PslReadDataSourceOptions.fromProperties(options));
+    Map<String, String> options =
+        ImmutableMap.of(Constants.SUBSCRIPTION_CONFIG_KEY, "invalid/path");
+    assertThrows(ApiException.class, () -> PslReadDataSourceOptions.fromProperties(options));
   }
 }

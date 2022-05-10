@@ -28,8 +28,6 @@ public class PslWriteDataSourceOptionsTest {
   @Test
   public void testInvalidTopicPath() {
     Map<String, String> options = ImmutableMap.of(Constants.TOPIC_CONFIG_KEY, "invalid/path");
-    assertThrows(
-        ApiException.class,
-        () -> PslWriteDataSourceOptions.fromProperties(options));
+    assertThrows(ApiException.class, () -> PslWriteDataSourceOptions.fromProperties(options));
   }
 }
