@@ -16,13 +16,13 @@
 
 package com.google.cloud.pubsublite.spark.internal;
 
-import com.google.api.client.util.Base64;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.GoogleCredentials;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.Base64;
 import javax.annotation.Nullable;
 
 public class PslCredentialsProvider implements CredentialsProvider {
@@ -38,7 +38,7 @@ public class PslCredentialsProvider implements CredentialsProvider {
 
   private static Credentials createCredentialsFromKey(String key) {
     try {
-      return GoogleCredentials.fromStream(new ByteArrayInputStream(Base64.decodeBase64(key)))
+      return GoogleCredentials.fromStream(new ByteArrayInputStream(Base64.getDecoder().decode(key)))
           .createScoped("https://www.googleapis.com/auth/cloud-platform");
     } catch (IOException e) {
       throw new UncheckedIOException("Failed to create Credentials from key", e);

@@ -16,7 +16,6 @@
 
 package com.google.cloud.pubsublite.spark;
 
-
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.pubsublite.Offset;

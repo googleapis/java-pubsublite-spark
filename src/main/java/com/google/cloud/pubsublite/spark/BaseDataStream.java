@@ -24,12 +24,14 @@ import com.google.cloud.pubsublite.SubscriptionPath;
 import com.google.cloud.pubsublite.internal.CursorClient;
 import com.google.cloud.pubsublite.spark.internal.MultiPartitionCommitter;
 import com.google.cloud.pubsublite.spark.internal.PartitionCountReader;
+import com.google.common.flogger.GoogleLogger;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import org.apache.spark.sql.connector.read.streaming.SparkDataStream;
 
 public class BaseDataStream implements SparkDataStream {
+  private static final GoogleLogger log = GoogleLogger.forEnclosingClass();
   private final CursorClient cursorClient;
   private final MultiPartitionCommitter committer;
   private final PartitionCountReader countReader;
@@ -80,8 +82,11 @@ public class BaseDataStream implements SparkDataStream {
 
   @Override
   public void stop() {
-    committer.close();
-    cursorClient.close();
-    countReader.close();
+    try (AutoCloseable a = committer;
+        AutoCloseable b = cursorClient;
+        AutoCloseable c = countReader) {
+    } catch (Exception e) {
+      log.atWarning().withCause(e).log("Unable to close LimitingHeadOffsetReader.");
+    }
   }
 }

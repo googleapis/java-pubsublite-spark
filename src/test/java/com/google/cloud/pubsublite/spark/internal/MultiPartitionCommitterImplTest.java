@@ -63,6 +63,6 @@ public class MultiPartitionCommitterImplTest {
   @Test
   public void testClose() {
     committer.close();
-    verify(committer).close();
+    verify(client).close();
   }
 }

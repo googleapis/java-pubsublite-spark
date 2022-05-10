@@ -1,3 +1,19 @@
+/*
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.google.cloud.pubsublite.spark;
 
 import static com.google.cloud.pubsublite.internal.testing.UnitTestExamples.example;
@@ -40,7 +56,7 @@ public class BaseDataStreamTest {
     when(countReader.getPartitionCount()).thenReturn(2);
     when(cursorClient.listPartitionCursors(example(SubscriptionPath.class)))
         .thenReturn(ApiFutures.immediateFailedFuture(UNCHECKED));
-    assertThrows(ApiException.class, stream::initialOffset);
+    assertThrows(IllegalStateException.class, stream::initialOffset);
   }
 
   @Test
@@ -50,17 +66,11 @@ public class BaseDataStreamTest {
         .thenReturn(
             ApiFutures.immediateFuture(
                 ImmutableMap.of(Partition.of(0), Offset.of(10), Partition.of(2), Offset.of(30))));
-    SparkSourceOffset offset = stream.initialOffset();
+    PslSourceOffset offset = PslSparkUtils.toPslSourceOffset(stream.initialOffset());
     // Missing offset for partition 1 set to 0.
-    // Extra offset for partition 2 added even though it was not in the count.
-    assertThat(offset.getPartitionOffsetMap())
+    // Extra offset for partition 2 not added.
+    assertThat(offset.partitionOffsetMap())
         .containsExactlyEntriesIn(
-            ImmutableMap.of(
-                Partition.of(0),
-                Offset.of(10),
-                Partition.of(1),
-                Offset.of(0),
-                Partition.of(2),
-                Offset.of(30)));
+            ImmutableMap.of(Partition.of(0), Offset.of(10), Partition.of(1), Offset.of(0)));
   }
 }
