@@ -100,7 +100,7 @@ public abstract class SampleTestBase {
     projectId = ProjectId.of(env.get(PROJECT_ID));
     projectNumber = ProjectNumber.of(Long.parseLong(env.get(PROJECT_NUMBER)));
     sourceTopicId = TopicName.of(env.get(TOPIC_ID));
-    clusterName = env.get(CLUSTER_NAME) + "-" + runId.substring(0,16);
+    clusterName = env.get(CLUSTER_NAME) + "-" + runId.substring(0, 16);
     bucketName = env.get(BUCKET_NAME);
   }
 
