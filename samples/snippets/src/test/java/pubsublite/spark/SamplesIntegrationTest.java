@@ -23,7 +23,15 @@ import static pubsublite.spark.AdminUtils.deleteSubscriptionExample;
 import static pubsublite.spark.AdminUtils.deleteTopicExample;
 import static pubsublite.spark.AdminUtils.subscriberExample;
 
+import com.google.api.gax.longrunning.OperationFuture;
+import com.google.cloud.dataproc.v1.Cluster;
+import com.google.cloud.dataproc.v1.ClusterConfig;
+import com.google.cloud.dataproc.v1.ClusterControllerClient;
+import com.google.cloud.dataproc.v1.ClusterControllerSettings;
+import com.google.cloud.dataproc.v1.ClusterOperationMetadata;
+import com.google.cloud.dataproc.v1.InstanceGroupConfig;
 import com.google.cloud.dataproc.v1.Job;
+import com.google.cloud.dataproc.v1.SoftwareConfig;
 import com.google.cloud.dataproc.v1.SparkJob;
 import com.google.cloud.pubsublite.SubscriptionName;
 import com.google.cloud.pubsublite.SubscriptionPath;
@@ -38,8 +46,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -53,6 +63,8 @@ public class SamplesIntegrationTest extends SampleTestBase {
   private TopicPath destinationTopicPath;
   private SubscriptionName destinationSubscriptionName;
   private SubscriptionPath destinationSubscriptionPath;
+  private String myEndpoint = String.format("%s-dataproc.googleapis.com:443", cloudRegion);
+  private String imageVersion = "1.5-debian10";
   private Boolean initialized = false;
 
   @Before
@@ -75,6 +87,53 @@ public class SamplesIntegrationTest extends SampleTestBase {
     uploadGCS(storage, sampleJarNameInGCS, sampleJarLoc);
     uploadGCS(storage, connectorJarNameInGCS, connectorJarLoc);
     initialized = true;
+
+    // Create a Dataproc cluster
+    ClusterControllerSettings clusterControllerSettings =
+        ClusterControllerSettings.newBuilder().setEndpoint(myEndpoint).build();
+    try (ClusterControllerClient clusterControllerClient =
+        ClusterControllerClient.create(clusterControllerSettings)) {
+      // Configure the settings for our cluster.
+      InstanceGroupConfig masterConfig =
+          InstanceGroupConfig.newBuilder()
+              .setMachineTypeUri("n1-standard-2")
+              .setNumInstances(1)
+              .build();
+      InstanceGroupConfig workerConfig =
+          InstanceGroupConfig.newBuilder()
+              .setMachineTypeUri("n1-standard-2")
+              .setNumInstances(2)
+              .build();
+      SoftwareConfig softwareConfig =
+          SoftwareConfig.newBuilder().setImageVersion(imageVersion).build();
+      ClusterConfig clusterConfig =
+          ClusterConfig.newBuilder()
+              .setMasterConfig(masterConfig)
+              .setWorkerConfig(workerConfig)
+              .setSoftwareConfig(softwareConfig)
+              .build();
+      Cluster cluster =
+          Cluster.newBuilder().setClusterName(clusterName).setConfig(clusterConfig).build();
+
+      OperationFuture<Cluster, ClusterOperationMetadata> createClusterAsyncRequest =
+          clusterControllerClient.createClusterAsync(
+              projectId.toString(), cloudRegion.toString(), cluster);
+      Cluster response = createClusterAsyncRequest.get();
+      System.out.printf("Cluster created successfully: %s", response.getClusterName());
+    } catch (ExecutionException e) {
+      System.err.println(String.format("Error creating cluster: %s ", e.getMessage()));
+    }
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    // Delete the Dataproc cluster.
+    ClusterControllerSettings clusterControllerSettings =
+        ClusterControllerSettings.newBuilder().setEndpoint(myEndpoint).build();
+    ClusterControllerClient clusterControllerClient =
+        ClusterControllerClient.create(clusterControllerSettings);
+    clusterControllerClient.deleteClusterAsync(
+        projectId.toString(), cloudRegion.toString(), clusterName);
   }
 
   /** Note that source single word messages have been published to a permanent topic. */
