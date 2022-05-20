@@ -26,6 +26,7 @@ import com.google.cloud.dataproc.v1.ClusterConfig;
 import com.google.cloud.dataproc.v1.ClusterControllerClient;
 import com.google.cloud.dataproc.v1.ClusterControllerSettings;
 import com.google.cloud.dataproc.v1.ClusterOperationMetadata;
+import com.google.cloud.dataproc.v1.GceClusterConfig;
 import com.google.cloud.dataproc.v1.InstanceGroupConfig;
 import com.google.cloud.dataproc.v1.SoftwareConfig;
 import com.google.cloud.pubsub.v1.AckReplyConsumer;
@@ -310,11 +311,16 @@ public class AdminUtils {
               .build();
       SoftwareConfig softwareConfig =
           SoftwareConfig.newBuilder().setImageVersion(imageVersion).build();
+      GceClusterConfig gceClusterConfig =
+          GceClusterConfig.newBuilder()
+              .addServiceAccountScopes("https://www.googleapis.com/auth/cloud-platform")
+              .build();
       ClusterConfig clusterConfig =
           ClusterConfig.newBuilder()
               .setMasterConfig(masterConfig)
               .setWorkerConfig(workerConfig)
               .setSoftwareConfig(softwareConfig)
+              .setGceClusterConfig(gceClusterConfig)
               .build();
       // Create the cluster object with the desired cluster config.
       Cluster cluster =
