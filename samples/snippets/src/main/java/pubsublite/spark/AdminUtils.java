@@ -18,8 +18,16 @@ package pubsublite.spark;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
+import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.rpc.AlreadyExistsException;
 import com.google.api.gax.rpc.ApiException;
+import com.google.cloud.dataproc.v1.Cluster;
+import com.google.cloud.dataproc.v1.ClusterConfig;
+import com.google.cloud.dataproc.v1.ClusterControllerClient;
+import com.google.cloud.dataproc.v1.ClusterControllerSettings;
+import com.google.cloud.dataproc.v1.ClusterOperationMetadata;
+import com.google.cloud.dataproc.v1.InstanceGroupConfig;
+import com.google.cloud.dataproc.v1.SoftwareConfig;
 import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsublite.AdminClient;
@@ -43,6 +51,7 @@ import com.google.cloud.pubsublite.proto.Topic;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.util.Durations;
 import com.google.pubsub.v1.PubsubMessage;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
@@ -272,5 +281,65 @@ public class AdminUtils {
     }
 
     return result;
+  }
+
+  public static void createCluster(
+      String projectId, String region, String clusterName, String imageVersion)
+      throws IOException, InterruptedException {
+    String myEndpoint = String.format("%s-dataproc.googleapis.com:443", region);
+
+    // Configure the settings for the cluster controller client.
+    ClusterControllerSettings clusterControllerSettings =
+        ClusterControllerSettings.newBuilder().setEndpoint(myEndpoint).build();
+
+    // Create a cluster controller client with the configured settings. The client only needs to be
+    // created once and can be reused for multiple requests. Using a try-with-resources
+    // closes the client, but this can also be done manually with the .close() method.
+    try (ClusterControllerClient clusterControllerClient =
+        ClusterControllerClient.create(clusterControllerSettings)) {
+      // Configure the settings for our cluster.
+      InstanceGroupConfig masterConfig =
+          InstanceGroupConfig.newBuilder()
+              .setMachineTypeUri("n1-standard-2")
+              .setNumInstances(1)
+              .build();
+      InstanceGroupConfig workerConfig =
+          InstanceGroupConfig.newBuilder()
+              .setMachineTypeUri("n1-standard-2")
+              .setNumInstances(2)
+              .build();
+      SoftwareConfig softwareConfig =
+          SoftwareConfig.newBuilder().setImageVersion(imageVersion).build();
+      ClusterConfig clusterConfig =
+          ClusterConfig.newBuilder()
+              .setMasterConfig(masterConfig)
+              .setWorkerConfig(workerConfig)
+              .setSoftwareConfig(softwareConfig)
+              .build();
+      // Create the cluster object with the desired cluster config.
+      Cluster cluster =
+          Cluster.newBuilder().setClusterName(clusterName).setConfig(clusterConfig).build();
+
+      // Create the Cloud Dataproc cluster.
+      OperationFuture<Cluster, ClusterOperationMetadata> createClusterAsyncRequest =
+          clusterControllerClient.createClusterAsync(projectId, region, cluster);
+      Cluster response = createClusterAsyncRequest.get();
+
+      // Print out a success message.
+      System.out.printf("Cluster created successfully: %s", response.getClusterName());
+
+    } catch (ExecutionException e) {
+      System.err.println(String.format("Error executing createCluster: %s ", e.getMessage()));
+    }
+  }
+
+  public static void deleteCluster(String projectId, String region, String clusterName)
+      throws IOException {
+    String myEndpoint = String.format("%s-dataproc.googleapis.com:443", region);
+    ClusterControllerSettings clusterControllerSettings =
+        ClusterControllerSettings.newBuilder().setEndpoint(myEndpoint).build();
+    ClusterControllerClient clusterControllerClient =
+        ClusterControllerClient.create(clusterControllerSettings);
+    clusterControllerClient.deleteClusterAsync(projectId, region, clusterName);
   }
 }
