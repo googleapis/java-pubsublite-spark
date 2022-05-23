@@ -17,8 +17,10 @@
 package pubsublite.spark;
 
 import static com.google.common.truth.Truth.assertThat;
+import static pubsublite.spark.AdminUtils.createCluster;
 import static pubsublite.spark.AdminUtils.createSubscriptionExample;
 import static pubsublite.spark.AdminUtils.createTopicExample;
+import static pubsublite.spark.AdminUtils.deleteCluster;
 import static pubsublite.spark.AdminUtils.deleteSubscriptionExample;
 import static pubsublite.spark.AdminUtils.deleteTopicExample;
 import static pubsublite.spark.AdminUtils.subscriberExample;
@@ -40,6 +42,7 @@ import java.util.Queue;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -53,6 +56,7 @@ public class SamplesIntegrationTest extends SampleTestBase {
   private TopicPath destinationTopicPath;
   private SubscriptionName destinationSubscriptionName;
   private SubscriptionPath destinationSubscriptionPath;
+  private String imageVersion = "1.5-debian10";
   private Boolean initialized = false;
 
   @Before
@@ -75,6 +79,15 @@ public class SamplesIntegrationTest extends SampleTestBase {
     uploadGCS(storage, sampleJarNameInGCS, sampleJarLoc);
     uploadGCS(storage, connectorJarNameInGCS, connectorJarLoc);
     initialized = true;
+
+    // Create a Dataproc cluster
+    createCluster(projectId.toString(), cloudRegion.toString(), clusterName, imageVersion);
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    // Delete the Dataproc cluster.
+    deleteCluster(projectId.toString(), cloudRegion.toString(), clusterName);
   }
 
   /** Note that source single word messages have been published to a permanent topic. */
