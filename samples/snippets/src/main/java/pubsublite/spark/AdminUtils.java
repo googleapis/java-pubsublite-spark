@@ -28,6 +28,7 @@ import com.google.cloud.dataproc.v1.ClusterControllerSettings;
 import com.google.cloud.dataproc.v1.ClusterOperationMetadata;
 import com.google.cloud.dataproc.v1.GceClusterConfig;
 import com.google.cloud.dataproc.v1.InstanceGroupConfig;
+import com.google.cloud.dataproc.v1.LifecycleConfig;
 import com.google.cloud.dataproc.v1.SoftwareConfig;
 import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.cloud.pubsub.v1.MessageReceiver;
@@ -315,12 +316,16 @@ public class AdminUtils {
           GceClusterConfig.newBuilder()
               .addServiceAccountScopes("https://www.googleapis.com/auth/cloud-platform")
               .build();
+      // Delete the cluster after 2 hours without submitted jobs
+      LifecycleConfig lifecycleConfig =
+          LifecycleConfig.newBuilder().setIdleDeleteTtl(Durations.fromHours(2L)).build();
       ClusterConfig clusterConfig =
           ClusterConfig.newBuilder()
               .setMasterConfig(masterConfig)
               .setWorkerConfig(workerConfig)
               .setSoftwareConfig(softwareConfig)
               .setGceClusterConfig(gceClusterConfig)
+              .setLifecycleConfig(lifecycleConfig)
               .build();
       // Create the cluster object with the desired cluster config.
       Cluster cluster =
