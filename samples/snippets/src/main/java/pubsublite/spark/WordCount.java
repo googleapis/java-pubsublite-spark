@@ -84,7 +84,6 @@ public class WordCount {
             .format("pubsublite")
             .option("pubsublite.topic", destinationTopicPath)
             .option("checkpointLocation", String.format("/tmp/checkpoint-%s", appId))
-            .outputMode(OutputMode.Complete())
             .trigger(Trigger.ProcessingTime(1, TimeUnit.SECONDS))
             .start();
 
