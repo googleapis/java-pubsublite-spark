@@ -56,7 +56,7 @@ public class SamplesIntegrationTest extends SampleTestBase {
   private TopicPath destinationTopicPath;
   private SubscriptionName destinationSubscriptionName;
   private SubscriptionPath destinationSubscriptionPath;
-  private String imageVersion = "1.5-debian10";
+  private String imageVersion = "2.0-debian10";
   private Boolean initialized = false;
 
   @Before

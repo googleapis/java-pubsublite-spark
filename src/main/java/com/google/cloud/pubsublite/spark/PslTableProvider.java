@@ -16,6 +16,7 @@
 
 package com.google.cloud.pubsublite.spark;
 
+import com.google.auto.service.AutoService;
 import java.util.Map;
 import org.apache.spark.sql.connector.catalog.Table;
 import org.apache.spark.sql.connector.catalog.TableProvider;
@@ -24,15 +25,16 @@ import org.apache.spark.sql.sources.DataSourceRegister;
 import org.apache.spark.sql.types.StructType;
 import org.apache.spark.sql.util.CaseInsensitiveStringMap;
 
+@AutoService(DataSourceRegister.class)
 public class PslTableProvider implements TableProvider, DataSourceRegister {
   @Override
   public StructType inferSchema(CaseInsensitiveStringMap caseInsensitiveStringMap) {
-    return null;
+    return SparkStructs.DEFAULT_SCHEMA;
   }
 
   @Override
   public Table getTable(StructType structType, Transform[] transforms, Map<String, String> map) {
-    return null;
+    return new PslTable();
   }
 
   @Override
