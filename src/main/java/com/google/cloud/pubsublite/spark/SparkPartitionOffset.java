@@ -19,7 +19,7 @@ package com.google.cloud.pubsublite.spark;
 import com.google.auto.value.AutoValue;
 import com.google.cloud.pubsublite.Partition;
 import java.io.Serializable;
-import org.apache.spark.sql.sources.v2.reader.streaming.PartitionOffset;
+import org.apache.spark.sql.connector.read.streaming.PartitionOffset;
 
 @AutoValue
 abstract class SparkPartitionOffset implements PartitionOffset, Serializable {

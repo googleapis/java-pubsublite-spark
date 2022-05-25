@@ -30,12 +30,11 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import javax.annotation.concurrent.GuardedBy;
 import org.apache.spark.sql.catalyst.InternalRow;
-import org.apache.spark.sql.sources.v2.writer.DataWriter;
-import org.apache.spark.sql.sources.v2.writer.WriterCommitMessage;
+import org.apache.spark.sql.connector.write.DataWriter;
+import org.apache.spark.sql.connector.write.WriterCommitMessage;
 import org.apache.spark.sql.types.StructType;
 
 public class PslDataWriter implements DataWriter<InternalRow> {
-
   private static final GoogleLogger log = GoogleLogger.forEnclosingClass();
 
   private final long partitionId, taskId, epochId;
@@ -94,4 +93,7 @@ public class PslDataWriter implements DataWriter<InternalRow> {
         "One or more writes for partitionId:%d, taskId:%d, epochId:%d failed, aborted.",
         partitionId, taskId, epochId);
   }
+
+  @Override
+  public void close() throws IOException {}
 }

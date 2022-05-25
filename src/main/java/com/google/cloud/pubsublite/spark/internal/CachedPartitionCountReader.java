@@ -41,6 +41,7 @@ public class CachedPartitionCountReader implements PartitionCountReader {
     adminClient.close();
   }
 
+  @Override
   public int getPartitionCount() {
     return supplier.get();
   }

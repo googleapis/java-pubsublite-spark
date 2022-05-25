@@ -67,6 +67,16 @@
         "^com.fasterxml.jackson.core"
       ],
       "groupName": "jackson dependencies"
+    },
+    {
+      "packagePatterns": [
+        "^spark.version",
+        "^org.apache.spark",
+        "^scala.version",
+        "^org.scala-lang"
+      ],
+      "enabled": false,
+      "groupName": "spark and scala pinned dependencies"
     }
   ],
   "semanticCommits": true,

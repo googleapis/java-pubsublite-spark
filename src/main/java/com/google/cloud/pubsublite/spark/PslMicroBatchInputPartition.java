@@ -16,52 +16,20 @@
 
 package com.google.cloud.pubsublite.spark;
 
-import com.google.cloud.pubsublite.SubscriptionPath;
-import com.google.cloud.pubsublite.cloudpubsub.FlowControlSettings;
-import com.google.cloud.pubsublite.internal.BlockingPullSubscriber;
-import com.google.cloud.pubsublite.internal.BlockingPullSubscriberImpl;
-import com.google.cloud.pubsublite.internal.CheckedApiException;
-import com.google.cloud.pubsublite.spark.internal.PartitionSubscriberFactory;
-import org.apache.spark.sql.catalyst.InternalRow;
-import org.apache.spark.sql.sources.v2.reader.InputPartition;
-import org.apache.spark.sql.sources.v2.reader.InputPartitionReader;
+import org.apache.spark.sql.connector.read.InputPartition;
 
-public class PslMicroBatchInputPartition implements InputPartition<InternalRow> {
+public class PslMicroBatchInputPartition implements InputPartition {
 
-  private final PartitionSubscriberFactory subscriberFactory;
-  private final SparkPartitionOffset startOffset;
-  private final SparkPartitionOffset endOffset;
-  private final SubscriptionPath subscriptionPath;
-  private final FlowControlSettings flowControlSettings;
+  final SparkPartitionOffset startOffset;
+  final SparkPartitionOffset endOffset;
+  final PslReadDataSourceOptions options;
 
   public PslMicroBatchInputPartition(
-      SubscriptionPath subscriptionPath,
-      FlowControlSettings flowControlSettings,
       SparkPartitionOffset startOffset,
       SparkPartitionOffset endOffset,
-      PartitionSubscriberFactory subscriberFactory) {
+      PslReadDataSourceOptions options) {
     this.startOffset = startOffset;
     this.endOffset = endOffset;
-    this.subscriptionPath = subscriptionPath;
-    this.flowControlSettings = flowControlSettings;
-    this.subscriberFactory = subscriberFactory;
-  }
-
-  @Override
-  public InputPartitionReader<InternalRow> createPartitionReader() {
-    BlockingPullSubscriber subscriber;
-    try {
-      PslPartitionOffset pslStartOffset = PslSparkUtils.toPslPartitionOffset(startOffset);
-      subscriber =
-          new BlockingPullSubscriberImpl(
-              (consumer) ->
-                  subscriberFactory.newSubscriber(
-                      pslStartOffset.partition(), pslStartOffset.offset(), consumer),
-              flowControlSettings);
-    } catch (CheckedApiException e) {
-      throw new IllegalStateException(
-          "Unable to create PSL subscriber for " + endOffset.partition(), e);
-    }
-    return new PslMicroBatchInputPartitionReader(subscriptionPath, endOffset, subscriber);
+    this.options = options;
   }
 }

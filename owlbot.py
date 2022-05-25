@@ -22,4 +22,5 @@ java.common_templates(excludes=[
     '.kokoro/build.sh',
     '.kokoro/presubmit/samples.cfg',
     '.kokoro/nightly/samples.cfg',
+    'renovate.json',
 ])

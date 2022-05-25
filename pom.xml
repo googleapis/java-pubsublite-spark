@@ -3,10 +3,9 @@
   <parent>
     <groupId>com.google.cloud</groupId>
     <artifactId>google-cloud-pubsublite-parent</artifactId>
-    <version>1.4.8</version>
+    <version>1.5.5</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.google.cloud</groupId>
   <artifactId>pubsublite-spark-sql-streaming</artifactId>
   <version>0.3.5-SNAPSHOT</version><!-- {x-version-update:pubsublite-spark-sql-streaming:current} -->
   <packaging>jar</packaging>
@@ -17,11 +16,92 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <encoding>UTF-8</encoding>
-    <scala.version>2.11.12</scala.version>
-    <scala.version.short>2.11</scala.version.short>
-    <spark.version>2.4.8</spark.version>
+    <scala.version>2.12.15</scala.version>
+    <scala.version.short>2.12</scala.version.short>
+    <spark.version>3.1.2</spark.version>
+    <hadoop.version>3.2.2</hadoop.version>
   </properties>
+  <dependencyManagement>
+    <dependencies>
+      <!-- Fixes to RequireUpperBoundDeps from spark !-->
+      <dependency>
+        <groupId>org.osgi</groupId>
+        <artifactId>org.osgi.core</artifactId>
+        <version>6.0.0</version>
+      </dependency>
+      <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>javax.servlet-api</artifactId>
+        <version>4.0.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-client</artifactId>
+        <version>${hadoop.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-common</artifactId>
+        <version>${hadoop.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.curator</groupId>
+        <artifactId>curator-client</artifactId>
+        <version>2.13.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-compress</artifactId>
+        <version>1.19</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.yetus</groupId>
+        <artifactId>audience-annotations</artifactId>
+        <version>0.12.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-util</artifactId>
+        <version>9.4.43.v20210629</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-server</artifactId>
+        <version>9.4.43.v20210629</version>
+      </dependency>
+      <dependency>
+        <groupId>jakarta.xml.bind</groupId>
+        <artifactId>jakarta.xml.bind-api</artifactId>
+        <version>2.3.3</version>
+      </dependency>
+      <dependency>
+        <groupId>jakarta.activation</groupId>
+        <artifactId>jakarta.activation-api</artifactId>
+        <version>1.2.2</version>
+      </dependency>
+      <dependency>
+        <groupId>commons.io</groupId>
+        <artifactId>commons.io</artifactId>
+        <version>2.5</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-net</groupId>
+        <artifactId>commons-net</artifactId>
+        <version>3.6</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
   <dependencies>
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-library</artifactId>
+      <version>${scala.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.scala-lang.modules</groupId>
+      <artifactId>scala-java8-compat_${scala.version.short}</artifactId>
+      <version>1.0.2</version>
+    </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-sql_${scala.version.short}</artifactId>
@@ -43,12 +123,12 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-pubsublite</artifactId>
-      <version>1.6.0</version>
+      <version>${project.parent.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.api.grpc</groupId>
       <artifactId>proto-google-cloud-pubsublite-v1</artifactId>
-      <version>1.5.5</version>
+      <version>${project.parent.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
@@ -79,10 +159,6 @@
       <artifactId>google-auth-library-oauth2-http</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.google.http-client</groupId>
-      <artifactId>google-http-client</artifactId>
-    </dependency>
-    <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
     </dependency>
@@ -106,16 +182,6 @@
       <groupId>com.github.ben-manes.caffeine</groupId>
       <artifactId>caffeine</artifactId>
       <version>2.9.3</version>
-    </dependency>
-    <dependency>
-      <groupId>org.scala-lang</groupId>
-      <artifactId>scala-library</artifactId>
-      <version>${scala.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.scala-lang.modules</groupId>
-      <artifactId>scala-java8-compat_${scala.version.short}</artifactId>
-      <version>1.0.2</version>
     </dependency>
 
     <!--test dependencies-->
@@ -246,6 +312,9 @@
                     <ignoreClass>org.apache.spark.unused.*</ignoreClass>
                     <ignoreClass>org.apache.hadoop.yarn.*</ignoreClass>
                     <ignoreClass>javax.ws.rs.*</ignoreClass>
+                    <ignoreClass>javax.annotation.*</ignoreClass>
+                    <ignoreClass>javax.activation.*</ignoreClass>
+                    <ignoreClass>javax.xml.bind.*</ignoreClass>
                   </ignoreClasses>
                   <ignoreWhenIdentical>true</ignoreWhenIdentical>
                 </banDuplicateClasses>
