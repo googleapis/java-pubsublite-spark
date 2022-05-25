@@ -24,9 +24,18 @@ import org.apache.spark.sql.connector.write.WriteBuilder;
 import org.apache.spark.sql.connector.write.WriterCommitMessage;
 import org.apache.spark.sql.connector.write.streaming.StreamingDataWriterFactory;
 import org.apache.spark.sql.connector.write.streaming.StreamingWrite;
+import org.apache.spark.sql.internal.connector.SupportsStreamingUpdateAsAppend;
 import org.apache.spark.sql.types.StructType;
 
-public class PslWrite implements WriteBuilder, BatchWrite, StreamingWrite {
+/**
+ * Pub/Sub Lite class for writing.
+ *
+ * <p>Note that SupportsStreamingUpdateAsAppend is the same hack that <a
+ * href="https://github.com/apache/spark/commit/db89b0e1b8bb98db6672f2b89e42e8a14e06e745">kafka</a>
+ * uses to opt-in to writing aggregates without requiring windowing.
+ */
+public class PslWrite
+    implements WriteBuilder, SupportsStreamingUpdateAsAppend, BatchWrite, StreamingWrite {
   private static final GoogleLogger log = GoogleLogger.forEnclosingClass();
 
   private final StructType inputSchema;
