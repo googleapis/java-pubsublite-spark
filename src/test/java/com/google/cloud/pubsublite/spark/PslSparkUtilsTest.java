@@ -137,7 +137,7 @@ public class PslSparkUtilsTest {
                 ByteArray.concat(message.data().toByteArray()),
                 PslSparkUtils.convertAttributesToSparkMap(message.attributes()),
                 Timestamps.toMicros(message.eventTime().get()),
-                "abc".getBytes()));
+                "abc".getBytes(StandardCharsets.UTF_8)));
     InternalRow row = InternalRow.apply(asScalaBufferConverter(list).asScala());
 
     StructType structType =
@@ -163,7 +163,7 @@ public class PslSparkUtilsTest {
             new StructField[] {
               new StructField("event_timestamp", DataTypes.LongType, false, Metadata.empty())
             });
-    List<Object> list = Collections.singletonList(/*Timestamp=*/ 100000L);
+    List<Object> list = Collections.singletonList(100000L);
     InternalRow row = InternalRow.apply(asScalaBufferConverter(list).asScala());
 
     Message message = PslSparkUtils.toPubSubMessage(structType, row);

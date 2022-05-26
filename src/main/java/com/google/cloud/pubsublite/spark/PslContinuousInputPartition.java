@@ -16,65 +16,15 @@
 
 package com.google.cloud.pubsublite.spark;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import org.apache.spark.sql.connector.read.InputPartition;
 
-import com.google.cloud.pubsublite.SubscriptionPath;
-import com.google.cloud.pubsublite.cloudpubsub.FlowControlSettings;
-import com.google.cloud.pubsublite.internal.BlockingPullSubscriberImpl;
-import com.google.cloud.pubsublite.internal.CheckedApiException;
-import com.google.cloud.pubsublite.spark.internal.PartitionSubscriberFactory;
-import java.io.Serializable;
-import org.apache.spark.sql.catalyst.InternalRow;
-import org.apache.spark.sql.sources.v2.reader.ContinuousInputPartition;
-import org.apache.spark.sql.sources.v2.reader.InputPartitionReader;
-import org.apache.spark.sql.sources.v2.reader.streaming.PartitionOffset;
-
-public class PslContinuousInputPartition
-    implements ContinuousInputPartition<InternalRow>, Serializable {
-
-  private final PartitionSubscriberFactory subscriberFactory;
-  private final SparkPartitionOffset startOffset;
-  private final SubscriptionPath subscriptionPath;
-  private final FlowControlSettings flowControlSettings;
+public class PslContinuousInputPartition implements InputPartition {
+  final SparkPartitionOffset startOffset;
+  final PslReadDataSourceOptions options;
 
   public PslContinuousInputPartition(
-      PartitionSubscriberFactory subscriberFactory,
-      SparkPartitionOffset startOffset,
-      SubscriptionPath subscriptionPath,
-      FlowControlSettings flowControlSettings) {
-    this.subscriberFactory = subscriberFactory;
+      SparkPartitionOffset startOffset, PslReadDataSourceOptions options) {
     this.startOffset = startOffset;
-    this.subscriptionPath = subscriptionPath;
-    this.flowControlSettings = flowControlSettings;
-  }
-
-  @Override
-  public InputPartitionReader<InternalRow> createContinuousReader(PartitionOffset offset) {
-    checkArgument(
-        offset instanceof SparkPartitionOffset, "offset is not instance of SparkPartitionOffset");
-
-    SparkPartitionOffset sparkPartitionOffset = (SparkPartitionOffset) offset;
-    PslPartitionOffset pslPartitionOffset =
-        PslSparkUtils.toPslPartitionOffset(sparkPartitionOffset);
-
-    BlockingPullSubscriberImpl subscriber;
-    try {
-      subscriber =
-          new BlockingPullSubscriberImpl(
-              (consumer) ->
-                  subscriberFactory.newSubscriber(
-                      pslPartitionOffset.partition(), pslPartitionOffset.offset(), consumer),
-              flowControlSettings);
-    } catch (CheckedApiException e) {
-      throw new IllegalStateException(
-          "Unable to create PSL subscriber for " + startOffset.toString(), e);
-    }
-    return new PslContinuousInputPartitionReader(
-        subscriptionPath, sparkPartitionOffset, subscriber);
-  }
-
-  @Override
-  public InputPartitionReader<InternalRow> createPartitionReader() {
-    return createContinuousReader(startOffset);
+    this.options = options;
   }
 }

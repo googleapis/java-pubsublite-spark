@@ -17,7 +17,7 @@
 package com.google.cloud.pubsublite.spark;
 
 import com.google.auto.value.AutoValue;
-import org.apache.spark.sql.sources.v2.writer.WriterCommitMessage;
+import org.apache.spark.sql.connector.write.WriterCommitMessage;
 
 @AutoValue
 public abstract class PslWriterCommitMessage implements WriterCommitMessage {

@@ -70,7 +70,6 @@ public class WordCount {
         df.withColumn("word", splitCol.getItem(0))
             .withColumn("word_count", splitCol.getItem(1).cast(DataTypes.LongType));
     df = df.groupBy("word").sum("word_count");
-    df = df.orderBy(df.col("sum(word_count)").desc(), df.col("word").asc());
 
     // Add Pub/Sub Lite message data field
     df =
@@ -84,7 +83,7 @@ public class WordCount {
             .format("pubsublite")
             .option("pubsublite.topic", destinationTopicPath)
             .option("checkpointLocation", String.format("/tmp/checkpoint-%s", appId))
-            .outputMode(OutputMode.Complete())
+            .outputMode(OutputMode.Update())
             .trigger(Trigger.ProcessingTime(1, TimeUnit.SECONDS))
             .start();
 

@@ -17,20 +17,31 @@
 package com.google.cloud.pubsublite.spark;
 
 import com.google.common.flogger.GoogleLogger;
-import org.apache.spark.sql.catalyst.InternalRow;
-import org.apache.spark.sql.sources.v2.writer.DataWriterFactory;
-import org.apache.spark.sql.sources.v2.writer.WriterCommitMessage;
-import org.apache.spark.sql.sources.v2.writer.streaming.StreamWriter;
+import org.apache.spark.sql.connector.write.BatchWrite;
+import org.apache.spark.sql.connector.write.DataWriterFactory;
+import org.apache.spark.sql.connector.write.PhysicalWriteInfo;
+import org.apache.spark.sql.connector.write.WriteBuilder;
+import org.apache.spark.sql.connector.write.WriterCommitMessage;
+import org.apache.spark.sql.connector.write.streaming.StreamingDataWriterFactory;
+import org.apache.spark.sql.connector.write.streaming.StreamingWrite;
+import org.apache.spark.sql.internal.connector.SupportsStreamingUpdateAsAppend;
 import org.apache.spark.sql.types.StructType;
 
-public class PslStreamWriter implements StreamWriter {
-
+/**
+ * Pub/Sub Lite class for writing.
+ *
+ * <p>Note that SupportsStreamingUpdateAsAppend is the same hack that <a
+ * href="https://github.com/apache/spark/commit/db89b0e1b8bb98db6672f2b89e42e8a14e06e745">kafka</a>
+ * uses to opt-in to writing aggregates without requiring windowing.
+ */
+public class PslWrite
+    implements WriteBuilder, SupportsStreamingUpdateAsAppend, BatchWrite, StreamingWrite {
   private static final GoogleLogger log = GoogleLogger.forEnclosingClass();
 
   private final StructType inputSchema;
   private final PslWriteDataSourceOptions writeOptions;
 
-  public PslStreamWriter(StructType inputSchema, PslWriteDataSourceOptions writeOptions) {
+  public PslWrite(StructType inputSchema, PslWriteDataSourceOptions writeOptions) {
     this.inputSchema = inputSchema;
     this.writeOptions = writeOptions;
   }
@@ -41,10 +52,20 @@ public class PslStreamWriter implements StreamWriter {
   }
 
   @Override
+  public void commit(WriterCommitMessage[] messages) {
+    commit(-1, messages);
+  }
+
+  @Override
   public void abort(long epochId, WriterCommitMessage[] messages) {
     log.atWarning().log(
         "Epoch id: %d is aborted, %d messages might have been published.",
         epochId, countMessages(messages));
+  }
+
+  @Override
+  public void abort(WriterCommitMessage[] messages) {
+    abort(-1, messages);
   }
 
   private long countMessages(WriterCommitMessage[] messages) {
@@ -58,8 +79,27 @@ public class PslStreamWriter implements StreamWriter {
     return cnt;
   }
 
-  @Override
-  public DataWriterFactory<InternalRow> createWriterFactory() {
+  private PslDataWriterFactory newWriterFactory() {
     return new PslDataWriterFactory(inputSchema, writeOptions);
+  }
+
+  @Override
+  public DataWriterFactory createBatchWriterFactory(PhysicalWriteInfo info) {
+    return newWriterFactory();
+  }
+
+  @Override
+  public StreamingDataWriterFactory createStreamingWriterFactory(PhysicalWriteInfo info) {
+    return newWriterFactory();
+  }
+
+  @Override
+  public BatchWrite buildForBatch() {
+    return this;
+  }
+
+  @Override
+  public StreamingWrite buildForStreaming() {
+    return this;
   }
 }

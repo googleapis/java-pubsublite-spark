@@ -17,13 +17,15 @@
 package com.google.cloud.pubsublite.spark;
 
 import com.google.cloud.pubsublite.internal.testing.UnitTestExamples;
-import org.apache.spark.sql.sources.v2.writer.WriterCommitMessage;
+import org.apache.spark.sql.connector.write.PhysicalWriteInfo;
+import org.apache.spark.sql.connector.write.PhysicalWriteInfoImpl;
+import org.apache.spark.sql.connector.write.WriterCommitMessage;
 import org.junit.Test;
 
-public class PslStreamWriterTest {
+public class PslWriteTest {
 
-  private final PslStreamWriter writer =
-      new PslStreamWriter(
+  private final PslWrite writer =
+      new PslWrite(
           SparkStructs.DEFAULT_SCHEMA,
           PslWriteDataSourceOptions.builder()
               .setTopicPath(UnitTestExamples.exampleTopicPath())
@@ -45,6 +47,8 @@ public class PslStreamWriterTest {
 
   @Test
   public void testCreateFactory() {
-    writer.createWriterFactory();
+    PhysicalWriteInfo info = new PhysicalWriteInfoImpl(42);
+    writer.createBatchWriterFactory(info);
+    writer.createStreamingWriterFactory(info);
   }
 }

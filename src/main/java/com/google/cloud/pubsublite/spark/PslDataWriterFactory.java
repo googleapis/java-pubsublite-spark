@@ -20,11 +20,13 @@ import com.google.cloud.pubsublite.spark.internal.CachedPublishers;
 import com.google.cloud.pubsublite.spark.internal.PublisherFactory;
 import java.io.Serializable;
 import org.apache.spark.sql.catalyst.InternalRow;
-import org.apache.spark.sql.sources.v2.writer.DataWriter;
-import org.apache.spark.sql.sources.v2.writer.DataWriterFactory;
+import org.apache.spark.sql.connector.write.DataWriter;
+import org.apache.spark.sql.connector.write.DataWriterFactory;
+import org.apache.spark.sql.connector.write.streaming.StreamingDataWriterFactory;
 import org.apache.spark.sql.types.StructType;
 
-public class PslDataWriterFactory implements Serializable, DataWriterFactory<InternalRow> {
+public class PslDataWriterFactory
+    implements Serializable, DataWriterFactory, StreamingDataWriterFactory {
   private static final long serialVersionUID = -6904546364310978844L;
 
   private static final CachedPublishers CACHED_PUBLISHERS = new CachedPublishers();
@@ -38,7 +40,12 @@ public class PslDataWriterFactory implements Serializable, DataWriterFactory<Int
   }
 
   @Override
-  public DataWriter<InternalRow> createDataWriter(int partitionId, long taskId, long epochId) {
+  public DataWriter<InternalRow> createWriter(int partitionId, long taskId) {
+    return createWriter(partitionId, taskId, -1);
+  }
+
+  @Override
+  public DataWriter<InternalRow> createWriter(int partitionId, long taskId, long epochId) {
     PublisherFactory pf = () -> CACHED_PUBLISHERS.getOrCreate(writeOptions);
     return new PslDataWriter(partitionId, taskId, epochId, inputSchema, pf);
   }

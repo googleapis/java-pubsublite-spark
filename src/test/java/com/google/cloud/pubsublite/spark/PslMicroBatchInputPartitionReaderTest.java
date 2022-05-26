@@ -30,13 +30,13 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.util.Timestamps;
 import java.util.Optional;
 import org.apache.spark.sql.catalyst.InternalRow;
-import org.apache.spark.sql.sources.v2.reader.InputPartitionReader;
+import org.apache.spark.sql.connector.read.PartitionReader;
 import org.junit.Test;
 
 public class PslMicroBatchInputPartitionReaderTest {
 
   private final BlockingPullSubscriberImpl subscriber = mock(BlockingPullSubscriberImpl.class);
-  private InputPartitionReader<InternalRow> reader;
+  private PartitionReader<InternalRow> reader;
 
   private static SequencedMessage newMessage(long offset) {
     return SequencedMessage.of(

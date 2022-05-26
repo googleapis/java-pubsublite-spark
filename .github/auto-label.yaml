@@ -11,16 +11,5 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""This script is used to synthesize generated parts of this library."""
-
-import synthtool.languages.java as java
-
-java.common_templates(excludes=[
-    # TODO: allow when pubsublite-spark is available in libraries-bom
-    'samples/install-without-bom/*',
-    '.kokoro/build.sh',
-    '.kokoro/presubmit/samples.cfg',
-    '.kokoro/nightly/samples.cfg',
-    'renovate.json',
-])
+requestsize:
+  enabled: true

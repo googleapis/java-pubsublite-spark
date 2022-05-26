@@ -17,8 +17,10 @@
 package pubsublite.spark;
 
 import static com.google.common.truth.Truth.assertThat;
+import static pubsublite.spark.AdminUtils.createCluster;
 import static pubsublite.spark.AdminUtils.createSubscriptionExample;
 import static pubsublite.spark.AdminUtils.createTopicExample;
+import static pubsublite.spark.AdminUtils.deleteCluster;
 import static pubsublite.spark.AdminUtils.deleteSubscriptionExample;
 import static pubsublite.spark.AdminUtils.deleteTopicExample;
 import static pubsublite.spark.AdminUtils.subscriberExample;
@@ -40,6 +42,7 @@ import java.util.Queue;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -53,6 +56,7 @@ public class SamplesIntegrationTest extends SampleTestBase {
   private TopicPath destinationTopicPath;
   private SubscriptionName destinationSubscriptionName;
   private SubscriptionPath destinationSubscriptionPath;
+  private String imageVersion = "2.0-debian10";
   private Boolean initialized = false;
 
   @Before
@@ -75,6 +79,15 @@ public class SamplesIntegrationTest extends SampleTestBase {
     uploadGCS(storage, sampleJarNameInGCS, sampleJarLoc);
     uploadGCS(storage, connectorJarNameInGCS, connectorJarLoc);
     initialized = true;
+
+    // Create a Dataproc cluster
+    createCluster(projectId.toString(), cloudRegion.toString(), clusterName, imageVersion);
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    // Delete the Dataproc cluster.
+    deleteCluster(projectId.toString(), cloudRegion.toString(), clusterName);
   }
 
   /** Note that source single word messages have been published to a permanent topic. */
@@ -262,45 +275,45 @@ public class SamplesIntegrationTest extends SampleTestBase {
             + "+--------------------+---------+------+---+--------------------+"
             + "--------------------+---------------+----------+\n"
             + "|projects/java-doc...|        0|     0| []|          [61 5F 31]|"
-            + "2021-02-01 23:26:...|           null|        []|\n"
+            + "2021-02-01 23:26:...|           null|        {}|\n"
             + "|projects/java-doc...|        0|     1| []|[77 6F 6E 64 65 7...|"
-            + "2021-02-01 23:26:...|           null|        []|\n"
+            + "2021-02-01 23:26:...|           null|        {}|\n"
             + "|projects/java-doc...|        0|     2| []|[73 65 72 65 6E 6...|"
-            + "2021-02-01 23:26:...|           null|        []|\n"
+            + "2021-02-01 23:26:...|           null|        {}|\n"
             + "|projects/java-doc...|        0|     3| []|    [68 61 73 5F 31]|"
-            + "2021-02-01 23:26:...|           null|        []|\n"
+            + "2021-02-01 23:26:...|           null|        {}|\n"
             + "|projects/java-doc...|        0|     4| []|[74 61 6B 65 6E 5...|"
-            + "2021-02-01 23:26:...|           null|        []|\n"
+            + "2021-02-01 23:26:...|           null|        {}|\n"
             + "|projects/java-doc...|        0|     5| []|[70 6F 73 73 65 7...|"
-            + "2021-02-01 23:26:...|           null|        []|\n"
+            + "2021-02-01 23:26:...|           null|        {}|\n"
             + "|projects/java-doc...|        0|     6| []|       [6F 66 5F 31]|"
-            + "2021-02-01 23:26:...|           null|        []|\n"
+            + "2021-02-01 23:26:...|           null|        {}|\n"
             + "|projects/java-doc...|        0|     7| []|       [6D 79 5F 31]|"
-            + "2021-02-01 23:26:...|           null|        []|\n"
+            + "2021-02-01 23:26:...|           null|        {}|\n"
             + "|projects/java-doc...|        0|     8| []|[65 6E 74 69 72 6...|"
-            + "2021-02-01 23:26:...|           null|        []|\n"
+            + "2021-02-01 23:26:...|           null|        {}|\n"
             + "|projects/java-doc...|        0|     9| []| [73 6F 75 6C 5F 31]|"
-            + "2021-02-01 23:26:...|           null|        []|\n"
+            + "2021-02-01 23:26:...|           null|        {}|\n"
             + "|projects/java-doc...|        0|    10| []| [6C 69 6B 65 5F 31]|"
-            + "2021-02-01 23:26:...|           null|        []|\n"
+            + "2021-02-01 23:26:...|           null|        {}|\n"
             + "|projects/java-doc...|        0|    11| []|[74 68 65 73 65 5...|"
-            + "2021-02-01 23:26:...|           null|        []|\n"
+            + "2021-02-01 23:26:...|           null|        {}|\n"
             + "|projects/java-doc...|        0|    12| []|[73 77 65 65 74 5...|"
-            + "2021-02-01 23:26:...|           null|        []|\n"
+            + "2021-02-01 23:26:...|           null|        {}|\n"
             + "|projects/java-doc...|        0|    13| []|[6D 6F 72 6E 69 6...|"
-            + "2021-02-01 23:26:...|           null|        []|\n"
+            + "2021-02-01 23:26:...|           null|        {}|\n"
             + "|projects/java-doc...|        0|    14| []|       [6F 66 5F 31]|"
-            + "2021-02-01 23:26:...|           null|        []|\n"
+            + "2021-02-01 23:26:...|           null|        {}|\n"
             + "|projects/java-doc...|        0|    15| []|[73 70 72 69 6E 6...|"
-            + "2021-02-01 23:26:...|           null|        []|\n"
+            + "2021-02-01 23:26:...|           null|        {}|\n"
             + "|projects/java-doc...|        0|    16| []|[77 68 69 63 68 5...|"
-            + "2021-02-01 23:26:...|           null|        []|\n"
+            + "2021-02-01 23:26:...|           null|        {}|\n"
             + "|projects/java-doc...|        0|    17| []|          [69 5F 31]|"
-            + "2021-02-01 23:26:...|           null|        []|\n"
+            + "2021-02-01 23:26:...|           null|        {}|\n"
             + "|projects/java-doc...|        0|    18| []|[65 6E 6A 6F 79 5...|"
-            + "2021-02-01 23:26:...|           null|        []|\n"
+            + "2021-02-01 23:26:...|           null|        {}|\n"
             + "|projects/java-doc...|        0|    19| []| [77 69 74 68 5F 31]|"
-            + "2021-02-01 23:26:...|           null|        []|\n"
+            + "2021-02-01 23:26:...|           null|        {}|\n"
             + "+--------------------+---------+------+---+--------------------+"
             + "--------------------+"
             + "---------------+----------+\n"

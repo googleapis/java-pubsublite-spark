@@ -24,7 +24,6 @@ import com.google.cloud.pubsublite.Offset;
 import com.google.cloud.pubsublite.Partition;
 import com.google.cloud.pubsublite.SequencedMessage;
 import com.google.cloud.pubsublite.SubscriptionPath;
-import com.google.cloud.pubsublite.internal.CursorClient;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
@@ -37,7 +36,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -223,25 +221,6 @@ public class PslSparkUtils {
         .partition(sparkPartitionOffset.partition())
         .offset(Offset.of(sparkPartitionOffset.offset() + 1))
         .build();
-  }
-
-  public static SparkSourceOffset getSparkStartOffset(
-      CursorClient cursorClient, SubscriptionPath subscriptionPath, long topicPartitionCount) {
-    try {
-      Map<Partition, com.google.cloud.pubsublite.Offset> pslSourceOffsetMap = new HashMap<>();
-      for (int i = 0; i < topicPartitionCount; i++) {
-        pslSourceOffsetMap.put(Partition.of(i), com.google.cloud.pubsublite.Offset.of(0));
-      }
-      cursorClient
-          .listPartitionCursors(subscriptionPath)
-          .get()
-          .forEach(pslSourceOffsetMap::replace);
-      return PslSparkUtils.toSparkSourceOffset(
-          PslSourceOffset.builder().partitionOffsetMap(pslSourceOffsetMap).build());
-    } catch (InterruptedException | ExecutionException e) {
-      throw new IllegalStateException(
-          "Failed to get information from PSL and construct startOffset", e);
-    }
   }
 
   // EndOffset = min(startOffset + batchOffsetRange, headOffset)

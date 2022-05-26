@@ -28,7 +28,7 @@
       <dependency>
         <groupId>com.google.cloud</groupId>
         <artifactId>libraries-bom</artifactId>
-        <version>24.2.0</version>
+        <version>25.3.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -44,7 +44,12 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-pubsublite</artifactId>
-      <version>1.4.8</version>
+      <version>1.6.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-dataproc</artifactId>
+      <version>3.1.1</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -61,17 +66,12 @@
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-invoker</artifactId>
-      <version>3.1.0</version>
+      <version>3.2.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-storage</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.google.cloud</groupId>
-      <artifactId>google-cloud-dataproc</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
