@@ -22,20 +22,20 @@ If you are using Maven, add this to your pom.xml file:
 <dependency>
   <groupId>com.google.cloud</groupId>
   <artifactId>pubsublite-spark-sql-streaming</artifactId>
-  <version>0.3.4</version>
+  <version>0.4.0</version>
 </dependency>
 ```
 
 If you are using Gradle without BOM, add this to your dependencies
 
 ```Groovy
-implementation 'com.google.cloud:pubsublite-spark-sql-streaming:0.3.4'
+implementation 'com.google.cloud:pubsublite-spark-sql-streaming:0.4.0'
 ```
 
 If you are using SBT, add this to your dependencies
 
 ```Scala
-libraryDependencies += "com.google.cloud" % "pubsublite-spark-sql-streaming" % "0.3.4"
+libraryDependencies += "com.google.cloud" % "pubsublite-spark-sql-streaming" % "0.4.0"
 ```
 
 ## Authentication
@@ -95,7 +95,7 @@ and manual Spark installations.
   The latest version of the connector is publicly available in the following link:
   | Connector version | Link |
   | --- | --- |
-  | 0.3.4 | `gs://spark-lib/pubsublite/pubsublite-spark-sql-streaming-0.3.4-with-dependencies.jar`([HTTP link](https://storage.googleapis.com/spark-lib/pubsublite/pubsublite-spark-sql-streaming-0.3.4-with-dependencies.jar)) |
+  | 0.4.0 | `gs://spark-lib/pubsublite/pubsublite-spark-sql-streaming-LATEST-with-dependencies.jar`([HTTP link](https://storage.googleapis.com/spark-lib/pubsublite/pubsublite-spark-sql-streaming-LATEST-with-dependencies.jar)) |
 
   The connector is also available from the [Maven Central repository](https://search.maven.org/artifact/com.google.cloud/pubsublite-spark-sql-streaming). You can download and pass it in the `--jars` option when using the `spark-submit` command.
 
@@ -103,7 +103,7 @@ and manual Spark installations.
 | Connector version | Spark version |
 | --- | --- |
 | ≤0.3.4 | 2.4.X |
-| current | 3.X.X |
+| Current | 3.X.X |
 
 ## Usage
 
