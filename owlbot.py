@@ -22,5 +22,7 @@ java.common_templates(excludes=[
     '.kokoro/build.sh',
     '.kokoro/presubmit/samples.cfg',
     '.kokoro/nightly/samples.cfg',
+    # TODO: add Java 17 back when Spark fully supports it
+    '.github/workflows/ci.yaml',
     'renovate.json',
 ])
