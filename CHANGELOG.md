@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.4.1](https://github.com/googleapis/java-pubsublite-spark/compare/v0.4.0...v0.4.1) (2022-06-30)
+
+
+### Documentation
+
+* update download link and compatibility table ([#421](https://github.com/googleapis/java-pubsublite-spark/issues/421)) ([35cce40](https://github.com/googleapis/java-pubsublite-spark/commit/35cce4066c6858b345026f9838fe53ee5154a291))
+
+
+### Dependencies
+
+* update dependency com.google.cloud:google-cloud-dataproc to v3.1.2 ([#434](https://github.com/googleapis/java-pubsublite-spark/issues/434)) ([15b32c7](https://github.com/googleapis/java-pubsublite-spark/commit/15b32c76c05436dcf293bc9c95cde61168c7f374))
+* update dependency org.eclipse.jetty:jetty-server to v11.0.10 ([#430](https://github.com/googleapis/java-pubsublite-spark/issues/430)) ([cdbc083](https://github.com/googleapis/java-pubsublite-spark/commit/cdbc0833981667fc6ef92e98a2a7b53616b5f207))
+* update dependency org.eclipse.jetty:jetty-server to v11.0.11 ([#432](https://github.com/googleapis/java-pubsublite-spark/issues/432)) ([74a09f2](https://github.com/googleapis/java-pubsublite-spark/commit/74a09f25c32248ce8645e70e8fa20f000b57c57f))
+* update dependency org.eclipse.jetty:jetty-util to v11.0.10 ([#431](https://github.com/googleapis/java-pubsublite-spark/issues/431)) ([066d8f2](https://github.com/googleapis/java-pubsublite-spark/commit/066d8f2e1956376e421117542bc5bcc326b1e1df))
+* update dependency org.eclipse.jetty:jetty-util to v11.0.11 ([#433](https://github.com/googleapis/java-pubsublite-spark/issues/433)) ([0a1133f](https://github.com/googleapis/java-pubsublite-spark/commit/0a1133f58b0de47bf37fdf60bef7b83f8939a458))
+
 ## [0.4.0](https://github.com/googleapis/java-pubsublite-spark/compare/v0.3.4...v0.4.0) (2022-05-27)
 
 
