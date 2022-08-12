@@ -3,7 +3,7 @@
   <parent>
     <groupId>com.google.cloud</groupId>
     <artifactId>google-cloud-pubsublite-parent</artifactId>
-    <version>1.6.1</version>
+    <version>1.6.3</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>pubsublite-spark-sql-streaming</artifactId>
