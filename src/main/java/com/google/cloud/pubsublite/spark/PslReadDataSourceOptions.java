@@ -63,6 +63,8 @@ import javax.annotation.Nullable;
 public abstract class PslReadDataSourceOptions implements Serializable {
   private static final long serialVersionUID = 2680059304693561607L;
 
+  private SubscriberServiceClient subscriberServiceClient = null;
+
   @Nullable
   public abstract String credentialsKey();
 
@@ -126,37 +128,42 @@ public abstract class PslReadDataSourceOptions implements Serializable {
   }
 
   @SuppressWarnings("CheckReturnValue")
-  PartitionSubscriberFactory getSubscriberFactory() {
+  public PartitionSubscriberFactory getSubscriberFactory() {
+    SubscriberServiceClient serviceClient = getSubscriberServiceClient();
     return (partition, offset, consumer) -> {
+      return SubscriberBuilder.newBuilder()
+          .setSubscriptionPath(this.subscriptionPath())
+          .setPartition(partition)
+          .setMessageConsumer(consumer)
+          .setStreamFactory(
+              responseStream -> {
+                ApiCallContext context =
+                    getCallContext(
+                        PubsubContext.of(Constants.FRAMEWORK),
+                        RoutingMetadata.of(subscriptionPath(), partition));
+                return serviceClient.subscribeCallable().splitCall(responseStream, context);
+              })
+          .setInitialLocation(
+              SeekRequest.newBuilder()
+                  .setCursor(Cursor.newBuilder().setOffset(offset.value()))
+                  .build())
+          .build();
+    };
+  }
+
+  private synchronized SubscriberServiceClient getSubscriberServiceClient() {
+    if (subscriberServiceClient != null) return subscriberServiceClient;
+    try {
       SubscriberServiceSettings.Builder settingsBuilder =
           SubscriberServiceSettings.newBuilder()
               .setCredentialsProvider(new PslCredentialsProvider(credentialsKey()));
-      try {
-        SubscriberServiceClient serviceClient =
-            SubscriberServiceClient.create(
-                addDefaultSettings(
-                    this.subscriptionPath().location().extractRegion(), settingsBuilder));
-        return SubscriberBuilder.newBuilder()
-            .setSubscriptionPath(this.subscriptionPath())
-            .setPartition(partition)
-            .setMessageConsumer(consumer)
-            .setStreamFactory(
-                responseStream -> {
-                  ApiCallContext context =
-                      getCallContext(
-                          PubsubContext.of(Constants.FRAMEWORK),
-                          RoutingMetadata.of(subscriptionPath(), partition));
-                  return serviceClient.subscribeCallable().splitCall(responseStream, context);
-                })
-            .setInitialLocation(
-                SeekRequest.newBuilder()
-                    .setCursor(Cursor.newBuilder().setOffset(offset.value()))
-                    .build())
-            .build();
-      } catch (IOException e) {
-        throw new IllegalStateException("Failed to create subscriber service.", e);
-      }
-    };
+      subscriberServiceClient =
+          SubscriberServiceClient.create(
+              addDefaultSettings(subscriptionPath().location().extractRegion(), settingsBuilder));
+      return subscriberServiceClient;
+    } catch (IOException e) {
+      throw new IllegalStateException("Unable to create SubscriberServiceClient.");
+    }
   }
 
   // TODO(b/jiangmichael): Make XXXClientSettings accept creds so we could simplify below methods.

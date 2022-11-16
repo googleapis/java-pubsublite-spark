@@ -36,7 +36,6 @@ public class PslMicroBatchStreamTest {
   private static final PslReadDataSourceOptions OPTIONS =
       PslReadDataSourceOptions.builder()
           .setSubscriptionPath(UnitTestExamples.exampleSubscriptionPath())
-          .setMaxMessagesPerBatch(500)
           .build();
   private final CursorClient cursorClient = mock(CursorClient.class);
   private final MultiPartitionCommitter committer = mock(MultiPartitionCommitter.class);
@@ -53,26 +52,15 @@ public class PslMicroBatchStreamTest {
 
   @Test
   public void testLatestOffset() {
-    // Called when retreiving the initial offset on the first 'latestOffset' call
-    when(partitionCountReader.getPartitionCount()).thenReturn(2);
     when(cursorClient.listPartitionCursors(UnitTestExamples.exampleSubscriptionPath()))
         .thenReturn(ApiFutures.immediateFuture(ImmutableMap.of()));
-    // First return head offsets that will not exceed maxMessagesPerBatch, then exceed the limit
-    when(headOffsetReader.getHeadOffset())
-        .thenReturn(createPslSourceOffset(301L, 200L))
-        .thenReturn(createPslSourceOffset(1000L, 250L));
+    when(headOffsetReader.getHeadOffset()).thenReturn(createPslSourceOffset(301L, 200L));
     assertThat(((SparkSourceOffset) stream.latestOffset()).getPartitionOffsetMap())
         .containsExactly(
             Partition.of(0L),
             SparkPartitionOffset.create(Partition.of(0L), 300L),
             Partition.of(1L),
             SparkPartitionOffset.create(Partition.of(1L), 199L));
-    assertThat(((SparkSourceOffset) stream.latestOffset()).getPartitionOffsetMap())
-        .containsExactly(
-            Partition.of(0L),
-            SparkPartitionOffset.create(Partition.of(0L), 800L),
-            Partition.of(1L),
-            SparkPartitionOffset.create(Partition.of(1L), 249L));
   }
 
   @Test
