@@ -24,7 +24,6 @@ import com.google.cloud.pubsublite.spark.PslWriteDataSourceOptions;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import javax.annotation.concurrent.GuardedBy;
 
 /** Cached {@link Publisher}s to reuse publisher of same settings in the same task. */
