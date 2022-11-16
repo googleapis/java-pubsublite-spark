@@ -69,11 +69,12 @@ public class PslMicroBatchStream extends BaseDataStream implements MicroBatchStr
     SparkSourceOffset newStartingOffset = (lastEndOffset == null) ? initialOffset() : lastEndOffset;
     SparkSourceOffset headOffset =
         PslSparkUtils.toSparkSourceOffset(headOffsetReader.getHeadOffset());
-    lastEndOffset = PslSparkUtils.getSparkEndOffset(
-        headOffset,
-        newStartingOffset,
-        options.maxMessagesPerBatch(),
-        headOffset.getPartitionOffsetMap().size());
+    lastEndOffset =
+        PslSparkUtils.getSparkEndOffset(
+            headOffset,
+            newStartingOffset,
+            options.maxMessagesPerBatch(),
+            headOffset.getPartitionOffsetMap().size());
     return lastEndOffset;
   }
 
