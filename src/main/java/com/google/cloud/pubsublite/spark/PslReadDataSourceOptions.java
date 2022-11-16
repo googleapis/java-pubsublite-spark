@@ -128,7 +128,7 @@ public abstract class PslReadDataSourceOptions implements Serializable {
   }
 
   @SuppressWarnings("CheckReturnValue")
-  public PartitionSubscriberFactory getSubscriberFactory() {
+  PartitionSubscriberFactory getSubscriberFactory() {
     SubscriberServiceClient serviceClient = getSubscriberServiceClient();
     return (partition, offset, consumer) -> {
       return SubscriberBuilder.newBuilder()
