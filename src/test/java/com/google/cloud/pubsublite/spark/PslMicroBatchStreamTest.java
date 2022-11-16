@@ -23,7 +23,6 @@ import static org.mockito.Mockito.*;
 
 import com.google.api.core.ApiFutures;
 import com.google.cloud.pubsublite.Partition;
-import com.google.cloud.pubsublite.Offset;
 import com.google.cloud.pubsublite.internal.CursorClient;
 import com.google.cloud.pubsublite.internal.testing.UnitTestExamples;
 import com.google.cloud.pubsublite.spark.internal.MultiPartitionCommitter;
