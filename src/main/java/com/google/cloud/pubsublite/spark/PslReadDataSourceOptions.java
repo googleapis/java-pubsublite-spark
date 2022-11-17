@@ -63,7 +63,7 @@ import javax.annotation.Nullable;
 public abstract class PslReadDataSourceOptions implements Serializable {
   private static final long serialVersionUID = 2680059304693561607L;
 
-  private SubscriberServiceClient subscriberServiceClient = null;
+  private transient SubscriberServiceClient subscriberServiceClient = null;
 
   @Nullable
   public abstract String credentialsKey();
