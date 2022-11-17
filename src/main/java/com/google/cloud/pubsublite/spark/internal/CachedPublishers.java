@@ -19,19 +19,17 @@ package com.google.cloud.pubsublite.spark.internal;
 import com.google.api.core.ApiService;
 import com.google.cloud.pubsublite.MessageMetadata;
 import com.google.cloud.pubsublite.internal.Publisher;
+import com.google.cloud.pubsublite.internal.wire.SystemExecutors;
 import com.google.cloud.pubsublite.spark.PslWriteDataSourceOptions;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import javax.annotation.concurrent.GuardedBy;
 
 /** Cached {@link Publisher}s to reuse publisher of same settings in the same task. */
 public class CachedPublishers {
 
-  // TODO(jiangmichaellll): Use com.google.cloud.pubsublite.internal.wire.SystemExecutors
-  // once new PSL client library is released.
-  private final Executor listenerExecutor = Executors.newSingleThreadExecutor();
+  private final Executor listenerExecutor = SystemExecutors.getFuturesExecutor();
 
   @GuardedBy("this")
   private final Map<PslWriteDataSourceOptions, Publisher<MessageMetadata>> publishers =
