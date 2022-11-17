@@ -58,11 +58,13 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.GuardedBy;
 
 @AutoValue
 public abstract class PslReadDataSourceOptions implements Serializable {
   private static final long serialVersionUID = 2680059304693561607L;
 
+  @GuardedBy("this")
   private transient SubscriberServiceClient subscriberServiceClient = null;
 
   @Nullable
