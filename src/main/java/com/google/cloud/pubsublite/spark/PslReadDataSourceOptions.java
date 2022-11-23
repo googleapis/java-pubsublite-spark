@@ -38,6 +38,7 @@ import com.google.cloud.pubsublite.internal.wire.SubscriberBuilder;
 import com.google.cloud.pubsublite.proto.Cursor;
 import com.google.cloud.pubsublite.proto.SeekRequest;
 import com.google.cloud.pubsublite.spark.internal.CachedPartitionCountReader;
+import com.google.cloud.pubsublite.spark.internal.CachedSubscriberClients;
 import com.google.cloud.pubsublite.spark.internal.LimitingHeadOffsetReader;
 import com.google.cloud.pubsublite.spark.internal.MultiPartitionCommitter;
 import com.google.cloud.pubsublite.spark.internal.MultiPartitionCommitterImpl;
@@ -50,7 +51,6 @@ import com.google.cloud.pubsublite.v1.AdminServiceSettings;
 import com.google.cloud.pubsublite.v1.CursorServiceClient;
 import com.google.cloud.pubsublite.v1.CursorServiceSettings;
 import com.google.cloud.pubsublite.v1.SubscriberServiceClient;
-import com.google.cloud.pubsublite.v1.SubscriberServiceSettings;
 import com.google.cloud.pubsublite.v1.TopicStatsServiceClient;
 import com.google.cloud.pubsublite.v1.TopicStatsServiceSettings;
 import java.io.IOException;
@@ -58,14 +58,10 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.GuardedBy;
 
 @AutoValue
 public abstract class PslReadDataSourceOptions implements Serializable {
   private static final long serialVersionUID = 2680059304693561607L;
-
-  @GuardedBy("this")
-  private transient SubscriberServiceClient subscriberServiceClient = null;
 
   @Nullable
   public abstract String credentialsKey();
@@ -131,7 +127,7 @@ public abstract class PslReadDataSourceOptions implements Serializable {
 
   @SuppressWarnings("CheckReturnValue")
   PartitionSubscriberFactory getSubscriberFactory() {
-    SubscriberServiceClient serviceClient = getSubscriberServiceClient();
+    SubscriberServiceClient serviceClient = CachedSubscriberClients.getOrCreate(this);
     return (partition, offset, consumer) -> {
       return SubscriberBuilder.newBuilder()
           .setSubscriptionPath(this.subscriptionPath())
@@ -151,21 +147,6 @@ public abstract class PslReadDataSourceOptions implements Serializable {
                   .build())
           .build();
     };
-  }
-
-  private synchronized SubscriberServiceClient getSubscriberServiceClient() {
-    if (subscriberServiceClient != null) return subscriberServiceClient;
-    try {
-      SubscriberServiceSettings.Builder settingsBuilder =
-          SubscriberServiceSettings.newBuilder()
-              .setCredentialsProvider(new PslCredentialsProvider(credentialsKey()));
-      subscriberServiceClient =
-          SubscriberServiceClient.create(
-              addDefaultSettings(subscriptionPath().location().extractRegion(), settingsBuilder));
-      return subscriberServiceClient;
-    } catch (IOException e) {
-      throw new IllegalStateException("Unable to create SubscriberServiceClient.");
-    }
   }
 
   // TODO(b/jiangmichael): Make XXXClientSettings accept creds so we could simplify below methods.
