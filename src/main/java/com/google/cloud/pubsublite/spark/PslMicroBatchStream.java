@@ -27,6 +27,7 @@ import com.google.cloud.pubsublite.spark.internal.PerTopicHeadOffsetReader;
 import com.google.common.annotations.VisibleForTesting;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.concurrent.GuardedBy;
 import org.apache.spark.sql.connector.read.InputPartition;
 import org.apache.spark.sql.connector.read.PartitionReaderFactory;
 import org.apache.spark.sql.connector.read.streaming.MicroBatchStream;
@@ -36,6 +37,9 @@ public class PslMicroBatchStream extends BaseDataStream implements MicroBatchStr
 
   private final PerTopicHeadOffsetReader headOffsetReader;
   private final PslReadDataSourceOptions options;
+
+  @GuardedBy("this")
+  private SparkSourceOffset lastEndOffset = null;
 
   @VisibleForTesting
   PslMicroBatchStream(
@@ -61,8 +65,17 @@ public class PslMicroBatchStream extends BaseDataStream implements MicroBatchStr
   }
 
   @Override
-  public SparkSourceOffset latestOffset() {
-    return PslSparkUtils.toSparkSourceOffset(headOffsetReader.getHeadOffset());
+  public synchronized SparkSourceOffset latestOffset() {
+    SparkSourceOffset newStartingOffset = (lastEndOffset == null) ? initialOffset() : lastEndOffset;
+    SparkSourceOffset headOffset =
+        PslSparkUtils.toSparkSourceOffset(headOffsetReader.getHeadOffset());
+    lastEndOffset =
+        PslSparkUtils.getSparkEndOffset(
+            headOffset,
+            newStartingOffset,
+            options.maxMessagesPerBatch(),
+            headOffset.getPartitionOffsetMap().size());
+    return lastEndOffset;
   }
 
   @Override

@@ -3,7 +3,7 @@
   <parent>
     <groupId>com.google.cloud</groupId>
     <artifactId>google-cloud-pubsublite-parent</artifactId>
-    <version>1.8.0</version>
+    <version>1.9.0</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>pubsublite-spark-sql-streaming</artifactId>
@@ -201,7 +201,7 @@
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
       <scope>test</scope>
-      <version>4.8.1</version>
+      <version>4.9.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
@@ -338,7 +338,7 @@
           <dependency>
             <groupId>org.apache.maven.shared</groupId>
             <artifactId>maven-dependency-tree</artifactId>
-            <version>3.2.0</version>
+            <version>3.2.1</version>
           </dependency>
         </dependencies>
       </plugin>

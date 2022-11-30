@@ -38,6 +38,7 @@ import com.google.cloud.pubsublite.internal.wire.SubscriberBuilder;
 import com.google.cloud.pubsublite.proto.Cursor;
 import com.google.cloud.pubsublite.proto.SeekRequest;
 import com.google.cloud.pubsublite.spark.internal.CachedPartitionCountReader;
+import com.google.cloud.pubsublite.spark.internal.CachedSubscriberClients;
 import com.google.cloud.pubsublite.spark.internal.LimitingHeadOffsetReader;
 import com.google.cloud.pubsublite.spark.internal.MultiPartitionCommitter;
 import com.google.cloud.pubsublite.spark.internal.MultiPartitionCommitterImpl;
@@ -50,7 +51,6 @@ import com.google.cloud.pubsublite.v1.AdminServiceSettings;
 import com.google.cloud.pubsublite.v1.CursorServiceClient;
 import com.google.cloud.pubsublite.v1.CursorServiceSettings;
 import com.google.cloud.pubsublite.v1.SubscriberServiceClient;
-import com.google.cloud.pubsublite.v1.SubscriberServiceSettings;
 import com.google.cloud.pubsublite.v1.TopicStatsServiceClient;
 import com.google.cloud.pubsublite.v1.TopicStatsServiceSettings;
 import java.io.IOException;
@@ -127,35 +127,25 @@ public abstract class PslReadDataSourceOptions implements Serializable {
 
   @SuppressWarnings("CheckReturnValue")
   PartitionSubscriberFactory getSubscriberFactory() {
+    SubscriberServiceClient serviceClient = CachedSubscriberClients.getOrCreate(this);
     return (partition, offset, consumer) -> {
-      SubscriberServiceSettings.Builder settingsBuilder =
-          SubscriberServiceSettings.newBuilder()
-              .setCredentialsProvider(new PslCredentialsProvider(credentialsKey()));
-      try {
-        SubscriberServiceClient serviceClient =
-            SubscriberServiceClient.create(
-                addDefaultSettings(
-                    this.subscriptionPath().location().extractRegion(), settingsBuilder));
-        return SubscriberBuilder.newBuilder()
-            .setSubscriptionPath(this.subscriptionPath())
-            .setPartition(partition)
-            .setMessageConsumer(consumer)
-            .setStreamFactory(
-                responseStream -> {
-                  ApiCallContext context =
-                      getCallContext(
-                          PubsubContext.of(Constants.FRAMEWORK),
-                          RoutingMetadata.of(subscriptionPath(), partition));
-                  return serviceClient.subscribeCallable().splitCall(responseStream, context);
-                })
-            .setInitialLocation(
-                SeekRequest.newBuilder()
-                    .setCursor(Cursor.newBuilder().setOffset(offset.value()))
-                    .build())
-            .build();
-      } catch (IOException e) {
-        throw new IllegalStateException("Failed to create subscriber service.", e);
-      }
+      return SubscriberBuilder.newBuilder()
+          .setSubscriptionPath(this.subscriptionPath())
+          .setPartition(partition)
+          .setMessageConsumer(consumer)
+          .setStreamFactory(
+              responseStream -> {
+                ApiCallContext context =
+                    getCallContext(
+                        PubsubContext.of(Constants.FRAMEWORK),
+                        RoutingMetadata.of(subscriptionPath(), partition));
+                return serviceClient.subscribeCallable().splitCall(responseStream, context);
+              })
+          .setInitialLocation(
+              SeekRequest.newBuilder()
+                  .setCursor(Cursor.newBuilder().setOffset(offset.value()))
+                  .build())
+          .build();
     };
   }
 
