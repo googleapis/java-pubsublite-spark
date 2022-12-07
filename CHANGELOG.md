@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.4.3](https://github.com/googleapis/java-pubsublite-spark/compare/v0.4.2...v0.4.3) (2022-12-07)
+
+
+### Dependencies
+
+* Update dependency certifi to v2022.12.7 ([#534](https://github.com/googleapis/java-pubsublite-spark/issues/534)) ([3a0d0f7](https://github.com/googleapis/java-pubsublite-spark/commit/3a0d0f786b28c5bb556c0aa0d0182e8652fa4c03))
+* Update dependency commons-net:commons-net to v3.9.0 ([#531](https://github.com/googleapis/java-pubsublite-spark/issues/531)) ([fe0fb45](https://github.com/googleapis/java-pubsublite-spark/commit/fe0fb45787c27634f65cdb8b4022783c8a4c8330))
+* Update dependency google-api-core to v2.11.0 ([#530](https://github.com/googleapis/java-pubsublite-spark/issues/530)) ([8c48ca2](https://github.com/googleapis/java-pubsublite-spark/commit/8c48ca21a810a3bb0d47c8618fa3cc63e41a5752))
+* Update dependency google-auth to v2.15.0 ([#532](https://github.com/googleapis/java-pubsublite-spark/issues/532)) ([32052df](https://github.com/googleapis/java-pubsublite-spark/commit/32052dfffe764303816532145e348480b4d5451e))
+* Update dependency google-cloud-storage to v2.7.0 ([#533](https://github.com/googleapis/java-pubsublite-spark/issues/533)) ([99d115b](https://github.com/googleapis/java-pubsublite-spark/commit/99d115b749b904f3db53796efc34e200d1255dea))
+
 ## [0.4.2](https://github.com/googleapis/java-pubsublite-spark/compare/v0.4.1...v0.4.2) (2022-12-01)
 
 
