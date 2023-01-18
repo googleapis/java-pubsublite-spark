@@ -8,9 +8,6 @@ Java idiomatic client for [Pub/Sub Lite Spark Connector][product-docs].
 - [Product Documentation][product-docs]
 - [Client Library Documentation][javadocs]
 
-> Note: This client is a work-in-progress, and may occasionally
-> make backwards-incompatible changes.
-
 
 ## Quickstart
 
@@ -92,12 +89,7 @@ and manual Spark installations.
   ```
 
 ## Downloading and Using the Connector
-  The latest version of the connector is publicly available in the following link:
-  | Connector version | Link |
-  | --- | --- |
-  | 0.4.0 | `gs://spark-lib/pubsublite/pubsublite-spark-sql-streaming-LATEST-with-dependencies.jar`([HTTP link](https://storage.googleapis.com/spark-lib/pubsublite/pubsublite-spark-sql-streaming-LATEST-with-dependencies.jar)) |
-
-  The connector is also available from the [Maven Central repository](https://search.maven.org/artifact/com.google.cloud/pubsublite-spark-sql-streaming). You can download and pass it in the `--jars` option when using the `spark-submit` command.
+  The connector is available from the [Maven Central repository](https://search.maven.org/artifact/com.google.cloud/pubsublite-spark-sql-streaming). You can download the latest jar with dependencies (pubsublite-spark-sql-streaming-x.x.x-with-dependencies.jar) and pass it in the `--jars` option when using the `spark-submit` command.
 
 ## Compatibility
 | Connector version | Spark version |
