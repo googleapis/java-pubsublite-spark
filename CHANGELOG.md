@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.4.5](https://github.com/googleapis/java-pubsublite-spark/compare/v0.4.4...v0.4.5) (2023-01-19)
+
+
+### Bug Fixes
+
+* **java:** Skip fixing poms for special modules ([#1744](https://github.com/googleapis/java-pubsublite-spark/issues/1744)) ([#578](https://github.com/googleapis/java-pubsublite-spark/issues/578)) ([f6111f2](https://github.com/googleapis/java-pubsublite-spark/commit/f6111f2564a021c9e2c6a7c3644e9f846a878113))
+* Skip clirr checks when publishing java docs temporarily ([#573](https://github.com/googleapis/java-pubsublite-spark/issues/573)) ([ac47150](https://github.com/googleapis/java-pubsublite-spark/commit/ac47150154c27e7a3d4ff4ba7099097f3e6de346))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-dataproc to v4.5.0 ([#566](https://github.com/googleapis/java-pubsublite-spark/issues/566)) ([c296725](https://github.com/googleapis/java-pubsublite-spark/commit/c2967254bdfc2e46862036146b56b2030c0ab316))
+* Update dependency setuptools to v65.7.0 ([#575](https://github.com/googleapis/java-pubsublite-spark/issues/575)) ([c0dc1b2](https://github.com/googleapis/java-pubsublite-spark/commit/c0dc1b25c4d208f32c0e99aeaa57b7fbe8a50e63))
+* Update dependency setuptools to v66 ([#576](https://github.com/googleapis/java-pubsublite-spark/issues/576)) ([ddc1636](https://github.com/googleapis/java-pubsublite-spark/commit/ddc1636331acdf59c012c16cb221d6de6caa3d98))
+
 ## [0.4.4](https://github.com/googleapis/java-pubsublite-spark/compare/v0.4.3...v0.4.4) (2023-01-17)
 
 
