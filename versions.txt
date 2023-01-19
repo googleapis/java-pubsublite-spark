@@ -1,4 +1,4 @@
 # Format:
 # module:released-version:current-version
 
-pubsublite-spark-sql-streaming:0.4.5:0.4.5
+pubsublite-spark-sql-streaming:0.4.5:0.4.6-SNAPSHOT
