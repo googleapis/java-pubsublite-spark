@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.0.0](https://github.com/googleapis/java-pubsublite-spark/compare/v0.4.5...v1.0.0) (2023-01-20)
+
+
+### Features
+
+* Mark stable to prepare for 1.0.0 release ([#571](https://github.com/googleapis/java-pubsublite-spark/issues/571)) ([b9d4f06](https://github.com/googleapis/java-pubsublite-spark/commit/b9d4f06688ce150353b65a97b2ebeedb9b99dbd8))
+
+
+### Dependencies
+
+* Update dependency google-resumable-media to v2.4.1 ([#579](https://github.com/googleapis/java-pubsublite-spark/issues/579)) ([95b449e](https://github.com/googleapis/java-pubsublite-spark/commit/95b449e7b1767656315bad303059ef5ec54a1929))
+
 ## [0.4.5](https://github.com/googleapis/java-pubsublite-spark/compare/v0.4.4...v0.4.5) (2023-01-19)
 
 
