@@ -89,7 +89,7 @@ and manual Spark installations.
   ```
 
 ## Downloading and Using the Connector
-  The latest version of the connector is publicly available from the [Maven Central repository](https://repo1.maven.org/maven2/com/google/cloud/pubsublite-spark-sql-streaming/). You can download and pass it in the `--jars` option when using the `spark-submit` command.
+  The latest version of the connector is publicly available from the [Maven Central repository](https://search.maven.org/artifact/com.google.cloud/pubsublite-spark-sql-streaming). You can download and pass it in the `--jars` option when using the `spark-submit` command.
 
 ## Compatibility
 | Connector version | Spark version |
