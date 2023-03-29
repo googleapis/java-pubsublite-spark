@@ -8,9 +8,6 @@ Java idiomatic client for [Pub/Sub Lite Spark Connector][product-docs].
 - [Product Documentation][product-docs]
 - [Client Library Documentation][javadocs]
 
-> Note: This client is a work-in-progress, and may occasionally
-> make backwards-incompatible changes.
-
 
 ## Quickstart
 
@@ -92,12 +89,7 @@ and manual Spark installations.
   ```
 
 ## Downloading and Using the Connector
-  The latest version of the connector is publicly available in the following link:
-  | Connector version | Link |
-  | --- | --- |
-  | 1.0.0 | `gs://spark-lib/pubsublite/pubsublite-spark-sql-streaming-LATEST-with-dependencies.jar`([HTTP link](https://storage.googleapis.com/spark-lib/pubsublite/pubsublite-spark-sql-streaming-LATEST-with-dependencies.jar)) |
-
-  The connector is also available from the [Maven Central repository](https://repo1.maven.org/maven2/com/google/cloud/pubsublite-spark-sql-streaming/). You can download and pass it in the `--jars` option when using the `spark-submit` command.
+  The latest version of the connector is publicly available from the [Maven Central repository](https://search.maven.org/artifact/com.google.cloud/pubsublite-spark-sql-streaming). You can download and pass it in the `--jars` option when using the `spark-submit` command.
 
 ## Compatibility
 | Connector version | Spark version |
@@ -305,9 +297,6 @@ and on [google-cloud-java][g-c-j].
 This library follows [Semantic Versioning](http://semver.org/).
 
 
-It is currently in major version zero (``0.y.z``), which means that anything may change at any time
-and the public API should not be considered stable.
-
 
 ## Contributing
 
@@ -348,7 +337,7 @@ Java is a registered trademark of Oracle and/or its affiliates.
 [kokoro-badge-link-4]: http://storage.googleapis.com/cloud-devrel-public/java/badges/java-pubsublite-spark/java8-win.html
 [kokoro-badge-image-5]: http://storage.googleapis.com/cloud-devrel-public/java/badges/java-pubsublite-spark/java11.svg
 [kokoro-badge-link-5]: http://storage.googleapis.com/cloud-devrel-public/java/badges/java-pubsublite-spark/java11.html
-[stability-image]: https://img.shields.io/badge/stability-preview-yellow
+[stability-image]: https://img.shields.io/badge/stability-stable-green
 [maven-version-image]: https://img.shields.io/maven-central/v/com.google.cloud/pubsublite-spark-sql-streaming.svg
 [maven-version-link]: https://search.maven.org/search?q=g:com.google.cloud%20AND%20a:pubsublite-spark-sql-streaming&core=gav
 [authentication]: https://github.com/googleapis/google-cloud-java#authentication
