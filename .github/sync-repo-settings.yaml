@@ -16,7 +16,6 @@ branchProtectionRules:
       - 'Kokoro - Test: Integration'
       - 'Kokoro - Test: Samples'
       - cla/google
-      - OwlBot Post Processor
   - pattern: java7
     isAdminEnforced: true
     requiredApprovingReviewCount: 1
