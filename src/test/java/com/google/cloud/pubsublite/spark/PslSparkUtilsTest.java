@@ -18,7 +18,6 @@ package com.google.cloud.pubsublite.spark;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
-import static scala.collection.JavaConverters.asScalaBufferConverter;
 
 import com.google.cloud.pubsublite.Message;
 import com.google.cloud.pubsublite.Offset;
@@ -44,6 +43,8 @@ import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import org.apache.spark.unsafe.types.ByteArray;
 import org.junit.Test;
+import scala.jdk.javaapi.CollectionConverters;
+
 
 public class PslSparkUtilsTest {
 
@@ -138,7 +139,7 @@ public class PslSparkUtilsTest {
                 PslSparkUtils.convertAttributesToSparkMap(message.attributes()),
                 Timestamps.toMicros(message.eventTime().get()),
                 "abc".getBytes(StandardCharsets.UTF_8)));
-    InternalRow row = InternalRow.apply(asScalaBufferConverter(list).asScala());
+    InternalRow row = InternalRow.apply(CollectionConverters.asScala(list).toSeq());
 
     StructType structType =
         new StructType(
@@ -164,7 +165,7 @@ public class PslSparkUtilsTest {
               new StructField("event_timestamp", DataTypes.LongType, false, Metadata.empty())
             });
     List<Object> list = Collections.singletonList(100000L);
-    InternalRow row = InternalRow.apply(asScalaBufferConverter(list).asScala());
+    InternalRow row = InternalRow.apply(CollectionConverters.asScala(list).toSeq());
 
     Message message = PslSparkUtils.toPubSubMessage(structType, row);
     assertThat(message).isEqualTo(expectedMsg);
