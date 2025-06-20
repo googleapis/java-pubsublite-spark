@@ -17,7 +17,7 @@
 package com.google.cloud.pubsublite.spark;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static scala.collection.JavaConverters.asScalaBufferConverter;
+import static scala.jdk.javaapi.CollectionConverters;
 
 import com.google.cloud.pubsublite.Message;
 import com.google.cloud.pubsublite.Offset;
@@ -73,12 +73,12 @@ public class PslSparkUtils {
                   value.stream()
                       .map(v -> ByteArray.concat(v.toByteArray()))
                       .collect(Collectors.toList());
-              valueList.add(new GenericArrayData(asScalaBufferConverter(attributeVals).asScala()));
+              valueList.add(new GenericArrayData(CollectionConverters.asScala(attributeVals).toSeq()));
             });
 
     return new ArrayBasedMapData(
-        new GenericArrayData(asScalaBufferConverter(keyList).asScala()),
-        new GenericArrayData(asScalaBufferConverter(valueList).asScala()));
+        new GenericArrayData(CollectionConverters.asScala(keyList).toSeq()),
+        new GenericArrayData(CollectionConverters.asScala(valueList).toSeq()));
   }
 
   public static InternalRow toInternalRow(
@@ -96,7 +96,7 @@ public class PslSparkUtils {
                     ? Timestamps.toMicros(msg.message().eventTime().get())
                     : null,
                 convertAttributesToSparkMap(msg.message().attributes())));
-    return InternalRow.apply(asScalaBufferConverter(list).asScala());
+    return InternalRow.apply(CollectionConverters.asScala(list).toSeq());
   }
 
   @SuppressWarnings("unchecked")
