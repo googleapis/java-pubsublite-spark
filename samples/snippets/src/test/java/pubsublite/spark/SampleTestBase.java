@@ -109,7 +109,7 @@ public abstract class SampleTestBase {
     assertThat(p.waitFor()).isEqualTo(0);
     String s;
     while ((s = stdOut.readLine()) != null) {
-      if (String.startsWith(s, "Maven home: ")) {
+      if (s.startsWith("Maven home: ")) {
         mavenHome = s.replace("Maven home: ", "");
       }
     }
