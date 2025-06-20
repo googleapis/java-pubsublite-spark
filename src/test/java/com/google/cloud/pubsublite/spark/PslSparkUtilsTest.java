@@ -45,7 +45,6 @@ import org.apache.spark.unsafe.types.ByteArray;
 import org.junit.Test;
 import scala.jdk.javaapi.CollectionConverters;
 
-
 public class PslSparkUtilsTest {
 
   @Test

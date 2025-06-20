@@ -73,7 +73,8 @@ public class PslSparkUtils {
                   value.stream()
                       .map(v -> ByteArray.concat(v.toByteArray()))
                       .collect(Collectors.toList());
-              valueList.add(new GenericArrayData(CollectionConverters.asScala(attributeVals).toSeq()));
+              valueList.add(
+                  new GenericArrayData(CollectionConverters.asScala(attributeVals).toSeq()));
             });
 
     return new ArrayBasedMapData(
