@@ -17,7 +17,6 @@
 package com.google.cloud.pubsublite.spark;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static scala.jdk.javaapi.CollectionConverters;
 
 import com.google.cloud.pubsublite.Message;
 import com.google.cloud.pubsublite.Offset;
@@ -52,6 +51,7 @@ import org.apache.spark.unsafe.types.ByteArray;
 import org.apache.spark.unsafe.types.UTF8String;
 import scala.Option;
 import scala.compat.java8.functionConverterImpls.FromJavaBiConsumer;
+import scala.jdk.javaapi.CollectionConverters;
 
 public class PslSparkUtils {
 
