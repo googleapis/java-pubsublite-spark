@@ -43,7 +43,6 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import org.apache.commons.lang.StringUtils;
 import org.apache.maven.shared.invoker.DefaultInvocationRequest;
 import org.apache.maven.shared.invoker.DefaultInvoker;
 import org.apache.maven.shared.invoker.InvocationOutputHandler;
@@ -110,7 +109,7 @@ public abstract class SampleTestBase {
     assertThat(p.waitFor()).isEqualTo(0);
     String s;
     while ((s = stdOut.readLine()) != null) {
-      if (StringUtils.startsWith(s, "Maven home: ")) {
+      if (s.startsWith("Maven home: ")) {
         mavenHome = s.replace("Maven home: ", "");
       }
     }
