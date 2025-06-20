@@ -102,4 +102,8 @@ public class PslWrite
   public StreamingWrite buildForStreaming() {
     return this;
   }
+
+  @Override
+public  boolean useCommitCoordinator() {
+    return false;
 }
