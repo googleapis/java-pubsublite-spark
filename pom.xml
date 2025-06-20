@@ -67,12 +67,12 @@
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-server</artifactId>
-        <version>11.0.14</version>
+        <version>11.0.24</version>
       </dependency>
       <dependency>
         <groupId>jakarta.xml.bind</groupId>
         <artifactId>jakarta.xml.bind-api</artifactId>
-        <version>4.0.0</version>
+        <version>4.0.2</version>
       </dependency>
       <dependency>
         <groupId>jakarta.activation</groupId>
