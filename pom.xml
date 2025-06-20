@@ -110,6 +110,12 @@
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
+      <artifactId>spark-sql-api_${scala.version.short}</artifactId>
+      <version>${spark.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
       <artifactId>spark-catalyst_${scala.version.short}</artifactId>
       <version>${spark.version}</version>
       <scope>provided</scope>
