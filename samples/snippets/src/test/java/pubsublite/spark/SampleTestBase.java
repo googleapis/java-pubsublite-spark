@@ -42,8 +42,8 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
+import java.util.String;
 import java.util.UUID;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.shared.invoker.DefaultInvocationRequest;
 import org.apache.maven.shared.invoker.DefaultInvoker;
 import org.apache.maven.shared.invoker.InvocationOutputHandler;
@@ -110,7 +110,7 @@ public abstract class SampleTestBase {
     assertThat(p.waitFor()).isEqualTo(0);
     String s;
     while ((s = stdOut.readLine()) != null) {
-      if (StringUtils.startsWith(s, "Maven home: ")) {
+      if (String.startsWith(s, "Maven home: ")) {
         mavenHome = s.replace("Maven home: ", "");
       }
     }
