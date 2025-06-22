@@ -105,6 +105,6 @@ public class PslWrite
 
   @Override
   public boolean useCommitCoordinator() {
-    return false;
+    return true;
   }
 }
