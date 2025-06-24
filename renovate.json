@@ -71,12 +71,10 @@
     {
       "packagePatterns": [
         "^spark.version",
-        "^org.apache.spark",
-        "^scala.version",
-        "^org.scala-lang"
+        "^org.apache.spark"
       ],
       "enabled": false,
-      "groupName": "spark and scala pinned dependencies"
+      "groupName": "spark and pinned dependencies"
     }
   ],
   "semanticCommits": true,

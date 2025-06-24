@@ -16,9 +16,9 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <encoding>UTF-8</encoding>
-    <scala.version>2.12.15</scala.version>
-    <scala.version.short>2.12</scala.version.short>
-    <spark.version>3.1.2</spark.version>
+    <scala.version>2.13.16</scala.version>
+    <scala.version.short>2.13</scala.version.short>
+    <spark.version>3.5.5</spark.version>
     <hadoop.version>3.2.2</hadoop.version>
   </properties>
   <dependencyManagement>
@@ -67,7 +67,7 @@
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-server</artifactId>
-        <version>11.0.24</version>
+        <version>11.0.14</version>
       </dependency>
       <dependency>
         <groupId>jakarta.xml.bind</groupId>
@@ -105,6 +105,12 @@
     <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-sql_${scala.version.short}</artifactId>
+      <version>${spark.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-sql-api_${scala.version.short}</artifactId>
       <version>${spark.version}</version>
       <scope>provided</scope>
     </dependency>
