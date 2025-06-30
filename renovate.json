@@ -68,14 +68,6 @@
       ],
       "groupName": "jackson dependencies"
     },
-    {
-      "packagePatterns": [
-        "^spark.version",
-        "^org.apache.spark"
-      ],
-      "enabled": false,
-      "groupName": "spark and pinned dependencies"
-    }
   ],
   "semanticCommits": true,
   "dependencyDashboard": true
