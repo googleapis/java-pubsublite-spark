@@ -25,7 +25,7 @@ if [ "$1" == "run" ]; then
   gcloud dataproc clusters create $CLUSTER_NAME \
     --region=$REGION \
     --zone=$REGION-$ZONE_ID \
-    --image-version=1.5-debian10 \
+    --image-version=2.3-debian12 \
     --scopes=cloud-platform
 
   # Package sample jar
