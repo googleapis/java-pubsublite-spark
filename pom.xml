@@ -62,12 +62,12 @@
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-util</artifactId>
-        <version>11.0.14</version>
+        <version>11.0.25</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-server</artifactId>
-        <version>11.0.14</version>
+        <version>11.0.25</version>
       </dependency>
       <dependency>
         <groupId>jakarta.xml.bind</groupId>
@@ -298,7 +298,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>3.2.1</version>
+        <version>3.6.0</version>
         <executions>
           <execution>
             <id>enforce</id>
