@@ -56,7 +56,7 @@ follow the steps:
    ```
 4. Create a Dataproc cluster
    ```sh
-   gcloud dataproc clusters create $CLUSTER_NAME --region=$REGION --zone=$REGION-$ZONE_ID --image-version=1.5-debian10 --scopes=cloud-platform
+   gcloud dataproc clusters create $CLUSTER_NAME --region=$REGION --zone=$REGION-$ZONE_ID --image-version=2.3-debian12 --scopes=cloud-platform
    ```
 5. Package sample jar
    ```sh
