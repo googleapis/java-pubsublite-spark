@@ -38,13 +38,8 @@
   <dependencies>
     <dependency>
       <groupId>org.apache.spark</groupId>
-      <artifactId>spark-sql_2.13</artifactId>
-      <version>3.5.3</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.spark</groupId>
-      <artifactId>spark-sql-api_2.13</artifactId>
-      <version>3.5.3</version>
+      <artifactId>spark-sql_2.11</artifactId>
+      <version>2.4.8</version>
     </dependency>
     <dependency>
       <groupId>com.google.cloud</groupId>
