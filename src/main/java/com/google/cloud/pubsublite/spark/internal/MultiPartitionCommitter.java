@@ -29,5 +29,6 @@ public interface MultiPartitionCommitter extends Closeable {
 
   void commit(PslSourceOffset offset);
 
+  @Override
   void close();
 }

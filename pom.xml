@@ -18,7 +18,7 @@
     <encoding>UTF-8</encoding>
     <scala.version>2.12.20</scala.version>
     <scala.version.short>2.12</scala.version.short>
-    <spark.version>3.5.3</spark.version>
+    <spark.version>3.5.5</spark.version>
     <hadoop.version>3.2.2</hadoop.version>
   </properties>
   <dependencyManagement>

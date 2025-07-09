@@ -81,6 +81,7 @@ public class BaseDataStream implements SparkDataStream {
   }
 
   @Override
+  @SuppressWarnings("try")
   public void stop() {
     try (AutoCloseable a = committer;
         AutoCloseable b = cursorClient;

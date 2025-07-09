@@ -101,6 +101,7 @@ public class LimitingHeadOffsetReader implements PerTopicHeadOffsetReader {
   }
 
   @Override
+  @SuppressWarnings("try")
   public void close() {
     try (AutoCloseable a = topicStatsClient;
         Closeable b = partitionCountReader) {
