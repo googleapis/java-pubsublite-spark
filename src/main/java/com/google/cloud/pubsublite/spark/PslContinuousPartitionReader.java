@@ -56,7 +56,8 @@ public class PslContinuousPartitionReader implements ContinuousPartitionReader<I
       subscriber.onData().get();
       // since next() will not be called concurrently, we are sure that the message
       // is available to this thread.
-      Optional<com.google.cloud.pubsublite.proto.SequencedMessage> proto_msg = subscriber.messageIfAvailable();
+      Optional<com.google.cloud.pubsublite.proto.SequencedMessage> proto_msg =
+          subscriber.messageIfAvailable();
       checkState(proto_msg.isPresent());
       currentMsg = SequencedMessage.fromProto(proto_msg.get());
       currentOffset =

@@ -24,8 +24,8 @@ import com.google.cloud.pubsublite.Message;
 import com.google.cloud.pubsublite.Offset;
 import com.google.cloud.pubsublite.Partition;
 import com.google.cloud.pubsublite.SequencedMessage;
-import com.google.cloud.pubsublite.proto.PubSubMessage;
 import com.google.cloud.pubsublite.internal.testing.UnitTestExamples;
+import com.google.cloud.pubsublite.proto.PubSubMessage;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.ByteString;
@@ -157,7 +157,8 @@ public class PslSparkUtilsTest {
 
   @Test
   public void testToPubSubMessageLongForEventTimestamp() {
-    PubSubMessage expectedMsg = Message.builder().setEventTime(Timestamps.fromMicros(100000L)).build().toProto();
+    PubSubMessage expectedMsg =
+        Message.builder().setEventTime(Timestamps.fromMicros(100000L)).build().toProto();
 
     StructType structType =
         new StructType(
