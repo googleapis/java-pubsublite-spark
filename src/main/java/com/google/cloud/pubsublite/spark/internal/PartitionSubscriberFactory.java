@@ -19,7 +19,7 @@ package com.google.cloud.pubsublite.spark.internal;
 import com.google.api.gax.rpc.ApiException;
 import com.google.cloud.pubsublite.Offset;
 import com.google.cloud.pubsublite.Partition;
-import com.google.cloud.pubsublite.SequencedMessage;
+import com.google.cloud.pubsublite.proto.SequencedMessage;
 import com.google.cloud.pubsublite.internal.wire.Subscriber;
 import java.io.Serializable;
 import java.util.List;

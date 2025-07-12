@@ -68,7 +68,7 @@ public class PslContinuousInputPartitionReaderTest {
 
     // Multiple get w/o next will return same msg.
     when(subscriber.onData()).thenReturn(ApiFutures.immediateFuture(null));
-    when(subscriber.messageIfAvailable()).thenReturn(Optional.of(message1));
+    when(subscriber.messageIfAvailable()).thenReturn(Optional.of(message1.toProto()));
     assertThat(reader.next()).isTrue();
     verifyInternalRow(reader.get(), 10L);
     verifyInternalRow(reader.get(), 10L);
@@ -76,7 +76,7 @@ public class PslContinuousInputPartitionReaderTest {
 
     // Next will advance to next msg.
     when(subscriber.onData()).thenReturn(ApiFutures.immediateFuture(null));
-    when(subscriber.messageIfAvailable()).thenReturn(Optional.of(message2));
+    when(subscriber.messageIfAvailable()).thenReturn(Optional.of(message2.toProto()));
     assertThat(reader.next()).isTrue();
     verifyInternalRow(reader.get(), 13L);
     assertThat(((SparkPartitionOffset) reader.getOffset()).offset()).isEqualTo(13L);

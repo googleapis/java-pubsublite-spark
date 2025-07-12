@@ -22,6 +22,7 @@ import static scala.collection.JavaConverters.asScalaBufferConverter;
 import com.google.cloud.pubsublite.Message;
 import com.google.cloud.pubsublite.Offset;
 import com.google.cloud.pubsublite.Partition;
+import com.google.cloud.pubsublite.proto.PubSubMessage;
 import com.google.cloud.pubsublite.SequencedMessage;
 import com.google.cloud.pubsublite.SubscriptionPath;
 import com.google.common.annotations.VisibleForTesting;
@@ -116,7 +117,7 @@ public class PslSparkUtils {
   }
 
   @SuppressWarnings("CheckReturnValue")
-  public static Message toPubSubMessage(StructType inputSchema, InternalRow row) {
+  public static PubSubMessage toPubSubMessage(StructType inputSchema, InternalRow row) {
     Message.Builder builder = Message.builder();
     extractVal(
         inputSchema,
@@ -159,7 +160,7 @@ public class PslSparkUtils {
                   }));
           builder.setAttributes(attributeMapBuilder.build());
         });
-    return builder.build();
+    return builder.build().toProto();
   }
 
   /**
