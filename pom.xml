@@ -151,6 +151,7 @@
     <dependency>
       <groupId>com.google.flogger</groupId>
       <artifactId>flogger</artifactId>
+      <version>0.8</version>
     </dependency>
     <dependency>
       <groupId>com.google.auto.value</groupId>
