@@ -145,6 +145,14 @@
       <artifactId>gax</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.google.api</groupId>
+      <artifactId>gax-grpc</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.flogger</groupId>
+      <artifactId>flogger</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.google.auto.value</groupId>
       <artifactId>auto-value-annotations</artifactId>
     </dependency>
