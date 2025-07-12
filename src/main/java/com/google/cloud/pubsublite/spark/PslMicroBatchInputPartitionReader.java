@@ -57,11 +57,11 @@ public class PslMicroBatchInputPartitionReader implements PartitionReader<Intern
     if (batchFulfilled) {
       return false;
     }
-    Optional<SequencedMessage> msg;
+    Optional<com.google.cloud.pubsublite.proto.SequencedMessage> proto_msg;
     while (true) {
       try {
         subscriber.onData().get(SUBSCRIBER_PULL_TIMEOUT.getSeconds(), TimeUnit.SECONDS);
-        msg = subscriber.messageIfAvailable();
+        proto_msg = subscriber.messageIfAvailable();
         break;
       } catch (TimeoutException e) {
         log.atWarning().log(
@@ -76,8 +76,8 @@ public class PslMicroBatchInputPartitionReader implements PartitionReader<Intern
     }
     // since next() is only called on one thread at a time, we are sure that the message is
     // available to this thread.
-    checkState(msg.isPresent());
-    currentMsg = msg.get();
+    checkState(proto_msg.isPresent());
+    currentMsg = SequencedMessage.fromProto(proto_msg.get());
     if (currentMsg.offset().value() == endOffset.offset()) {
       // this is the last msg for the batch.
       batchFulfilled = true;
