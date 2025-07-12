@@ -72,14 +72,14 @@ public class PslMicroBatchInputPartitionReaderTest {
 
     // Multiple get w/o next will return same msg.
     when(subscriber.onData()).thenReturn(ApiFutures.immediateFuture(null));
-    when(subscriber.messageIfAvailable()).thenReturn(Optional.of(message1));
+    when(subscriber.messageIfAvailable()).thenReturn(Optional.of(message1.toProto()));
     assertThat(reader.next()).isTrue();
     verifyInternalRow(reader.get(), 10L);
     verifyInternalRow(reader.get(), 10L);
 
     // Next will advance to next msg which is also the last msg in the batch.
     when(subscriber.onData()).thenReturn(ApiFutures.immediateFuture(null));
-    when(subscriber.messageIfAvailable()).thenReturn(Optional.of(message2));
+    when(subscriber.messageIfAvailable()).thenReturn(Optional.of(message2.toProto()));
     assertThat(reader.next()).isTrue();
     verifyInternalRow(reader.get(), 14L);
 
@@ -96,14 +96,14 @@ public class PslMicroBatchInputPartitionReaderTest {
 
     // Multiple get w/o next will return same msg.
     when(subscriber.onData()).thenReturn(ApiFutures.immediateFuture(null));
-    when(subscriber.messageIfAvailable()).thenReturn(Optional.of(message1));
+    when(subscriber.messageIfAvailable()).thenReturn(Optional.of(message1.toProto()));
     assertThat(reader.next()).isTrue();
     verifyInternalRow(reader.get(), 10L);
     verifyInternalRow(reader.get(), 10L);
 
     // Next will advance to next msg, and recognize it's out of the batch range.
     when(subscriber.onData()).thenReturn(ApiFutures.immediateFuture(null));
-    when(subscriber.messageIfAvailable()).thenReturn(Optional.of(message2));
+    when(subscriber.messageIfAvailable()).thenReturn(Optional.of(message2.toProto()));
     assertThat(reader.next()).isFalse();
   }
 }

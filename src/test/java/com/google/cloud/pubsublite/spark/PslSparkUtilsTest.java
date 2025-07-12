@@ -25,6 +25,7 @@ import com.google.cloud.pubsublite.Offset;
 import com.google.cloud.pubsublite.Partition;
 import com.google.cloud.pubsublite.SequencedMessage;
 import com.google.cloud.pubsublite.internal.testing.UnitTestExamples;
+import com.google.cloud.pubsublite.proto.PubSubMessage;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.ByteString;
@@ -151,12 +152,13 @@ public class PslSparkUtilsTest {
               new StructField("random_extra_field", DataTypes.BinaryType, false, Metadata.empty())
             });
 
-    assertThat(message).isEqualTo(PslSparkUtils.toPubSubMessage(structType, row));
+    assertThat(message.toProto()).isEqualTo(PslSparkUtils.toPubSubMessage(structType, row));
   }
 
   @Test
   public void testToPubSubMessageLongForEventTimestamp() {
-    Message expectedMsg = Message.builder().setEventTime(Timestamps.fromMicros(100000L)).build();
+    PubSubMessage expectedMsg =
+        Message.builder().setEventTime(Timestamps.fromMicros(100000L)).build().toProto();
 
     StructType structType =
         new StructType(
@@ -166,7 +168,7 @@ public class PslSparkUtilsTest {
     List<Object> list = Collections.singletonList(100000L);
     InternalRow row = InternalRow.apply(asScalaBufferConverter(list).asScala());
 
-    Message message = PslSparkUtils.toPubSubMessage(structType, row);
+    PubSubMessage message = PslSparkUtils.toPubSubMessage(structType, row);
     assertThat(message).isEqualTo(expectedMsg);
   }
 
