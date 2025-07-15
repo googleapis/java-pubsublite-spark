@@ -19,7 +19,7 @@
     <scala.version>2.12.20</scala.version>
     <scala.version.short>2.12</scala.version.short>
     <spark.version>3.5.5</spark.version>
-    <hadoop.version>3.2.2</hadoop.version>
+    <hadoop.version>3.4.1</hadoop.version>
   </properties>
   <dependencyManagement>
     <dependencies>
