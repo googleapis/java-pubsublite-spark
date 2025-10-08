@@ -39,9 +39,10 @@ public class PslCredentialsProvider implements CredentialsProvider {
 
   private static ServiceAccountCredentials createCredentialsFromKey(String key) {
     try {
-      return (ServiceAccountCredentials) ServiceAccountCredentials.fromStream(
-              new ByteArrayInputStream(Base64.getDecoder().decode(key)))
-          .createScoped("https://www.googleapis.com/auth/cloud-platform");
+      return (ServiceAccountCredentials)
+          ServiceAccountCredentials.fromStream(
+                  new ByteArrayInputStream(Base64.getDecoder().decode(key)))
+              .createScoped("https://www.googleapis.com/auth/cloud-platform");
     } catch (IOException e) {
       throw new UncheckedIOException("Failed to create Credentials from key", e);
     }
