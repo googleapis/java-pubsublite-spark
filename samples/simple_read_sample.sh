@@ -32,8 +32,8 @@ if [ "$1" == "run" ]; then
   mvn clean package -Dmaven.test.skip=true
 
   # Create GCS bucket and upload sample jar onto GCS
-  gsutil mb $BUCKET
-  gsutil cp target/pubsublite-spark-snippets-$SAMPLE_VERSION.jar $BUCKET
+  gcloud storage buckets create $BUCKET
+  gcloud storage cp target/pubsublite-spark-snippets-$SAMPLE_VERSION.jar $BUCKET
 
   # Set Dataproc region
   gcloud config set dataproc/region $REGION
@@ -52,7 +52,7 @@ elif [ "$1" == "clean" ]; then
   gcloud pubsub lite-topics delete $SOURCE_TOPIC_ID --zone=$REGION-$ZONE_ID
 
   # Delete GCS bucket.
-  gsutil -m rm -rf $BUCKET
+  gcloud storage rm --recursive --continue-on-error $BUCKET
 
   # Delete Dataproc cluster.
   gcloud dataproc clusters delete $CLUSTER_NAME --region=$REGION

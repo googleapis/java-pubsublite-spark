@@ -65,9 +65,9 @@ follow the steps:
 6. Download `pubsublite-spark-sql-streaming-$CONNECTOR_VERSION-with-dependencies.jar` from [Maven Central](https://search.maven.org/artifact/com.google.cloud/pubsublite-spark-sql-streaming) and set `PUBSUBLITE_SPARK_SQL_STREAMING_JAR_LOCATION` environment variable.
 7. Create GCS bucket and upload both `pubsublite-spark-sql-streaming-$CONNECTOR_VERSION-with-dependencies.jar` and the sample jar onto GCS
    ```sh
-   gsutil mb $BUCKET
-   gsutil cp target/pubsublite-spark-snippets-$SAMPLE_VERSION.jar $BUCKET
-   gsutil cp $PUBSUBLITE_SPARK_SQL_STREAMING_JAR_LOCATION $BUCKET
+   gcloud storage buckets create $BUCKET
+   gcloud storage cp target/pubsublite-spark-snippets-$SAMPLE_VERSION.jar $BUCKET
+   gcloud storage cp $PUBSUBLITE_SPARK_SQL_STREAMING_JAR_LOCATION $BUCKET
    ```
 8. Set Dataproc region
    ```sh
@@ -98,7 +98,7 @@ To clean up, either use provided bash script `word_count_sample.sh clean` or fol
    ```
 2. Delete GCS bucket.
    ```sh
-   gsutil -m rm -rf $BUCKET
+   gcloud storage rm --recursive --continue-on-error $BUCKET
    ```
 3. Delete Dataproc cluster.
    ```sh
@@ -151,9 +151,9 @@ follow the steps:
 6. Download `pubsublite-spark-sql-streaming-$CONNECTOR_VERSION-with-dependencies.jar` from [Maven Central](https://search.maven.org/artifact/com.google.cloud/pubsublite-spark-sql-streaming) and set `PUBSUBLITE_SPARK_SQL_STREAMING_JAR_LOCATION` environment variable.
 7. Create GCS bucket and upload both `pubsublite-spark-sql-streaming-$CONNECTOR_VERSION-with-dependencies.jar` and the sample jar onto GCS
    ```sh
-   gsutil mb $BUCKET
-   gsutil cp target/pubsublite-spark-snippets-$SAMPLE_VERSION.jar $BUCKET
-   gsutil cp $PUBSUBLITE_SPARK_SQL_STREAMING_JAR_LOCATION $BUCKET
+   gcloud storage buckets create $BUCKET
+   gcloud storage cp target/pubsublite-spark-snippets-$SAMPLE_VERSION.jar $BUCKET
+   gcloud storage cp $PUBSUBLITE_SPARK_SQL_STREAMING_JAR_LOCATION $BUCKET
    ```
 8. Set Dataproc region
    ```sh
@@ -178,7 +178,7 @@ To clean up, either use provided bash script `simple_read_sample.sh clean` or fo
    ```
 2. Delete GCS bucket.
    ```sh
-   gsutil -m rm -rf $BUCKET
+   gcloud storage rm --recursive --continue-on-error $BUCKET
    ```
 3. Delete Dataproc cluster.
    ```sh
@@ -231,9 +231,9 @@ follow the steps:
 6. Download `pubsublite-spark-sql-streaming-$CONNECTOR_VERSION-with-dependencies.jar` from [Maven Central](https://search.maven.org/artifact/com.google.cloud/pubsublite-spark-sql-streaming) and set `PUBSUBLITE_SPARK_SQL_STREAMING_JAR_LOCATION` environment variable.
 7. Create GCS bucket and upload both `pubsublite-spark-sql-streaming-$CONNECTOR_VERSION-with-dependencies.jar` and the sample jar onto GCS
    ```sh
-   gsutil mb $BUCKET
-   gsutil cp target/pubsublite-spark-snippets-$SAMPLE_VERSION.jar $BUCKET
-   gsutil cp $PUBSUBLITE_SPARK_SQL_STREAMING_JAR_LOCATION $BUCKET
+   gcloud storage buckets create $BUCKET
+   gcloud storage cp target/pubsublite-spark-snippets-$SAMPLE_VERSION.jar $BUCKET
+   gcloud storage cp $PUBSUBLITE_SPARK_SQL_STREAMING_JAR_LOCATION $BUCKET
    ```
 8. Set Dataproc region
    ```sh
@@ -259,7 +259,7 @@ To clean up, either use provided bash script `simple_write_sample.sh clean` or f
    ```
 2. Delete GCS bucket.
    ```sh
-   gsutil -m rm -rf $BUCKET
+   gcloud storage rm --recursive --continue-on-error $BUCKET
    ```
 3. Delete Dataproc cluster.
    ```sh
