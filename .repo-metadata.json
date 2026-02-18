@@ -12,7 +12,7 @@
   "repo": "googleapis/java-pubsublite-spark",
   "repo_short": "java-pubsublite-spark",
   "distribution_name": "com.google.cloud:pubsublite-spark-sql-streaming",
-  "codeowner_team": "@googleapis/api-pubsublite",
+  "codeowner_team": "@googleapis/managed-kafka-team",
   "library_type": "AGENT",
   "api_id": "pubsublite.googleapis.com"
 }

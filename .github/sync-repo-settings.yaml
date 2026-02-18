@@ -35,7 +35,7 @@ permissionRules:
     permission: admin
   - team: yoshi-java-admins
     permission: admin
-  - team: yoshi-java
+  - team: cloud-sdk-java-team
     permission: push
-  - team: api-pubsublite
+  - team: managed-kafka-team
     permission: admin
