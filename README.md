@@ -14,6 +14,7 @@ Java idiomatic client for [Pub/Sub Lite Spark Connector][product-docs].
 
 If you are using Maven, add this to your pom.xml file:
 
+<!-- {x-version-update-start:pubsublite-spark-sql-streaming:released} -->
 
 ```xml
 <dependency>
@@ -34,6 +35,7 @@ If you are using SBT, add this to your dependencies:
 ```Scala
 libraryDependencies += "com.google.cloud" % "pubsublite-spark-sql-streaming" % "1.0.0"
 ```
+<!-- {x-version-update-end} -->
 
 ## Authentication
 
@@ -50,7 +52,7 @@ The client application making API calls must be granted [authorization scopes][a
 You will need a [Google Cloud Platform Console][developer-console] project with the Pub/Sub Lite Spark Connector [API enabled][enable-api].
 You will need to [enable billing][enable-billing] to use Google Pub/Sub Lite Spark Connector.
 [Follow these instructions][create-project] to get your project set up. You will also need to set up the local development environment by
-[installing the Google Cloud SDK][cloud-sdk] and running the following commands in command line:
+[installing the Google Cloud Command Line Interface][cloud-cli] and running the following commands in command line:
 `gcloud auth login` and `gcloud config set project [YOUR PROJECT ID]`.
 
 ### Installation and setup
@@ -339,15 +341,15 @@ Java is a registered trademark of Oracle and/or its affiliates.
 [kokoro-badge-link-5]: http://storage.googleapis.com/cloud-devrel-public/java/badges/java-pubsublite-spark/java11.html
 [stability-image]: https://img.shields.io/badge/stability-stable-green
 [maven-version-image]: https://img.shields.io/maven-central/v/com.google.cloud/pubsublite-spark-sql-streaming.svg
-[maven-version-link]: https://search.maven.org/search?q=g:com.google.cloud%20AND%20a:pubsublite-spark-sql-streaming&core=gav
+[maven-version-link]: https://central.sonatype.com/artifact/com.google.cloud/pubsublite-spark-sql-streaming/1.0.0
 [authentication]: https://github.com/googleapis/google-cloud-java#authentication
 [auth-scopes]: https://developers.google.com/identity/protocols/oauth2/scopes
 [predefined-iam-roles]: https://cloud.google.com/iam/docs/understanding-roles#predefined_roles
 [iam-policy]: https://cloud.google.com/iam/docs/overview#cloud-iam-policy
 [developer-console]: https://console.developers.google.com/
 [create-project]: https://cloud.google.com/resource-manager/docs/creating-managing-projects
-[cloud-sdk]: https://cloud.google.com/sdk/
-[troubleshooting]: https://github.com/googleapis/google-cloud-common/blob/main/troubleshooting/readme.md#troubleshooting
+[cloud-cli]: https://cloud.google.com/cli
+[troubleshooting]: https://github.com/googleapis/google-cloud-java/blob/main/TROUBLESHOOTING.md
 [contributing]: https://github.com/googleapis/java-pubsublite-spark/blob/main/CONTRIBUTING.md
 [code-of-conduct]: https://github.com/googleapis/java-pubsublite-spark/blob/main/CODE_OF_CONDUCT.md#contributor-code-of-conduct
 [license]: https://github.com/googleapis/java-pubsublite-spark/blob/main/LICENSE
