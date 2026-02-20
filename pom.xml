@@ -13,6 +13,8 @@
   <url>https://github.com/googleapis/java-pubsublite-spark</url>
   <description>Spark SQL Streaming Connector for Google Cloud Pub/Sub Lite</description>
   <properties>
+    <!--clirr is disabled in the parent pom-->
+    <clirr.skip>true</clirr.skip>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <encoding>UTF-8</encoding>
